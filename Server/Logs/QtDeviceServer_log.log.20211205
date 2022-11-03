@@ -1,0 +1,43 @@
+2021-12-14 07:31:44,949 - Server - INFO - Session opened.
+2021-12-14 07:31:53,988 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 6527)
+2021-12-14 07:32:19,237 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-14 15:01:42,718 - Server - WARNING - Failed to open the session
+2021-12-14 15:01:42,718 - Server - WARNING - Failed to open the session
+2021-12-14 15:01:44,113 - Server - WARNING - Failed to open the session
+2021-12-14 15:01:44,113 - Server - WARNING - Failed to open the session
+2021-12-14 15:01:44,113 - Server - WARNING - Failed to open the session
+2021-12-14 15:01:52,790 - Server - INFO - Session opened.
+2021-12-14 15:03:30,668 - Server - WARNING - Failed to open the session
+2021-12-14 15:03:30,668 - Server - WARNING - Failed to open the session
+2021-12-14 15:03:33,249 - Server - WARNING - Failed to open the session
+2021-12-14 15:03:33,249 - Server - WARNING - Failed to open the session
+2021-12-14 15:03:33,249 - Server - WARNING - Failed to open the session
+2021-12-14 15:03:39,883 - Server - INFO - Session opened.
+2021-12-14 15:03:48,930 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 11649)
+2021-12-14 15:04:19,164 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-14 15:05:11,537 - Server - INFO - Session opened.
+2021-12-14 15:05:20,306 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 11926)
+2021-12-14 15:07:39,804 - Server - INFO - Session opened.
+2021-12-14 15:07:49,297 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 12214)
+2021-12-14 15:08:08,084 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-14 15:29:10,114 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 10329)
+2021-12-14 15:30:17,871 - Server - INFO - Session opened.
+2021-12-14 15:30:25,584 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 10730)
+2021-12-14 15:35:58,025 - Server - INFO - Session opened.
+2021-12-14 15:36:07,672 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 11409)
+2021-12-14 15:36:51,038 - Server.RequestHandler - INFO - A client (127.0.0.1, 11409) has been disconnected.
+2021-12-14 15:36:55,684 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 11452)
+2021-12-14 15:44:46,721 - Server - INFO - Session opened.
+2021-12-14 15:45:08,360 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 11941)
+2021-12-14 16:09:56,414 - Server - INFO - Session opened.
+2021-12-14 16:10:03,656 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 12870)
+2021-12-14 17:37:12,683 - Server - INFO - Session opened.
+2021-12-14 17:37:21,483 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 13609)
+2021-12-14 17:37:23,531 - Server.RequestHandler - INFO - A client (127.0.0.1, 13609) has been disconnected.
+2021-12-14 17:37:24,216 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 13611)
+2021-12-14 17:37:25,050 - Server.RequestHandler - INFO - A client (127.0.0.1, 13611) has been disconnected.
+2021-12-14 17:37:29,877 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 13617)
+2021-12-14 17:37:59,265 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-14 17:39:41,817 - Server - INFO - Session opened.
+2021-12-14 17:40:07,236 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 14030)
+2021-12-14 17:40:25,778 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].

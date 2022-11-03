@@ -1,0 +1,30 @@
+2021-10-28 13:55:21,801 - Server - INFO - Session opened.
+2021-10-28 13:55:29,394 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 2190)
+2021-10-28 13:55:51,426 - Server.dds - INFO - No client is being connected. closing the device.
+2021-10-28 14:14:42,676 - Server - INFO - Session opened.
+2021-10-28 14:27:46,863 - Server - INFO - Session opened.
+2021-10-28 14:27:51,582 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 2732)
+2021-10-28 14:27:58,650 - Server.RequestHandler - INFO - A client (127.0.0.1, 2732) has been disconnected.
+2021-10-28 16:55:57,830 - Server - INFO - Session opened.
+2021-10-28 16:56:14,018 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1378)
+2021-10-28 16:57:57,184 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 8333)
+2021-10-28 18:41:34,830 - Server.RequestHandler - INFO - A client (127.0.0.1, 8333) has been disconnected.
+2021-10-28 20:24:41,285 - Server - WARNING - Failed to open the session
+2021-10-28 20:24:44,238 - Server - WARNING - Failed to open the session
+2021-10-28 20:24:44,238 - Server - WARNING - Failed to open the session
+2021-10-28 20:24:45,770 - Server - WARNING - Failed to open the session
+2021-10-28 20:24:45,770 - Server - WARNING - Failed to open the session
+2021-10-28 20:24:45,770 - Server - WARNING - Failed to open the session
+2021-10-28 20:24:57,512 - Server - INFO - Session opened.
+2021-10-28 20:25:15,519 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 13762)
+2021-10-28 20:25:27,019 - Server.RequestHandler - INFO - A client (127.0.0.1, 13762) has been disconnected.
+2021-10-28 22:02:35,092 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 4410)
+2021-10-28 22:14:24,600 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 13066)
+2021-10-28 22:14:28,667 - Server.RequestHandler - INFO - A client (127.0.0.1, 4410) has been disconnected.
+2021-10-28 22:20:36,715 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 7146)
+2021-10-28 22:21:33,354 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1495)
+2021-10-28 22:25:22,537 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 11457)
+2021-10-28 22:28:15,554 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1393)
+2021-10-28 22:28:28,932 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1402)
+2021-10-28 22:29:23,339 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1430)
+2021-10-28 22:29:57,718 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1452)

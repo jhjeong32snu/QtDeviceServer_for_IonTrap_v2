@@ -1,0 +1,9 @@
+2022-01-03 09:44:47,348 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 14590)
+2022-01-03 09:47:28,820 - Server.RequestHandler - INFO - A client (, 0) has been disconnected.
+2022-01-03 10:16:04,130 - Server.RequestHandler - INFO - A client (127.0.0.1, 14590) has been disconnected.
+2022-01-03 10:17:07,490 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 2320)
+2022-01-03 10:20:30,777 - Server.dds - INFO - No client is being connected. closing the device.
+2022-01-03 10:20:31,322 - Server.RequestHandler - INFO - A client (127.0.0.1, 2320) has been disconnected.
+2022-01-03 10:20:43,162 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 2729)
+2022-01-03 11:20:12,389 - Server.RequestHandler - INFO - A client (127.0.0.1, 2729) has been disconnected.
+2022-01-03 11:20:12,397 - Server.dds - INFO - No client is being connected. closing the device.

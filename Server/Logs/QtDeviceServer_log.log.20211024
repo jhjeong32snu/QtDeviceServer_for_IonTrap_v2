@@ -1,0 +1,47 @@
+2021-11-02 09:00:31,705 - Server - INFO - Session opened.
+2021-11-02 09:52:52,260 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 14523)
+2021-11-02 10:24:19,668 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 10:24:23,181 - Server.RequestHandler - INFO - A client (127.0.0.1, 14523) has been disconnected.
+2021-11-02 10:24:34,571 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 2692)
+2021-11-02 10:25:53,790 - Server.RequestHandler - INFO - A client (127.0.0.1, 2692) has been disconnected.
+2021-11-02 10:31:29,302 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1061)
+2021-11-02 10:31:43,668 - Server.RequestHandler - INFO - A client (127.0.0.1, 1061) has been disconnected.
+2021-11-02 10:31:48,787 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1072)
+2021-11-02 10:33:10,339 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1120)
+2021-11-02 10:35:21,947 - Server.RequestHandler - INFO - A client (127.0.0.1, 1120) has been disconnected.
+2021-11-02 10:35:23,282 - Server.RequestHandler - INFO - A client (127.0.0.1, 1072) has been disconnected.
+2021-11-02 10:35:30,426 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 9787)
+2021-11-02 10:37:40,513 - Server.RequestHandler - INFO - A client (127.0.0.1, 9787) has been disconnected.
+2021-11-02 10:37:50,342 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 7105)
+2021-11-02 10:40:18,949 - Server.RequestHandler - INFO - A client (127.0.0.1, 7105) has been disconnected.
+2021-11-02 10:40:51,146 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 13113)
+2021-11-02 10:41:11,395 - Server.RequestHandler - INFO - A client (127.0.0.1, 13113) has been disconnected.
+2021-11-02 10:41:16,345 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 13131)
+2021-11-02 10:43:49,008 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 10:43:49,554 - Server.RequestHandler - INFO - A client (127.0.0.1, 13131) has been disconnected.
+2021-11-02 10:44:02,689 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 12274)
+2021-11-02 10:55:51,319 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 10:55:51,993 - Server.RequestHandler - INFO - A client (127.0.0.1, 12274) has been disconnected.
+2021-11-02 10:55:59,560 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 4101)
+2021-11-02 11:00:43,039 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 11:00:43,681 - Server.RequestHandler - INFO - A client (127.0.0.1, 4101) has been disconnected.
+2021-11-02 11:00:49,304 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1200)
+2021-11-02 11:01:11,513 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 11:01:36,432 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 11:01:38,024 - Server.RequestHandler - INFO - A client (127.0.0.1, 1200) has been disconnected.
+2021-11-02 12:03:36,814 - Server - INFO - Session opened.
+2021-11-02 12:03:56,152 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 2997)
+2021-11-02 12:05:16,408 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 12:05:17,622 - Server.RequestHandler - INFO - A client (127.0.0.1, 2997) has been disconnected.
+2021-11-02 12:17:01,837 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 2960)
+2021-11-02 12:17:11,207 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 13:01:28,134 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 13:01:28,975 - Server.RequestHandler - INFO - A client (127.0.0.1, 2960) has been disconnected.
+2021-11-02 13:02:03,276 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 6890)
+2021-11-02 15:13:03,686 - Server - INFO - Session opened.
+2021-11-02 15:21:06,253 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 14698)
+2021-11-02 15:21:13,055 - Server.RequestHandler - INFO - A client (127.0.0.1, 14698) has been disconnected.
+2021-11-02 15:24:19,527 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 8064)
+2021-11-02 15:24:55,896 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 15:25:08,458 - Server.dds - INFO - No client is being connected. closing the device.
+2021-11-02 15:25:48,377 - Server.dds - INFO - No client is being connected. closing the device.

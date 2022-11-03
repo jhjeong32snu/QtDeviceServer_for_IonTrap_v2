@@ -1,0 +1,112 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 27 17:01:22 2021
+
+@author: jhjeong
+E-mail: jhjeong32@snu.ac.kr
+Tel. 010-9600-3392
+"""
+from QtClient_basic_v0_01 import ClientSocket
+
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import pyqtSignal, QObject
+from configparser import ConfigParser
+
+import os, sys
+
+filename = os.path.abspath(__file__)
+dirname = os.path.dirname(filename)
+
+class ClientMain(QObject):
+    
+    cp = None
+    user_name = "unanimous"
+    IP = "127.0.0.1"	
+    device_dict = {}
+    
+    status = "standby"
+    _fire_signal = pyqtSignal()
+    _gui_signal = pyqtSignal(list)
+    _msg_list = []
+    gui = None
+    
+    ccd_cnt = 0
+
+    def __init__(self, gui=True):
+        super().__init__()
+        self._readConfig()
+        self.socket = ClientSocket(self, self.user_name)
+        self.socket._message_signal.connect(self.receivedMessage)
+
+        self._setupDevices()
+        if gui:
+            sys.path.append(dirname + '/gui')
+            from client_main_gui import MainWindow
+            self.gui = MainWindow(self.device_dict, self.cp, self, self.cp.get("gui", "theme"))
+        
+        self._fire_signal.connect(self.dealMessageList)
+        
+    def _readConfig(self):
+        PC_name = os.getenv('COMPUTERNAME', 'defaultValue')
+        config_file = dirname + '/config/%s.ini' % PC_name
+        print(config_file)
+        # import os
+        if not os.path.isfile(config_file):
+            raise FileNotFoundError ("No such file has been found: %s" % config_file)
+            return
+        
+        self.cp = ConfigParser()
+        self.cp.read(config_file)
+        
+        self.IP = self.cp.get("server", "ip")
+        self.PORT = int(self.cp.get("server", "port"))
+        self.user_name = self.cp.get("server", "nickname")
+        self.cp.set("server", "conf_file", config_file)
+
+    def _setupDevices(self):
+        sys.path.append(dirname + "/devices")
+        device_list = self.cp['device']
+        for device in device_list:
+            # get the device nickname and its folder name from the section "device"
+            sys.path.append(dirname + "/devices/%s/" % (device.upper()))
+            sys.path.append(dirname + "/devices/%s/%s/" % (device.upper(), self.cp.get('device', device)))
+            
+            exec( "from %s import %s" % (self.cp.get(device, 'file'), self.cp.get(device, 'class')) )
+            exec( "self.device_dict['%s'] = %s(socket=self)" % (device, self.cp.get(device, 'class')))
+
+    def toMessageList(self, msg):
+        self._msg_list.append(msg)
+        if self.status == "standby":
+            self._fire_signal.emit()
+        
+    def dealMessageList(self):
+        self.status = "sending"
+        while len(self._msg_list):
+            msg = self._msg_list.pop(0)
+            self.socket.sendMessage(msg)
+        self.status = "standby"
+        
+    def receivedMessage(self, msg_list):
+        device = msg_list.pop(1)
+        if not device == "SRV":
+            if device.lower() in self.device_dict.keys():
+                self.device_dict[device.lower()].toWorkList(msg_list)
+        
+        else:
+            if not self.gui == None:
+                self._gui_signal.emit(msg_list)
+                
+    
+               
+                
+    
+if __name__ == "__main__":
+    app = QtWidgets.QApplication.instance()
+    if app is None:
+        app = QtWidgets.QApplication([])
+    client = ClientMain()
+    if not client.gui == None:
+        client.gui.show()
+    # print(client.socket.makeConnection(client.IP, client.PORT))
+# client.socket.sendMessage(["C", "DAC", "ON", []])
+# client.socket.sendMessage(["C", "DAC", "SETV", [0, 0.3, 1, -4, 2, -0.7, 12, 8]])

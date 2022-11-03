@@ -1,0 +1,20 @@
+2021-11-11 09:18:04,209 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 3676)
+2021-11-11 09:20:50,169 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 12316)
+2021-11-11 09:21:50,408 - Server.RequestHandler - INFO - A client (127.0.0.1, 12316) has been disconnected.
+2021-11-11 09:21:54,373 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 12357)
+2021-11-11 09:21:56,959 - Server.RequestHandler - INFO - A client (127.0.0.1, 12357) has been disconnected.
+2021-11-11 09:22:05,871 - Server - INFO - Session opened.
+2021-11-11 09:22:37,225 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 4643)
+2021-11-11 09:26:39,439 - Server.RequestHandler - INFO - A client (127.0.0.1, 4643) has been disconnected.
+2021-11-11 09:26:45,853 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 5094)
+2021-11-11 21:19:53,383 - Server.RequestHandler - INFO - A client (127.0.0.1, 5094) has been disconnected.
+2021-11-11 22:43:28,190 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 12289)
+2021-11-11 23:38:55,409 - Server.RequestHandler - INFO - A client (127.0.0.1, 12289) has been disconnected.
+2021-11-11 23:42:33,259 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 12279)
+2021-11-11 23:42:47,254 - Server.RequestHandler - INFO - A client (127.0.0.1, 12279) has been disconnected.
+2021-11-11 23:43:23,811 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 6613)
+2021-11-11 23:44:36,147 - Server.RequestHandler - INFO - A client (127.0.0.1, 6613) has been disconnected.
+2021-11-11 23:44:45,595 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 4705)
+2021-11-11 23:54:28,146 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 3683)
+2021-11-11 23:57:27,212 - Server.RequestHandler - INFO - A client (127.0.0.1, 3683) has been disconnected.
+2021-11-11 23:57:37,710 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 5438)

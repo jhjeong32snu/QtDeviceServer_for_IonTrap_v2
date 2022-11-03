@@ -1,0 +1,41 @@
+2021-12-15 10:36:16,988 - Server - INFO - Session opened.
+2021-12-15 10:36:27,595 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 3761)
+2021-12-15 10:36:29,315 - Server.RequestHandler - INFO - A client (127.0.0.1, 3761) has been disconnected.
+2021-12-15 10:36:30,047 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 3765)
+2021-12-15 10:36:30,884 - Server.RequestHandler - INFO - A client (127.0.0.1, 3765) has been disconnected.
+2021-12-15 10:36:32,990 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 3770)
+2021-12-15 10:36:33,561 - Server.RequestHandler - INFO - A client (127.0.0.1, 3770) has been disconnected.
+2021-12-15 10:36:40,072 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 3788)
+2021-12-15 10:37:05,452 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-15 10:38:43,451 - Server - INFO - Session opened.
+2021-12-15 10:38:54,435 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 4097)
+2021-12-15 10:39:40,928 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-15 10:39:53,203 - Server.RequestHandler - INFO - A client (127.0.0.1, 4097) has been disconnected.
+2021-12-15 10:40:00,876 - Server - WARNING - Failed to open the session
+2021-12-15 10:40:04,706 - Server - INFO - Session opened.
+2021-12-15 10:40:04,706 - Server - INFO - Session opened.
+2021-12-15 10:40:12,986 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 4374)
+2021-12-15 10:40:12,986 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 4374)
+2021-12-15 10:40:17,347 - Server.ccd - ERROR - An error ['The device should be opened beforehand.'] occured while handling ['run'].
+2021-12-15 10:40:17,347 - Server.ccd - ERROR - An error ['The device should be opened beforehand.'] occured while handling ['run'].
+2021-12-15 10:40:41,657 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-15 10:40:41,657 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-15 10:42:35,938 - Server - INFO - Session opened.
+2021-12-15 10:42:44,850 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 4737)
+2021-12-15 10:44:13,227 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 4997)
+2021-12-15 10:44:44,135 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-15 10:44:45,040 - Server.RequestHandler - INFO - A client (127.0.0.1, 4997) has been disconnected.
+2021-12-15 10:45:01,795 - Server - WARNING - Failed to open the session
+2021-12-15 10:45:03,578 - Server - INFO - Session opened.
+2021-12-15 10:45:03,578 - Server - INFO - Session opened.
+2021-12-15 10:45:11,634 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 5312)
+2021-12-15 10:45:11,634 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 5312)
+2021-12-15 10:45:24,310 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-15 10:45:24,310 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-15 10:45:34,749 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-15 10:45:34,749 - Server.ccd - ERROR - An error [''CCD_Controller' object has no attribute 'stopAcquisition''] occured while handling ['run'].
+2021-12-15 10:46:34,165 - Server - INFO - Session opened.
+2021-12-15 10:46:44,891 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 5654)
+2021-12-15 10:47:52,924 - Server.RequestHandler - INFO - A client (, 0) has been disconnected.
+2021-12-15 10:50:15,890 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 6164)
+2021-12-15 10:50:19,333 - Server.RequestHandler - INFO - A client (127.0.0.1, 6164) has been disconnected.
