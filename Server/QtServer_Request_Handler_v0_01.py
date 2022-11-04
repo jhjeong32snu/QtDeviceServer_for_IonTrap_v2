@@ -136,6 +136,14 @@ class MessageHandler(QObject):
         self._address = self.socket.peerAddress().toString()
         self._port = self.socket.peerPort()
         self._fire_signal.connect(self.dealMessageList)
+        
+    @property
+    def address(self):
+        return self._address
+    
+    @property
+    def port(self):
+        return self._port
 
     def sendMessage(self, msg):
         block = QByteArray()

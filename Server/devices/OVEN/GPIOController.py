@@ -8,12 +8,15 @@ Created on Tue Oct 25 13:48:03 2022
 import time, os
 from PyQt5.QtCore import QThread, QObject, QTimer, pyqtSignal
 import platform
+import RPi.GPIO as G
+from queue import Queue
 
 conf_dir = os.path.dirname(__file__) + '/Libs/'
 conf_file = platform.node() + '.conf'
 
-class OVEN_HandlerQT(QThread):
+class GPIO_HandlerQT(QThread):
     
+    _pin_assignment = {}
     _connection_flag = False
     _operation = False
     _channel = 1
@@ -25,20 +28,37 @@ class OVEN_HandlerQT(QThread):
     
     sig_oven_control = pyqtSignal()
     
-    def __init__(self, parent=None, config=None, device="DC_Power_Supply_E3631A"):
+    def __init__(self, parent=None, config=None, device="GPIO"):
         super().__init__()
         self.parent = parent
         self.cp = config
-        self.oven_timer = OvenTimer()
+        self._G = G
+        self._G.setwarnings(False)
+        self.que = Queue()
+
         self.device = device
+        try: 
+            self._G.cleanup()
+            print("GPOI pins are reseted.")
+        except: pass
+        
         
         self.DC = None
         self.file_name = ""
         self.class_name = ""
         
     def __call__(self):
-        return self.device
+        return self._pin_assignment
+    
+    def _readConfig(self):
+        if self.cp == None:
+            print("No config file has been found.")
+            return
         
+        
+    @property
+    def pin(self):
+        return self._pin_assignment
         
     @property
     def connection(self):

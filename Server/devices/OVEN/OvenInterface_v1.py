@@ -11,43 +11,29 @@ conf_dir = os.path.dirname(__file__) + '/Libs/'
 conf_file = platform.node() + '.conf'
 
 from queue import Queue
+from OvenController import OVEN_HandlerQT
 """
 
 """
 
 class Oven_Interface(QThread):
     
-    _connection_flag = False
+    _status = "standby"
     
     def __init__(self, parent=None, config=None, logger=None, device=None):
         super().__init__()
         self.parent = parent
         self.cp = config
         self._device = device
+        self.isOpened = False
+        self._client_list = []
+        self._allowed_ip_list = []
+        self.oven = None
         
-        self._logger = logger
-        self._queue = []
-        
-        self.DC = self._discover_device(self._read_config())
-        self.DC = DC_Power_Supply_E3631A(port=None, device=self.DC)
-        
+        self.logger = logger
+        self.que = Queue()
         self.DB = DB_ASRI133109()
-        
-        # Internal variables
-        self.CNT = 0
-        self.CHANNEL = "00"
-        self.STATUS = "OFF"
-        
-        self._VOL = 0
-        self._CUR = 0
-        
-        self._TAR_VOL = 0
-        self._TAR_CUR = 0
-        
-        self._oven_flag = False
-        self._timer = None
-        self._oven = None
-        
+      
     def logger_decorator(func):
         """
         It writes logs when an exception happens.
@@ -72,16 +58,212 @@ class Oven_Interface(QThread):
     
     @logger_decorator
     def openDevice(self):
-        device_file = self.cp.get("oven", "device_file")
-        device_class = self.cp.get("oven", "device_class")
+        if self.oven == None:
+            device_file = self.cp.get("oven", "device_file")
+            device_class = self.cp.get("oven", "device_class")
+            
+            self.oven = OVEN_HandlerQT(self, self.cp, device="DC_Power_Supply_E3631A")
+            self.setDeviceFile(device_file, device_class)
+            self._connection_flag = True
+            
+            self.oven.oven_timer._sig_Over.connect(self._putOvenOver)
+            self.oven.oven_timer._sig_Time.connect(self._putOvenQuery)
+            
+        if not self.isOpened:
+            return self.oven.openDevice()
+        else:
+            return -1
         
-        exec("from %s import %s as dc_device" % (device_file, device_class))
-        dc = dc_device(self.port, )
-       self.oven.openDevice()
+        
+    def _putOvenQuery(self):
+        cmd = ["Q", "OVEN", "RUN", self._client_list]
+        self.toWorkList(cmd)
+        
+    def _putOvenOver(self):
+        message = ["D", "OVEN", "OVER", []]
+        self.informClients(message, self._client_list)
+        
        
-from Libs.DC_Power_Supply_E3631A_v0_01 import DC_Power_Supply_E3631A
+    def toWorkList(self, cmd):         
+        self.que.put(cmd)
+        if not self.isRunning():
+            self.start()
 
-from Libs.DB_ASRI133109_v0_01 import DB_ASRI133109
+    def run(self):
+        while True:
+            work = self.que.get()
+            self._status  = "running"
+            # decompose the job
+            work_type, command = work[:2]
+            client = work[-1]
+            
+            if not client.address in self._allowed_ip_list:
+                message = ["E", "OVEN", "BAN", []]
+                self.informClients(message, client)
+                self._status = "standby"
+                self.toLog("error", "An unallowed ip(%s) attempted to control the oven." % client.address)
+                return
+            
+            if work_type == "C":
+                if command == "ELLO":
+                    if not client in self._client_list:
+                        self._client_list.append(client)
+                        
+                    message = ["D", "OVEN", "ELLO", []]
+                    self.informClients(message, client)
+                    if not self.isOpened:
+                        flag = self.openDevice()
+                        if flag:
+                            self.isOpened = True
+                            message = ["D", "OVEN", "ELLO", []]
+                            self.informClients(message, self._client_list)
+                        else:
+                            message = ["E", "OVEN", "ON", []]
+                            self.informClients(message, self._client_list)
+                    else:
+                        message = ["D", "OVEN", "ELLO", []]
+                        self.informClients(message, client)
+                        
+                elif command == "ON":
+                    channel = work[2]
+                    self.oven.channel = channel
+                    # GPIO controller is needed.
+                    
+                    
+                    message = ["D", "OVEN", "ON", []]
+
+                    if not self.oven.isRunning():
+                        self.oven.operation = True
+                        self.oven.status = "on"
+                        self.oven.start()
+                        
+                        self.informClients(message, self._client_list)
+                        
+                    else:
+                        if self.oven.status == "on":
+                            self.informClients(message, client)
+                        else:
+                            self.oven.status = "on"
+                            self.informClients(message, self._client_list)
+                        
+                elif command == "OFF":
+                    message = ["D", "OVEN", "OFF", [1]]
+                    
+                    if not self.oven.isRunning():
+                        self.oven.operation = True
+                        self.oven.status = "off"
+                        self.oven.start()
+                        
+                        self.informClients(message, self._client_list)
+
+                    else:
+                        if self.oven.status == "off": # it is already getting off..
+                            self.informClients(message, self.client)
+                        else:
+                            self.informClients(message, self._client_list)
+                            
+                elif command == "SETA":
+                    channel, value = work[2]
+                    
+                elif command == "SETV":
+                    channel, value = work[2]
+                    
+                        
+            elif work_type == "Q":
+                if command == "STAT":
+                    if not self.oven == None:
+                        data = []
+                        data += ["conn", self.oven.connection]
+                        data += ["oper", self.oven.operation]
+                        data += ["ch", self.oven.channel]
+                        data += ["tar", self.oven.target]
+                        data += ["stat", self.oven.status]
+                        data += ["volt", self.oven.voltage]
+                        data += ["curr", self.oven.current]
+                        data += ["time", self.oven.time]
+                        
+                        message = ["D", "OVEN", "STAT", data]
+                        
+                    
+                    else:
+                        message = ["E", "OVEN", "STAT", []]
+                        
+                    self.informClients(message, client)
+                    
+                if command == "RUN":
+                    if not self.oven == None:
+                        data = []
+                        data += ["volt", self.oven.voltage]
+                        data += ["curr", self.oven.current]
+                        data += ["time", self.oven.time]
+                        
+                        message = ["D", "OVEN", "RUN", data]
+                        
+                        self.informClients(message, client)
+                    
+                #%%
+                
+                elif command == "STAT":
+                    data_list = work[2]
+                    for board_idx, data in enumerate(data_list):
+                        while len(data):
+                            param = data.pop(0)
+                            if param == "C":
+                                self._current_settings[board_idx+1]["current"] = data.pop(0)
+                            elif param == "F":
+                                self._current_settings[board_idx+1]["freq_in_MHz"] = data.pop(0)
+                            elif param == "P":
+                                self._current_settings[board_idx+1]["power"] = data.pop(0)
+                                
+                elif command == "SETC":
+                    board_idx, channel_1, channel_2, current = work[2]
+                    if channel_1:
+                        self._current_settings[board_idx]["current"][0] = current
+                    if channel_2:
+                        self._current_settings[board_idx]["current"][1] = current
+                    self.toGUI("Current values of Board_%d board have been changed." % (board_idx))
+                    
+                elif command == "SETF":
+                    board_idx, channel_1, channel_2, frequency_in_MHz = work[2]
+                    if channel_1:
+                        self._current_settings[board_idx]["freq_in_MHz"][0] = frequency_in_MHz
+                    if channel_2:
+                        self._current_settings[board_idx]["freq_in_MHz"][1] = frequency_in_MHz
+                    self.toGUI("Frequency values of Board_%d board have been changed." % (board_idx))
+                    
+                elif command == "PWUP":
+                    board_idx, channel_1, channel_2 = work[2]
+                    if channel_1:
+                        self._current_settings[board_idx]["power"][0] = 1
+                        self._current_settings[board_idx]["current"][0] = 0
+                    if channel_2:
+                        self._current_settings[board_idx]["power"][1] = 1
+                        self._current_settings[board_idx]["current"][1] = 0
+                    self.toGUI("Board_%d has been powered up." % (board_idx))
+
+                elif command == "PWDN":
+                    board_idx, channel_1, channel_2 = work[2]
+                    if channel_1:
+                        self._current_settings[board_idx]["power"][0] = 0
+                        self._current_settings[board_idx]["current"][0] = 0
+                    if channel_2:
+                        self._current_settings[board_idx]["power"][1] = 0
+                        self._current_settings[board_idx]["current"][1] = 0
+                    self.toGUI("Board_%d has been powered off." % (board_idx))
+
+            self.sig_update_callback.emit()
+            self._status = "standby"
+    
+    @logger_decorator
+    def informClients(self, msg, client):
+        if not type(client) == list:
+            client = [client]
+        
+        for client in client:
+            client.toMessageList(msg)
+            while client.status == "sending":
+                time.sleep(0.01)
+            
         
     def _readDeviceConfig(self, device=""):
         if device == "":
