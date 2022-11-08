@@ -55,7 +55,8 @@ class CCD_UI_base:
                               "BTN_ON": "",
                               "BTN_OFF":"",
                               "LBL":    "background-color:rgb(180, 180, 180);",
-                              "STATUS": "background-color:rgb(10, 10, 10); color:rgb(255, 255, 255)",
+                              "STATUS": "background-color:rgb(10, 10, 10); color:rgb(255, 255, 255);",
+                              "TXT": "background-color:rgb(240, 240, 240); color:rgb(0, 0, 0);",
                               
                               "fig_face_color": "w",
                               "ax_face_color": "w",
@@ -63,12 +64,13 @@ class CCD_UI_base:
                               "color_map": "gist_earth"
                               },
                     
-                    "black": {"main":   "background-color:rgb(30,30,30); color:rgb(140, 140, 140)",
-                              "GBOX":   "color:rgb(140, 140, 140)",
-                              "BTN_ON" :"background-color:rgb(180, 50, 50)",
-                              "BTN_OFF":"background-color:rgb(60, 60, 60)",
+                    "black": {"main":   "background-color:rgb(30,30,30); color:rgb(140, 140, 140);",
+                              "GBOX":   "color:rgb(140, 140, 140);",
+                              "BTN_ON" :"background-color:rgb(180, 50, 50);",
+                              "BTN_OFF":"background-color:rgb(60, 60, 60);",
                               "LBL":    "background-color:rgb(0, 0, 0);",
-                              "STATUS": "background-color:rgb(180, 180, 180); color:rgb(10, 10, 10)",
+                              "STATUS": "background-color:rgb(180, 180, 180); color:rgb(10, 10, 10);",
+                              "TXT": "background-color:rgb(30,30,30); color:rgb(140, 140, 140);",
                               
                               "fig_face_color": [0.235, 0.235, 0.235],
                               "ax_face_color": [0.118, 0.118, 0.118],
@@ -154,6 +156,7 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         self.LBL_ROI_y2.setText("%d" % (self.zoom_y2))
         
         self.BTN_save.setIcon(QtGui.QIcon(dirname + '/Libs/gui_save.ico'))
+        self.BTN_oven_settings.setIcon(QtGui.QIcon(dirname + '/Libs/gui_settings.ico'))
         self._makePlot(self.CCD_image_label)
         
         # if self._camera_type == "CCD":
@@ -203,6 +206,8 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
                 getattr(self, item).setStyleSheet(self._theme_color[self._theme]["LBL"])
             elif "STATUS_" in item:
                 getattr(self, item).setStyleSheet(self._theme_color[self._theme]["STATUS"])
+            elif "TXT_" in item:
+                getattr(self, item).setStyleSheet(self._theme_color[self._theme]["TXT"])
 
         self.fig.set_facecolor(self._theme_color[self._theme]["fig_face_color"])
         self.ax.set_facecolor(self._theme_color[self._theme]["ax_face_color"])
@@ -406,6 +411,11 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             
     def toStatusBar(self, msg):
         self.statusBar.showMessage(msg)
+        
+    def toLog(self, msg):
+        if not msg[1] == "\n":
+            msg += "\n"
+        self.TXT_log.insertPlainText(msg)
     
             
     #%% Mouse Interaction

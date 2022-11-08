@@ -112,9 +112,12 @@ class MessageHandler(QObject):
     To combat the unwanted crushes when more than one thread tries to send messages, I made a message queue
     When a new message has been added to the message queue, a fire signal is emitted and the MessageHandler sends the message one by one in the list.
     
+    Note that the class is callable and returns the ip address of the client.
+    
     - userName: User-defined nickname to be distinguished from other clients. this name is usually pre-defined in a user-config file.    
     - status: represents if it is sending messages or not.
               the emission of the fire signal will be ignored when the status is "sending" even if a new message has been added to the message queue.
+              
     """    
     _sig_kill_me  = pyqtSignal(str)
     _msg_list = []
@@ -136,6 +139,9 @@ class MessageHandler(QObject):
         self._address = self.socket.peerAddress().toString()
         self._port = self.socket.peerPort()
         self._fire_signal.connect(self.dealMessageList)
+        
+    def __call__(self):
+        return self._address
         
     @property
     def address(self):

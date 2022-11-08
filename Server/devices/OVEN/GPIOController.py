@@ -41,11 +41,9 @@ class GPIO_HandlerQT(QThread):
             self._G.cleanup()
             print("GPOI pins are reseted.")
         except: pass
-        
-        
-        self.DC = None
-        self.file_name = ""
-        self.class_name = ""
+        self._G.setmode(self._G.BCM)
+
+        self._readConfig()
         
     def __call__(self):
         return self._pin_assignment
@@ -53,7 +51,22 @@ class GPIO_HandlerQT(QThread):
     def _readConfig(self):
         if self.cp == None:
             print("No config file has been found.")
-            return
+        else:
+            config_dict = dict(self.cp.items("GPIO"))
+            
+            for key, val in 
+        
+    def setPinOut(self, pin_num, out_flag):
+        try:
+            if out_flag:
+                self._G.setup(self.pin_num, self._G.OUT)
+            else:
+                self._G.setup(self.pin_num, self._G.IN)
+                
+            self.pin_assignment[self.pin_num] = "OUT" if out_flag else "IN"
+                
+        except Exception as err:
+            print("An error has been occured when setting the pin(%d), (%s)" % (pin_num, err))
         
         
     @property

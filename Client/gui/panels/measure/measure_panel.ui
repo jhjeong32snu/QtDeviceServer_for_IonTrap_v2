@@ -683,7 +683,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="LBL_photodiode_voltage_unit">
+                 <widget class="QLabel" name="NON_photodiode_voltage_unit">
                   <property name="text">
                    <string>  mV</string>
                   </property>
@@ -734,7 +734,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="LBL_photodiode_power_unit_2">
+                 <widget class="QLabel" name="NON_photodiode_power_unit_2">
                   <property name="text">
                    <string>  μW</string>
                   </property>

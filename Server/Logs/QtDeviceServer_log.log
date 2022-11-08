@@ -1,2 +1,4 @@
-2022-11-04 09:34:10,875 - Server - INFO - Session opened.
-2022-11-04 09:34:35,042 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 13804)
+2022-11-08 10:45:37,017 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 5210)
+2022-11-08 10:51:04,410 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 9549)
+2022-11-08 10:55:12,888 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 9843)
+2022-11-08 11:01:21,285 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 10442)
