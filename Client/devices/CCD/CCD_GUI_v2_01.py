@@ -142,6 +142,8 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         self.plot_handler = PlotHandler(self, self.cam, self.image_handler)
         self.plot_handler._sig_plot_update.connect(self.updatePlot)
         
+        self.LBL_directory.setText(dirname + "/data")
+        
         
     #%% Initialization
     def _initUi(self):
@@ -332,7 +334,7 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         
     #%% Save data
     def SelectFilepath(self):
-        save_path = QFileDialog.getExistingDirectory(self, "Select Directory", "C:/", QFileDialog.DontUseNativeDialog)
+        save_path = QFileDialog.getExistingDirectory(self, "Select Directory", self.LBL_directory.text(), QFileDialog.DontUseNativeDialog)
         if save_path == "":
             pass
         else:
@@ -340,14 +342,23 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             self.cam.save_directory = save_path
             
     def SelectSavepath(self):
-        save_file, _ = QFileDialog.getSaveFileName(self, 'Save File', "C:/", options=QFileDialog.DontUseNativeDialog)
-        self.SaveImage(save_file)
-            
-    def SaveImage(self, save_name=""):
-        if save_name == "":
-            save_name = self.LBL_directory.text() + '/' + datetime.now().strftime("%y%m%d_%H%M_default")
+        save_file, _ = QFileDialog.getSaveFileName(self, 'Save File', self.LBL_directory.text(), options=QFileDialog.DontUseNativeDialog)
+        if save_file == "":
+            pass
         else:
-            save_name = self.LBL_directory.text() + '/' + save_name
+            save_path, save_name = os.path.split(save_file)
+            self.SaveImage(save_path, save_name)
+            
+    def SaveImage(self, save_path="", save_name=""):
+        if save_path == "":
+            save_path = self.LBL_directory.text()
+        if save_name == "":
+            save_name = datetime.now().strftime("%y%m%d_%H%M_default")
+        
+        if (save_name[-4:] == ".png") or (save_name[-4:] == ".tif"):
+            save_name = save_name[:-4]
+        
+        save_name = save_path + "/" + save_name
         
         if os.path.exists(self.AddExtention(save_name)):
             save_name += "_%03d"
@@ -357,9 +368,9 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             save_name = save_name % idx
         
         if self.CBOX_file_format.currentText() == "png":
-            self.SavePNG( self.AddExtention(save_name) )
+            self.cam.saveImages( self.AddExtention(save_name), False, self.CBOX_Full.isChecked() )
         else:
-            self.SaveTIF( self.AddExtention(save_name) , True)
+            self.cam.saveImages( self.AddExtention(save_name), True, self.CBOX_Full.isChecked() )
             
     def AddExtention(self, save_name):
         return save_name + ('.png' if self.CBOX_file_format.currentText() == "png" else '.tif')
@@ -369,24 +380,7 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         
     def SetRecord(self, record_flag):
         self._auto_save = record_flag
-        
-    def SavePNG(self, save_name):
-        png_arr = np.uint16(65535*(self._plot_im - self._im_min)/(self._im_max - self._im_min))
-        img = Image.fromarray(png_arr)
-        img.save(save_name, format="PNG")
-        print("Saved %s" % save_name)
-        
-    def SaveTIF(self, save_name, stack=False):
-        if stack:
-            im_arr = []
-            for arr in self.cam._buffer_list:
-                im_arr.append( Image.fromarray(arr) )
-            im_arr[0].save(save_name, format="tiff", save_all=True, append_images=im_arr[1:])
-        else:
-            im = Image.fromarray(self._plot_im)
-            im.save(save_name, format='tiff')
-        print("saved %s" % save_name)
-        
+    
     def SetScanLength(self):
         try:
             length = int(self.LBL_scan_length.text())
@@ -534,6 +528,7 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             if self._img_cnt == int(self.LBL_scan_length.text()):
                 self._enableObjects(False)
                 self.BTN_acquisition.setChecked(False)
+                self.SaveImage()
                 
     def updatePlot(self):
         if not self.isHidden():
@@ -611,13 +606,8 @@ class PlotHandler(QThread):
         while self.GUI.BTN_acquisition.isChecked():
             if self.update_enbaled:
                 time.sleep(self.minimum_interval)
-                # t1 = datetime.now()
                 self.processImage()
-                # t2 = datetime.now()
-                
-                # if (t2-t1) < self.timedelta:
-                #     time.sleep( ((self.timedelta - (t2-t1)).microseconds/1e6) )
-                
+
                 self._sig_plot_update.emit()
                 self.update_enabled = False
     

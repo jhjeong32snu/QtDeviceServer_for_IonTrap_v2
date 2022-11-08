@@ -110,7 +110,7 @@ class CameraHandler(Process):
         return processed_image
     
     
-    def saveImage(self, save_name="default", tif_flag=True):
+    def saveImage(self, save_name="default", tif_flag=True, full_flag=True):
         if os.path.exists(save_name):
             extention = save_name[-3:]
             file_name = save_name[:-4]
@@ -123,29 +123,49 @@ class CameraHandler(Process):
             save_name = save_name % idx
     
         if tif_flag:
-            save_thread = Thread(target=self._saveTIF, args=(save_name, ))
+            save_thread = Thread(target=self._saveTIF, args=(save_name, full_flag, ))
             save_thread.start()
         
         else:
-            save_thread = Thread(target=self._savePNG, args=(save_name, ))
+            save_thread = Thread(target=self._savePNG, args=(save_name, full_flag, ))
             save_thread.start()
         
         
-    def _savePNG(self, save_name):
+    def _savePNG(self, save_name, full_flag):
         png_arr = np.uint16(65535*((self.cam.ccd_image - np.min(self.cam.ccd_image))/np.ptp(self.cam.ccd_image)))
+        if not full_flag:
+            png_arr = png_arr[self.roi_dict["y"][0]:self.roi_dict["y"][1],
+                              self.roi_dict["x"][0]:self.roi_dict["x"][1]]
+        
         img = Image.fromarray(png_arr)
         img.save(save_name, format="PNG")
         print("Saved %s" % save_name)
         
-    def _saveTIF(self, save_name):
+    def _saveTIF(self, save_name, full_flag):
         if self.cam.trigger_count == 1:
-            im = Image.fromarray(self.cam.ccd_image)
+            if not full_flag:
+                ccd_image = self.cam.ccd_image[self.roi_dict["y"][0]:self.roi_dict["y"][1],
+                                               self.roi_dict["x"][0]:self.roi_dict["x"][1]]
+            else:
+                ccd_image = self.cam.ccd_image
+            
+            im = Image.fromarray(ccd_image)
+            
             im.save(save_name, format='tiff')
         
         else:
+           
+            cam_image = np.asarray(self.cam._buffer_list).astype(np.int16)
+            
+            if not full_flag:
+                cam_image = cam_image[:, 
+                                   self.roi_dict["y"][0]:self.roi_dict["y"][1],
+                                   self.roi_dict["x"][0]:self.roi_dict["x"][1]]
             im_arr = []
-            for arr in self.cam._buffer_list:
+
+            for arr in cam_image:
                 im_arr.append( Image.fromarray(arr) )
+                
             im_arr[0].save(save_name, format="tiff", save_all=True, append_images=im_arr[1:])
 
     def run(self):
@@ -200,10 +220,10 @@ class CameraHandler(Process):
                     self.result_p.send(["D", "FULL", [self.cam.store_full_image]])
                     
                 elif cmd == "SAVE":
-                    file_name, tif_flag = data
+                    file_name, tif_flag, full_flag = data
                     print("file_name", file_name)
-                    self.saveImage(file_name, tif_flag)
-                    self.result_p.send(["D", "SAVE", [filename, tif_flag]])
+                    self.saveImage(file_name, tif_flag, full_flag)
+                    self.result_p.send(["D", "SAVE", [filename, tif_flag, full_flag]])
 
                 else:
                     self.result_p.send(["E", "CMD", ["An unknown command (%s)" % cmd]])
