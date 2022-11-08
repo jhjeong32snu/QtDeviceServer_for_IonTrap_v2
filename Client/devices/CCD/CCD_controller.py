@@ -133,8 +133,8 @@ class CCD_Interface(QThread):
             self._sendCommand_n_GetResponse("STOP", [])
             self.image_thread.running_flag = False
             
-    def saveImages(self, save_name, tif_flag = True):
-        self._sendCommand_n_GetResponse("SAVE", [save_name, tif_flag])
+    def saveImages(self, save_name, tif_flag = True, full_flag=True):
+        self._sendCommand_n_GetResponse("SAVE", [save_name, tif_flag, full_flag])
         
     def toWorkList(self, cmd):         
         self.que.put(cmd)
@@ -188,7 +188,7 @@ class CCD_Interface(QThread):
                     self.setTriggerCount(data[0])
                     
                 elif command == "SAVE":
-                    self.saveImages(data[0], data[1])
+                    self.saveImages(data[0], data[1], data[2])
                     
                 else:
                     self.toStatusBar("An unknown command has been detected (%s)." % command)
