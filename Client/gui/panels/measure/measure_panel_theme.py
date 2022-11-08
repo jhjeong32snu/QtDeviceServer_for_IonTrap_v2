@@ -58,8 +58,11 @@ class measure_panel_theme_base():
                                                         }
                                        """}
                                        
-    _label_stylesheet = {"white": "background-color:rgb(210, 210, 210); color:rgb(0, 0, 0); border:none;",
+    _text_stylesheet = {"white": "background-color:rgb(210, 210, 210); color:rgb(0, 0, 0); border:none;",
                          "black": "background-color:rgb(0, 0, 0); color:rgb(180, 180, 180); border:none;"}
+    
+    _label_stylesheet = {"white": "background-color:rgb(185, 185, 185); color:rgb(0, 0, 0);",
+                     "black": "background-color:rgb(100, 100, 100); color:rgb(200, 200, 200);"}
                                        
     _groupbox_stylesheet = {"white": "background-color:rgb(255, 255, 255); color:rgb(0, 0, 0)",
                             "black": "background-color:rgb(0, 0, 0); color:rgb(180, 180, 180)"}
@@ -114,6 +117,8 @@ class measure_panel_theme_base():
             if "BTN_" in item:
                 getattr(self, item).setStyleSheet(self._pushbutton_stylesheet[self._theme])
             elif "TXT_" in item:
+                getattr(self, item).setStyleSheet(self._text_stylesheet[self._theme])
+            elif "LBL_" in item:
                 getattr(self, item).setStyleSheet(self._label_stylesheet[self._theme])
             elif "SLD_" in item:
                 getattr(self, item).setStyleSheet(self._slider_stylesheet[self._theme])

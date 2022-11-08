@@ -574,6 +574,10 @@ class WavemeterWindow(QMainWindow, Ui_MainWindow, WaveMeter_Theme_Base):
 class tabWidget(QMainWindow, Ui_tabWindow, WaveMeter_Theme_Base):
     def closeEvent(self, QCloseEvent):
         self.status = False
+        
+    def showEvent(self, e):
+        self.canvas.fig.canvas.draw()
+        self.canvas.fig.canvas.flush_events()
 
     def __init__(self, mw, chNum, name, theme):
         super().__init__()
@@ -658,6 +662,7 @@ class tabWidget(QMainWindow, Ui_tabWindow, WaveMeter_Theme_Base):
         self.canvas.plot(top=0.9, bottom=0.22, left=0.15, right=0.9)
 
     def updatePlot(self, time, freq):
+        
         if freq > 0.0:
             diff = (freq - self.channel.targetFreq) * 1e+6  ### MHz
             
@@ -693,8 +698,10 @@ class tabWidget(QMainWindow, Ui_tabWindow, WaveMeter_Theme_Base):
             self.canvas.ax.set_xlim(self.x_timeList[0], self.x_timeList[len(self.x_timeList)-1])
             self.canvas.ax.set_ylim(self.minFreq - 5.0e-1, self.maxFreq + 5.0e-1)
             self.canvas.line1.set_data(self.x_timeList, self.y_freqDiffList)
-            self.canvas.fig.canvas.draw()
-            self.canvas.fig.canvas.flush_events()
+            
+            if self.isVisible():
+                self.canvas.fig.canvas.draw()
+                self.canvas.fig.canvas.flush_events()
 
     def changeNumHistory(self):
         self.numHistory = self.spinboxNumHistory.value()
@@ -988,6 +995,14 @@ class tabWidgetCal(QMainWindow, Ui_tabCalWindow, WaveMeter_Theme_Base):
         self.socket.sendMSG(['C', 'ACL', [self.name, self.channel.targetFreq]])
 
 class PIDWidget(QMainWindow, Ui_PIDWindow, WaveMeter_Theme_Base):
+    
+    def showEvent(self, e):
+        self.canvasP.draw()
+        self.canvasI.draw()
+        self.canvasD.draw()
+        self.canvasO.draw()
+    
+    
     def __init__(self, mw, tab, chNum, name):
         super().__init__()
         self.setupUi(self)
@@ -1101,22 +1116,26 @@ class PIDWidget(QMainWindow, Ui_PIDWindow, WaveMeter_Theme_Base):
         self.canvasP.ax.set_xlim(self.x_tries[0], self.x_tries[len(self.x_tries)-1])
         self.canvasP.ax.set_ylim(self.minP, self.maxP)
         self.canvasP.line1.set_data(self.x_tries, self.y_Pval)
-        self.canvasP.draw()
 
         self.canvasI.ax.set_xlim(self.x_tries[0], self.x_tries[len(self.x_tries)-1])
         self.canvasI.ax.set_ylim(self.minI, self.maxI)
         self.canvasI.line1.set_data(self.x_tries, self.y_Ival)
-        self.canvasI.draw()
+
         
         self.canvasD.ax.set_xlim(self.x_tries[0], self.x_tries[len(self.x_tries)-1])
         self.canvasD.ax.set_ylim(self.minD, self.maxD)
         self.canvasD.line1.set_data(self.x_tries, self.y_Dval)
-        self.canvasD.draw()
+        
 
         self.canvasO.ax.set_xlim(self.x_tries[0], self.x_tries[len(self.x_tries)-1])
         self.canvasO.ax.set_ylim(self.minO, self.maxO)
         self.canvasO.line1.set_data(self.x_tries, self.y_Oval)
-        self.canvasO.draw()
+        
+        if self.isVisible():
+            self.canvasP.draw()
+            self.canvasI.draw()
+            self.canvasD.draw()
+            self.canvasO.draw()
 
     def updatePID(self):
         chName = self.name

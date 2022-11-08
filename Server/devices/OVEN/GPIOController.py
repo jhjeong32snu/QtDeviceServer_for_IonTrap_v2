@@ -8,12 +8,15 @@ Created on Tue Oct 25 13:48:03 2022
 import time, os
 from PyQt5.QtCore import QThread, QObject, QTimer, pyqtSignal
 import platform
+import RPi.GPIO as G
+from queue import Queue
 
 conf_dir = os.path.dirname(__file__) + '/Libs/'
 conf_file = platform.node() + '.conf'
 
-class OVEN_HandlerQT(QThread):
+class GPIO_HandlerQT(QThread):
     
+    _pin_assignment = {}
     _connection_flag = False
     _operation = False
     _channel = 1
@@ -25,20 +28,50 @@ class OVEN_HandlerQT(QThread):
     
     sig_oven_control = pyqtSignal()
     
-    def __init__(self, parent=None, config=None, device="DC_Power_Supply_E3631A"):
+    def __init__(self, parent=None, config=None, device="GPIO"):
         super().__init__()
         self.parent = parent
         self.cp = config
-        self.oven_timer = OvenTimer()
+        self._G = G
+        self._G.setwarnings(False)
+        self.que = Queue()
+
         self.device = device
-        
-        self.DC = None
-        self.file_name = ""
-        self.class_name = ""
+        try: 
+            self._G.cleanup()
+            print("GPOI pins are reseted.")
+        except: pass
+        self._G.setmode(self._G.BCM)
+
+        self._readConfig()
         
     def __call__(self):
-        return self.device
+        return self._pin_assignment
+    
+    def _readConfig(self):
+        if self.cp == None:
+            print("No config file has been found.")
+        else:
+            config_dict = dict(self.cp.items("GPIO"))
+            
+            for key, val in 
         
+    def setPinOut(self, pin_num, out_flag):
+        try:
+            if out_flag:
+                self._G.setup(self.pin_num, self._G.OUT)
+            else:
+                self._G.setup(self.pin_num, self._G.IN)
+                
+            self.pin_assignment[self.pin_num] = "OUT" if out_flag else "IN"
+                
+        except Exception as err:
+            print("An error has been occured when setting the pin(%d), (%s)" % (pin_num, err))
+        
+        
+    @property
+    def pin(self):
+        return self._pin_assignment
         
     @property
     def connection(self):
