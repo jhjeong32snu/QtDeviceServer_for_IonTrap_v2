@@ -187,12 +187,10 @@ class MessageHandler(QObject):
         self.status = "standby"
         
     def receiveMessage(self):
-        print("Received a message")
         stream = QDataStream(self.socket)
         stream.setVersion(QDataStream.Qt_5_0)
 
         while(self.socket.bytesAvailable() >= 2):
-            print(self.socket.bytesAvailable())
             if self._block_size == 0:
                 if self.socket.bytesAvailable() < 2:
                     return
@@ -205,7 +203,6 @@ class MessageHandler(QObject):
             data = list(stream.readQVariantList())   ### data
             self._block_size = 0
 
-            print("Received,", [control, device, command, data])
             if device == "SRV":
                 if control =="C" and command == "CON":
                     self.user_name, self._name_duplicate = self.fixUserName(data[0])

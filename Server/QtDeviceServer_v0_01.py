@@ -67,7 +67,6 @@ class DeviceServer(DeviceServerBase):
         sys.path.append(dirname + "/devices")
         device_list = self.cp['device']
         for device in device_list:
-            print(device)
             # get the device nickname and its folder name from the section "device"
             sys.path.append(dirname + "/devices/%s" % (device))
             

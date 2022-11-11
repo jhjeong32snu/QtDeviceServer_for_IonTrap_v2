@@ -1,4 +1,50 @@
-2022-11-08 10:45:37,017 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 5210)
-2022-11-08 10:51:04,410 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 9549)
-2022-11-08 10:55:12,888 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 9843)
-2022-11-08 11:01:21,285 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 10442)
+2022-11-11 16:40:51,263 - Server - INFO - Session opened.
+2022-11-11 16:41:36,444 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 10543)
+2022-11-11 16:45:31,476 - Server.dds - INFO - No client is being connected. closing the device.
+2022-11-11 16:53:27,937 - Server - INFO - Session opened.
+2022-11-11 16:53:47,848 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 11027)
+2022-11-11 16:54:16,198 - Server.dds - INFO - No client is being connected. closing the device.
+2022-11-11 16:58:37,466 - Server - INFO - Session opened.
+2022-11-11 16:59:35,344 - Server - WARNING - Failed to open the session
+2022-11-11 16:59:37,395 - Server - INFO - Session opened.
+2022-11-11 16:59:37,395 - Server - INFO - Session opened.
+2022-11-11 17:03:25,299 - Server - INFO - Session opened.
+2022-11-11 17:15:38,265 - Server.dds - ERROR - test
+2022-11-11 17:26:38,138 - Server - INFO - Session opened.
+2022-11-11 17:27:56,610 - Server - INFO - Session opened.
+2022-11-11 17:32:19,332 - Server - INFO - Session opened.
+2022-11-11 17:33:38,439 - Server - INFO - Session opened.
+2022-11-11 17:34:24,472 - Server - INFO - Session opened.
+2022-11-11 17:34:50,738 - Server - INFO - Session opened.
+2022-11-11 17:38:14,586 - Server - INFO - Session opened.
+2022-11-11 17:38:14,586 - Server - INFO - Session opened.
+2022-11-11 17:38:19,934 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:38:19,934 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:38:33,372 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:38:33,372 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:39:27,816 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:39:27,816 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:39:28,676 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:39:28,676 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:39:29,409 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:39:29,409 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:39:55,676 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:39:55,676 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:41:25,071 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:41:25,071 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:42:26,148 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:42:26,148 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:43:30,756 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:43:30,756 - Server.dds - ERROR - An error ['The device is already opened!'] occured while handling ['openDevice'].
+2022-11-11 17:44:29,846 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:29,846 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:31,154 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:31,154 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:31,688 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:31,688 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:32,059 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:32,059 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:49,139 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:49,139 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:51,974 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].
+2022-11-11 17:44:51,974 - Server.dds - ERROR - An error [''str' object has no attribute 'toMessageList''] occured while handling ['informClients'].

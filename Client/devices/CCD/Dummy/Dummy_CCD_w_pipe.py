@@ -216,17 +216,10 @@ class CCD_controller(CCD_controller_Base):
                                              self.temperature + 45*self.gain,
                                              self.sensor_size, dtype=np.uint16)
             else:
-                data_arr = self.test_im
+                data_arr = self.test_im + np.random.randint(0, 50, np.shape(self.test_im))
             
             if not self.data_p == None:
                 processed_data = self.parent.processData(data_arr) # This is a bad design.... 
-                
-                # if ( ( (self.parent.roi_dict["x"][1] - self.parent.roi_dict["x"][0]) *
-                #       (self.parent.roi_dict["y"][1] - self.parent.roi_dict["y"][0]) ) > 696800):
-                #     self._half_period_flag = not self._half_period_flag
-                # else: self._half_period_flag = True
-                
-                # if self._half_period_flag:
                     
                 im_max = np.max(processed_data)
                 im_min = np.min(processed_data)

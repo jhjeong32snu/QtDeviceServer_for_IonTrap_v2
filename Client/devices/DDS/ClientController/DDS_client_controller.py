@@ -15,22 +15,6 @@ import os, sys
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
-def requires_device_open(func):
-    """Decorator that checks if the device is open.
-
-    Raises:
-        RuntimeError - the func is called before the device is open.
-    """
-
-    def wrapper(self, *args):
-        if self._is_opened:
-            return func(self, *args)
-        else:
-            raise RuntimeError('{} is called before the device is opened.'
-                               .format(func.__name__))
-    return wrapper
-    
-
 class DDS_ClientInterface(QThread):
     
     device_type = "DDS"
@@ -45,11 +29,6 @@ class DDS_ClientInterface(QThread):
                          2: {"current": [0, 0], "freq_in_MHz": [0, 0], "power": [0, 0]}}
     _board_nickname = ["EA", "EC"]
 
-    
-    # def closeEvent(self, e):
-    #     self._gui_opened = False
-    #     self.closeDevice()
-    
     def __init__(self, socket=None):
         super().__init__()
         
@@ -58,6 +37,22 @@ class DDS_ClientInterface(QThread):
         self.que = Queue()
         
         self.config_file = ""
+        
+        
+    def requires_device_open(func):
+        """Decorator that checks if the device is open.
+    
+        Raises:
+            RuntimeError - the func is called before the device is open.
+        """
+    
+        def wrapper(self, *args):
+            if self._is_opened:
+                return func(self, *args)
+            else:
+                raise RuntimeError('{} is called before the device is opened.'
+                                   .format(func.__name__))
+        return wrapper
         
     def openGui(self):
         sys.path.append(dirname + '/../')
