@@ -11,7 +11,6 @@ os.system('CLS')
 import time
 import numpy as np
 from datetime import datetime
-from PIL import Image
 from configparser import ConfigParser
 
 from PyQt5 import uic
@@ -24,7 +23,7 @@ Ui_Form, QtBaseClass = uic.loadUiType(qt_designer_file)
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QVBoxLayout, QFileDialog
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt
 
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RectangleSelector
@@ -101,6 +100,22 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         self.oc.close_oven()
         self.cam.close_device()
         print("Released the camera")
+        
+    def changeEvent(self, event):
+        """
+        QEvent::WindowActivate	    24	Window was activated.
+        QEvent::WindowBlocked	    103	The window is blocked by a modal dialog.
+        QEvent::WindowDeactivate	25	Window was deactivated.
+        QEvent::WindowIconChange	34	The window's icon has changed.
+        QEvent::WindowStateChange	105	The window's state (minimized, maximized or full-screen) has changed (QWindowStateChangeEvent).
+        QEvent::WindowTitleChange	33	The window title has changed.
+        QEvent::WindowUnblocked	    104	The window is unblocked after a modal dialog exited.
+        """
+        # print(event.type(), self.isActiveWindow())
+        # if event.type() == QEvent.WindowStateChange:
+        #     if (event.oldState() == Qt.WindowMinimized):
+        #         print("WindowMinimized")
+
         
     def showEvent(self, e):
         if not self.BTN_acquisition.isChecked():
@@ -432,7 +447,7 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             y_roi2 = self.zoom_y2
         
         self.cam.toWorkList(["C", "ROI", [["x", "y"], [(x_roi1, x_roi2), (y_roi1, y_roi2)]]])
-        # self._plot_update()
+        
             
     def ZoomOut(self):
         self._zoom_in_flag = False
@@ -540,6 +555,8 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             self.STATUS_raw_max.setText(str(self.image_handler.raw_max))
     
             self.canvas.draw()
+            
+            self.plot_handler.update_enbaled = True
                             
     #%% for EMCCD
     def CoolingOn(self):
@@ -595,21 +612,29 @@ class PlotHandler(QThread):
         
         self.cam = cam
         self.image_handler = image_handler        
-        self.setMinimumInterval(0.12) # minimum update rate of the CCD image
+        self.setMinimumInterval(1.12) # minimum update rate of the CCD image
         
         self.update_enbaled = True
+        
+        self.cam._sig_im_size_changed.connect(self._adjustMinimumInterval)
         
     def setMinimumInterval(self, interval=0.1):
         self.minimum_interval = interval
         
+        
+    def calculateProperInterval(self, im_size):
+        process_time = 2.784e-08*im_size + 6.146e-02 + 0.2
+        return np.max( (process_time, 0.12) )
+        
     def run(self):
         while self.GUI.BTN_acquisition.isChecked():
             if self.update_enbaled:
-                time.sleep(self.minimum_interval)
                 self.processImage()
 
                 self._sig_plot_update.emit()
-                self.update_enabled = False
+                self.update_enbaled = False
+                time.sleep(self.minimum_interval)
+
     
     def processImage(self):
         # self.ax.clear()
@@ -627,11 +652,16 @@ class PlotHandler(QThread):
         
         if self.GUI._zoom_in_flag:
             extent = np.array([self.GUI.zoom_x1, self.GUI.zoom_x2,
-                            self.GUI.zoom_y1, self.GUI.zoom_y2]).astype(np.float16)
+                            self.GUI.zoom_y1, self.GUI.zoom_y2]).astype(np.uint16)
         else:
             extent = np.array([0, self.cam._param_dict["SIZE"][1],
-                               0, self.cam._param_dict["SIZE"][0]]).astype(np.float16)
+                               0, self.cam._param_dict["SIZE"][0]]).astype(np.uint16)
         self.im.set_extent(extent)
+        
+    def _adjustMinimumInterval(self, im_size_x, im_size_y):
+        print('\n\n received im size,', im_size_x, im_size_y)
+        min_interval = self.calculateProperInterval(im_size_x*im_size_y)
+        self.setMinimumInterval(min_interval)
 
 
         
