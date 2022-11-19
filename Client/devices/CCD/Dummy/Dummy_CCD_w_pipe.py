@@ -15,6 +15,8 @@ dirname = os.path.dirname(filename)
 
 debug = True
 
+
+
 class CCD_controller_Base:
     
     _image_buffer = None

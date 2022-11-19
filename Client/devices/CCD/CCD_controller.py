@@ -8,8 +8,9 @@ v2.01: Multirprocessing handles the device.
 """
 debug = True
 
-import os, sys
+import os
 os.system('CLS')
+import matplotlib.pyplot as plt
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -67,7 +68,7 @@ class CCD_Interface(QThread):
         self.toStatusBar("Closed the device.")
         
     def openGui(self):
-        from CCD_GUI_v2_01 import CCD_UI
+        from CCD_GUI_v2_01 import CCD_UI        
         self.gui = CCD_UI(controller=self)
         self._gui_opened = True
 
