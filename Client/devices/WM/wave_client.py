@@ -571,6 +571,7 @@ class WavemeterWindow(QMainWindow, Ui_MainWindow, WaveMeter_Theme_Base):
             print("Message of wrong format", control)
             return
 
+#%%
 class tabWidget(QMainWindow, Ui_tabWindow, WaveMeter_Theme_Base):
     def closeEvent(self, QCloseEvent):
         self.status = False
@@ -592,7 +593,6 @@ class tabWidget(QMainWindow, Ui_tabWindow, WaveMeter_Theme_Base):
         self.chNum = chNum
         self.channel = self.mw.channelList[chNum]
         self.PIDWidget = PIDWidget(mw, self, chNum, name)
-        self.PIDWidget.changeTheme(mw._theme)
         self.name = name
         self.status = False
         self.theme = theme
@@ -905,8 +905,11 @@ class tabWidget(QMainWindow, Ui_tabWindow, WaveMeter_Theme_Base):
 
     def PIDMonitorClicked(self):
         self.PIDWidget.show()
+        self.PIDWidget.changeTheme(self.mw._theme)
         self.PIDWidget.activateWindow()
+        
 
+#%%
 class tabWidgetCal(QMainWindow, Ui_tabCalWindow, WaveMeter_Theme_Base):
     def closeEvent(self, QCloseEvent):
         self.status = False
@@ -1001,6 +1004,7 @@ class tabWidgetCal(QMainWindow, Ui_tabCalWindow, WaveMeter_Theme_Base):
     def btnCalOnceClicked(self):
         self.socket.sendMSG(['C', 'ACL', [self.name, self.channel.targetFreq]])
 
+#%%
 class PIDWidget(QMainWindow, Ui_PIDWindow, WaveMeter_Theme_Base):
     
     def showEvent(self, e):
