@@ -52,8 +52,9 @@ class ClientMain(QObject):
         print(config_file)
         # import os
         if not os.path.isfile(config_file):
-            raise FileNotFoundError ("No such file has been found: %s" % config_file)
-            return
+            from shutil import copyfile
+            copyfile(dirname + "/config/default.ini", config_file)
+            print ("No such file has been found: %s. Copied the default ini file." % config_file)
         
         self.cp = ConfigParser()
         self.cp.read(config_file)
