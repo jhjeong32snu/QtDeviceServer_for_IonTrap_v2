@@ -38,15 +38,15 @@ class Oven_Interface(QThread):
         """
         It writes logs when an exception happens.
         """
-        def wrapper(self, *args):
+        def wrapper(self, *args, **kwargs):
             try:
-                func(self, *args)
+                func(self, *args, **kwargs)
             except Exception as err:
                 if not self.logger == None:
                     self.logger.error("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
                 else:
                     print("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
-        return func
+        return wrapper
         
     @property
     def device(self):

@@ -14,6 +14,8 @@ filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
 
+
+
 class DDS_Controller(QThread):
     """
     A dummy/test class to give a guide for making a script.
@@ -41,16 +43,16 @@ class DDS_Controller(QThread):
         """
         It writes logs when an exception happens.
         """
-        def wrapper(self, *args):
+        def wrapper(self, *args, **kwargs):
             try:
-                func(self, *args)
+                func(self, *args, **kwargs)
             except Exception as err:
                 if not self.logger == None:
                     self.logger.error("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
                 else:
                     print("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
-        return func
-    
+        return wrapper
+        
     @logger_decorator
     def openDevice(self):
         self.dds.openDevice()
@@ -64,7 +66,7 @@ class DDS_Controller(QThread):
         self.queue.put(cmd)
         if not self.isRunning():
             self.start()
-            print("Thread started")
+            print("Thread started of the device (%s)" % self.device)
 
     @logger_decorator          
     def run(self):

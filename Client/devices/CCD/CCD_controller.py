@@ -8,8 +8,9 @@ v2.01: Multirprocessing handles the device.
 """
 debug = True
 
-import os, sys
+import os
 os.system('CLS')
+import matplotlib.pyplot as plt
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -31,6 +32,7 @@ class CCD_Interface(QThread):
     
     _sig_closed = pyqtSignal()
     _sig_update_callback = pyqtSignal(str)
+    _sig_im_size_changed = pyqtSignal(int, int)
     _device_opened = False
     _gui_opened = False
     _status = "standby"
@@ -66,10 +68,9 @@ class CCD_Interface(QThread):
         self.toStatusBar("Closed the device.")
         
     def openGui(self):
-        from CCD_GUI_v2_01 import CCD_UI
+        from CCD_GUI_v2_01 import CCD_UI        
         self.gui = CCD_UI(controller=self)
         self._gui_opened = True
-        self.image_thread._openedGUI()
 
     def openDevice(self):
         if not self._device_opened:
@@ -250,8 +251,13 @@ class CCD_Interface(QThread):
             self._available_ccd = [pc_name]
 
     def _sendCommand_n_GetResponse(self, command, data):
+        
         self.user_cmd_p.send(["C", command, data])
         
+        response = self.user_cmd_p.recv()
+        
+        command, data = response[1:]
+
         if command == "OPEN":
             self._param_dict["OPEN"] = 1
         elif command == "CLOSE":
@@ -260,10 +266,11 @@ class CCD_Interface(QThread):
             self._param_dict["RUN"] = 1
         elif command == "STOP":
             self._param_dict["RUN"] = 0
+        elif command == "ROI":
+            self._sig_im_size_changed.emit( (data[1][1] - data[1][0]), (data[3][1] - data[3][0]) )
         else:
             self._param_dict[command] = data[0]
         
-        response = self.user_cmd_p.recv()
         if self.debug:
             print(response)
             
@@ -316,9 +323,7 @@ class CCD_ImageHandler(QThread):
         self.image_datetime = datetime.now()
         self.raw_min = 0
         self.raw_max = 0
-        
-        self.GUI = None
-        
+               
         
     def run(self):
         while self.running_flag:
@@ -330,26 +335,8 @@ class CCD_ImageHandler(QThread):
             self.image_datetime = datetime.now()
             self._img_recv_signal.emit(self.raw_min, self.raw_max)
             self._status = "standby"
-            
-    def _openedGUI(self):
-        self.GUI = self.controller.gui
-        self.im = self.GUI.im
-        self.ax = self.GUI.ax
-            
-    def processImage(self):
-        # self.ax.clear()
-        self.im.set_data(self.GUI._plot_im)
-        self.im.set_clim(self.GUI._im_min, self.GUI._im_max)
-        self.im.set_cmap(self.GUI._theme_color[self.GUI._theme]["color_map"])
-        
-        if self.GUI._zoom_in_flag:
-            extent = np.array([self.GUI.zoom_x1, self.GUI.zoom_x2,
-                            self.GUI.zoom_y1, self.GUI.zoom_y2]).astype(np.float16)
-        else:
-            extent = np.array([0, self.controller._param_dict["SIZE"][1],
-                               0, self.controller._param_dict["SIZE"][0]]).astype(np.float16)
-        self.im.set_extent(extent)
-    
+
+                
 class Cooling_Thread(QThread):
     
     def __init__(self, parent):
