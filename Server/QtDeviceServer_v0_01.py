@@ -56,7 +56,7 @@ class DeviceServer(DeviceServerBase):
             config_file = QFileDialog.getOpenFileName(None, 'Open .ini file.', self._default_ini_path, 'ini files(*.ini)')[0]
         
         if not os.path.isfile(config_file):
-            raise FileNotFoundError ("No such file has been found: %s" % config_file)
+            self._makeDefault_ini(self._default_ini_path + "default.ini", self._default_ini_path + self._getHostName() + '.ini')
         
         self.cp = ConfigParser()
         self.cp.read(config_file)
@@ -89,6 +89,15 @@ class DeviceServer(DeviceServerBase):
         handler.setFormatter(formatter)
         handler.suffix = "%Y%m%d"
         self.logger.addHandler(handler)
+        
+    def _makeDefault_ini(self, default_name, copyname):
+        from shutil import copyfile
+        try:
+            print("No initial config file has been found. A default ini file has been copied and renamed to '%s'" % os.path.basename(copyname))
+            copyfile(default_name, copyname)
+        except Exception as ee:
+            raise FileNotFoundError ("No such file has been found: %s" % default_name)
+            print("Error: %s" % ee)
         
 if __name__ == "__main__":
     app = QtWidgets.QApplication.instance()

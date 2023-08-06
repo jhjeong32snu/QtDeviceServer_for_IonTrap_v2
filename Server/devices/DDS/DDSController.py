@@ -212,8 +212,14 @@ class DDS_Controller(QThread):
         
     def _getSerialNumber_from_Config(self, directory, pc_name):
         cp = ConfigParser()
-        cp.read(directory + pc_name + '.conf')
+        config_file_name = directory + pc_name + '.conf'
+        if not os.path.isfile(config_file_name):
+            from shutil import copyfile
+            copyfile(directory + "default.conf", config_file_name)
+            print("No config file has been found of DDS config file for PC:%s, copied the default config file." % pc_name)
+            self.toLog("warning", "No config file found for (%s). copied the default config file" % pc_name)
         
+        cp.read(directory + pc_name + '.conf')
         self._serial_number = cp.get('FPGA', 'serial_number')
         self._num_boards = int(cp.get('DDS', 'number_of_boards'))
         
