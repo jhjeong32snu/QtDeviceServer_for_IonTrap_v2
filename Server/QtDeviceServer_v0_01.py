@@ -26,7 +26,7 @@ class DeviceServer(DeviceServerBase):
     """
     v0.02: Load devices by a config file.
     
-    This class simply gathers necessary modules to run the server.
+    This class simply gathers the necessary modules to run the server.
         - It creates a logger to record the history of the server
         - It imports device controller modules to device_dict
         - Opens the RequestHandler that deals the communications.
@@ -54,7 +54,7 @@ class DeviceServer(DeviceServerBase):
             config_file = self._default_ini_path + self._getHostName() + '.ini'
         else:
             config_file = QFileDialog.getOpenFileName(None, 'Open .ini file.', self._default_ini_path, 'ini files(*.ini)')[0]
-        
+        5
         if not os.path.isfile(config_file):
             self._makeDefault_ini(self._default_ini_path + "default.ini", self._default_ini_path + self._getHostName() + '.ini')
         

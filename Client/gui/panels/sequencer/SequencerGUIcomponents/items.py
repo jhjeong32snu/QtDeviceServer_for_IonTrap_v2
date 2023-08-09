@@ -350,8 +350,8 @@ class ButtonTableCellWidget(QtWidgets.QTableWidget):
                     self.setCellWidget(r, c, QtWidgets.QPushButton(text=text_list[r*column_number+c]))
                     self.cellWidget(r, c).setText(text_list[r*column_number+c])
 
-          row_h = (TABLE_CELL_H-2) / row_number
-          col_w = (TABLE_CELL_W-2) / column_number
+          row_h = int ((TABLE_CELL_H-2) / row_number)
+          col_w = int ((TABLE_CELL_W-2) / column_number)
           for r in range(row_number):
                self.setRowHeight(r, row_h)
           for c in range(column_number):

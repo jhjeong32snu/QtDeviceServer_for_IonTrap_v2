@@ -52,7 +52,7 @@ class OVEN_HandlerQT(QThread):
     def operation(self):
         return self._operation
     
-    @operation.seter
+    @operation.setter
     def operation(self, flag):
         self._operation = flag
         

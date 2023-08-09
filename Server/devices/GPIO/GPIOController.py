@@ -11,7 +11,7 @@ import platform
 if platform.system() == "Windows":
     from termcolor import colored
     print(colored("You are running this script on 'Winows'. \nThe GPIO pins are autumatically set to simulated dummies.", 'magenta'))
-    from Libs.WindowsGPIO import GPIO_Dummy
+    from GPIO_Libs.WindowsGPIO import GPIO_Dummy
     G = GPIO_Dummy()
 else:
     import RPi.GPIO as G
