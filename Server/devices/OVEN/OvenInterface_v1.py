@@ -6,7 +6,7 @@ Created on Tue Oct 25 13:48:03 2022
 @author: pi
 """
 import time, os, platform
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, QTimer, pyqtSignal
 conf_dir = os.path.dirname(__file__) + '/Libs/'
 conf_file = platform.node() + '.conf'
 
@@ -16,6 +16,12 @@ from OVEN_Libs.DB_ASRI133109_v0_01 import DB_ASRI133109
 
 
 class Oven_Interface(QThread):
+    """
+    This is an interface class that makes for the users to use the DC power supply and the mechanical shutter.
+    This class is for more like an application-like operation.
+    
+    
+    """
     
     _status = "standby"
     
@@ -54,15 +60,20 @@ class Oven_Interface(QThread):
     @device.setter
     def device(self, dev):
         self._device = dev
+        
+    @property
+    def time(self):
+        return self.oven_timer.time
     
     @logger_decorator
     def openDevice(self):
         if self.oven == None:
-            device_file = self.cp.get("oven", "device_file")
-            device_class = self.cp.get("oven", "device_class")
+            device_file = self.cp.get("oven", "file")
+            device_class = self.cp.get("oven", "class")
+            device_model = self.cp.get("oven", "model")
             
             self.oven = OVEN_HandlerQT(self, self.cp, device="DC_Power_Supply_E3631A")
-            self.setDeviceFile(device_file, device_class)
+            self.oven.setDeviceFile(device_file, device_class, device_model)
             self._connection_flag = True
             
             self.oven.oven_timer._sig_Over.connect(self._putOvenOver)
@@ -523,6 +534,62 @@ class Oven_Interface(QThread):
                 self._logger.warning(log_msg)
             elif log_type == 'error':
                 self._logger.error(log_msg)
+        
+class OvenTimer(QObject):
+    
+    _sig_Over = pyqtSignal(bool)
+    _sig_Time = pyqtSignal(int)
+    
+    def __init__(self, max_time=480, debug=False):
+        super().__init__()
+        self.max_time = max_time
+        self._time = 0
+        
+        self.timer = QTimer() 
+        self.timer.timeout.connect(self.countdown)
+        
+        self._debug = debug
+        
+    @property
+    def time(self):
+        return self._time
+    
+    @time.setter
+    def time(self, time):
+        self._time = time
+    
+    def start(self):
+        self.time = self.max_time
+        self.timer.start(1000) # event for every second.
+        
+    def stop(self):
+        self.timer.stop()
+        self.time = 0
+        self._sig_Over.emit(False)
+        
+        if self._debug:
+            print("Timer stopped!")
+        
+    def countdown(self):
+        self.time -= 1
+        
+        self._sig_Time.emit(self.time)
+            
+        if self._debug:
+            print("Current time: (%2d:%02d)" % ( (self.time // 60), (self.time % 60)))
+            
+        if self.time <= 0:
+            self.timeOver()
+        
+    def timeOver(self):
+        self.timer.stop()
+        self.time = 0
+        self._sig_Over.emit(True)
+        
+        if self._debug:
+            print("Time out!")
+    
+        
         
 if __name__ == '__main__':
     OH = OVEN_Handler()

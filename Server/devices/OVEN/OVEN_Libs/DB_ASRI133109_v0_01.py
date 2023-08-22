@@ -40,17 +40,24 @@ class DB_ASRI133109():
         self.__db_pw   = db_pw
         
         self._connect_to_db()
+        self._conn_flag = False
         print("version:", self.version)
         
     def _connect_to_db(self):
-        self._conn = psycopg2.connect(database=self.__db_name,
-                                     host=self.__db_ip,
-                                     port=self.__db_port,
-                                     user=self.__db_user,
-                                     password=self.__db_pw)
+        try:
+            self._conn = psycopg2.connect(database=self.__db_name,
+                                         host=self.__db_ip,
+                                         port=self.__db_port,
+                                         user=self.__db_user,
+                                         password=self.__db_pw,
+                                         connect_timeout = 1)
+            self._conn_flag = True
+        except:
+            print("Couldn't connect to the DB server.")
         
     def _disconnect_from_db(self):
         self._conn.close()
+        self._conn_flag = False
         
     def _get_columns(self, tbl_name):
         df = pdsql.read_sql_query("select * from %s limit 0;" % tbl_name, self._conn)
@@ -67,27 +74,28 @@ class DB_ASRI133109():
         
     def _into_DB(func):
         def db_wrapper(self, *args):
-            curs = self._conn.cursor()
-            tbl_columns = self._get_columns(func.__name__)
-            tbl_values = self._to_string(args)
-            
-            
-            if 'time' in tbl_columns:
-                time2db = datetime.datetime.now().strftime("\'%Y-%m-%d %H:%M:%S\'")
-                tbl_columns.sort(key='time'.__eq__)
-                tbl_values.append(time2db)
+            if self.__conn_flag:
+                curs = self._conn.cursor()
+                tbl_columns = self._get_columns(func.__name__)
+                tbl_values = self._to_string(args)
                 
-            header = "insert into %s" % func.__name__
-            insert_columns = ", ".join(tbl_columns)
-            insert_values = ", ".join(tbl_values)
-
-            db_string = header + "(" + insert_columns + ")" + " values " + "(" + insert_values + ")"
-            curs.execute(db_string)
-            
-            self._conn.commit()
-            print("Commited to %s" % func.__name__)
-            
-            return func
+                
+                if 'time' in tbl_columns:
+                    time2db = datetime.datetime.now().strftime("\'%Y-%m-%d %H:%M:%S\'")
+                    tbl_columns.sort(key='time'.__eq__)
+                    tbl_values.append(time2db)
+                    
+                header = "insert into %s" % func.__name__
+                insert_columns = ", ".join(tbl_columns)
+                insert_values = ", ".join(tbl_values)
+    
+                db_string = header + "(" + insert_columns + ")" + " values " + "(" + insert_values + ")"
+                curs.execute(db_string)
+                
+                self._conn.commit()
+                print("Commited to %s" % func.__name__)
+                
+                return func
         db_wrapper.__name__ = func.__name__
         db_wrapper.__doc__ = func.__doc__
         return db_wrapper

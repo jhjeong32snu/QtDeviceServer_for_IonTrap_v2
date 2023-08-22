@@ -8,6 +8,7 @@ Created on Tue Oct 25 13:48:03 2022
 import time, os
 from PyQt5.QtCore import QThread, QObject, QTimer, pyqtSignal
 import platform
+from queue import Queue
 
 conf_dir = os.path.dirname(__file__) + '/Libs/'
 conf_file = platform.node() + '.conf'
@@ -25,16 +26,18 @@ class OVEN_HandlerQT(QThread):
     
     sig_oven_control = pyqtSignal()
     
-    def __init__(self, parent=None, config=None, device="DC_Power_Supply_E3631A"):
+    def __init__(self, parent=None, config=None, logger=None, device="DC_Power_Supply_E3631A"):
         super().__init__()
         self.parent = parent
         self.cp = config
-        self.oven_timer = OvenTimer()
-        self.device = device
+        self.model_name = device
         
         self.DC = None
         self.file_name = ""
         self.class_name = ""
+        
+        self.logger = logger
+        self.que = Queue()
         
     def __call__(self):
         return self.device
@@ -96,11 +99,8 @@ class OVEN_HandlerQT(QThread):
     def current(self, value):
         self._current = value
         
-    @property
-    def time(self):
-        return self.oven_timer.time
     
-    def setDeviceFile(self, file_name, class_name, model_name):
+    def setDeviceFile(self, file_name, class_name, model_name="DC_Power_Supply_E3631A"):
         self.file_name = file_name
         self.class_name = class_name
         self.model_name = model_name
@@ -199,60 +199,7 @@ class OVEN_HandlerQT(QThread):
                 return dev.device
         
     
-class OvenTimer(QObject):
-    
-    _sig_Over = pyqtSignal(bool)
-    _sig_Time = pyqtSignal(int)
-    
-    def __init__(self, max_time=480, debug=False):
-        super().__init__()
-        self.max_time = max_time
-        self._time = 0
-        
-        self.timer = QTimer() 
-        self.timer.timeout.connect(self.countdown)
-        
-        self._debug = debug
-        
-    @property
-    def time(self):
-        return self._time
-    
-    @time.setter
-    def time(self, time):
-        self._time = time
-    
-    def start(self):
-        self.time = self.max_time
-        self.timer.start(1000) # event for every second.
-        
-    def stop(self):
-        self.timer.stop()
-        self.time = 0
-        self._sig_Over.emit(False)
-        
-        if self._debug:
-            print("Timer stopped!")
-        
-    def countdown(self):
-        self.time -= 1
-        
-        self._sig_Time.emit(self.time)
-            
-        if self._debug:
-            print("Current time: (%2d:%02d)" % ( (self.time // 60), (self.time % 60)))
-            
-        if self.time <= 0:
-            self.timeOver()
-        
-    def timeOver(self):
-        self.timer.stop()
-        self.time = 0
-        self._sig_Over.emit(True)
-        
-        if self._debug:
-            print("Time out!")
-    
+
     
 if __name__ == '__main__':
     OH = OVEN_HandlerQT()
