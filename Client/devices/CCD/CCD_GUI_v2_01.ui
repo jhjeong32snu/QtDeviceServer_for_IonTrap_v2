@@ -21,7 +21,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">font-color:rgb(255, 255, 255);</string>
+    <string notr="true"/>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="3,1">
     <property name="spacing">
@@ -274,7 +274,7 @@
           <string>Zoom In</string>
          </property>
          <property name="checkable">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
         <widget class="QPushButton" name="BTN_draw_rectangle">
@@ -2047,9 +2047,9 @@
   </connection>
   <connection>
    <sender>BTN_view_zoom</sender>
-   <signal>clicked(bool)</signal>
+   <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>ZoomActive()</slot>
+   <slot>ZoomIn()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>676</x>

@@ -14,8 +14,6 @@ filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
 
-
-
 class DDS_Controller(QThread):
     """
     A dummy/test class to give a guide for making a script.
@@ -30,7 +28,7 @@ class DDS_Controller(QThread):
     _client_list = []
     _status = "standby"
     
-    def __init__(self, parent=None, config=None, logger=None, device="DDS_w_VVA"):
+    def __init__(self, parent=None, config=None, logger=None, device="dds"):
         super().__init__()
         self.parent = parent
         self.cp = config
@@ -39,13 +37,17 @@ class DDS_Controller(QThread):
         self.queue = Queue()
         self._readDeviceConfig(device)
         
+    @property
+    def description(self):
+        return "DDS"
+        
     def logger_decorator(func):
         """
         It writes logs when an exception happens.
         """
         def wrapper(self, *args, **kwargs):
             try:
-                func(self, *args, **kwargs)
+                return func(self, *args, **kwargs)
             except Exception as err:
                 if not self.logger == None:
                     self.logger.error("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
@@ -88,7 +90,7 @@ class DDS_Controller(QThread):
                         
                     if not client in self._client_list:
                         self._client_list.append(client)
-                    client.toMessageList(["D", "DDS", "HELO", []])
+                    client.toMessageList(["D", "DDS", "HELO", [True]])
                     data = self.getCurrentSettings()
                     message = ["D", "DDS", "STAT", data]
                     self.informClients(message, client)
@@ -151,7 +153,7 @@ class DDS_Controller(QThread):
             elif work_type == "Q":
                 if command == "STAT":
                     data = self.getCurrentSettings()
-                    message = ["D", "DDS", "STAT", data]
+                    message = ["D", "DDS", "STAT", [data]]
                     self.informClients(message, client)
                         
             else:
@@ -164,12 +166,13 @@ class DDS_Controller(QThread):
         """
         This functions returnes current settings data as list.
         """
+        print("getting")
         data = []
         for board_idx in self._current_settings.keys():
             data.append(["C", self._current_settings[board_idx]["current"],
                          "F", self._current_settings[board_idx]["freq_in_MHz"],
                          "P", self._current_settings[board_idx]["power"]])
-            
+        print("there", data)
         return data
                     
     @logger_decorator
@@ -179,8 +182,7 @@ class DDS_Controller(QThread):
         
         for client in client:
             client.toMessageList(msg)
-            while client.status == "sending":
-                time.sleep(0.01)
+        print(msg)
         
     def toLog(self, log_type, log_content):
         if not self.logger == None:
@@ -197,31 +199,36 @@ class DDS_Controller(QThread):
         else:
             print(log_type, log_content)
 
-    def _readDeviceConfig(self, device):
-        self.cp = ConfigParser()
-        self.cp.read(dirname + "/DDS.conf")
-        sys.path.append(dirname + '/%s' % device)
-        exec("from %s import %s as DDS" % (self.cp.get(device, "file",), self.cp.get(device, "class")))
+    # 230901.To be deleted
+    # def _readDeviceConfig(self, device):
+    #     self.cp = ConfigParser()
+    #     self.cp.read(dirname + "/DDS.conf")
+    #     sys.path.append(dirname + '/%s' % device)
+    #     exec("from %s import %s as DDS" % (self.cp.get(device, "file",), self.cp.get(device, "class")))
         
-        self._getSerialNumber_from_Config(directory = dirname + '/%s/config/' % device,
-                                          pc_name = os.getenv("COMPUTERNAME", "defaultvalue"))
+    #     self._getSerialNumber_from_Config(directory = dirname + '/%s/config/' % device,
+    #                                       pc_name = os.getenv("COMPUTERNAME", "defaultvalue"))
         
-        sys.path.append(dirname + '/%s/config' % device)
+    #     sys.path.append(dirname + '/%s/config' % device)
 
-        exec("self.dds = DDS('%s')" % (self._serial_number))
+    #     exec("self.dds = DDS('%s')" % (self._serial_number))
+    def _readDeviceConfig(self, device):
+        device_type = self.cp.get("device", device)
         
-    def _getSerialNumber_from_Config(self, directory, pc_name):
-        cp = ConfigParser()
-        config_file_name = directory + pc_name + '.conf'
-        if not os.path.isfile(config_file_name):
-            from shutil import copyfile
-            copyfile(directory + "default.conf", config_file_name)
-            print("No config file has been found of DDS config file for PC:%s, copied the default config file." % pc_name)
-            self.toLog("warning", "No config file found for (%s). copied the default config file" % pc_name)
+        if device_type == "Dummy":
+            sys.path.append(dirname + "/Dummy_DDS")
+            from Dummy import DummyDDS as DDS
+        else:
+            sys.path.append(dirname + "/DDS_w_VVA")
+            from DDS_n_VVA import AD9912_w_VVA as DDS
+            
+        self._getSerialNumber_from_Config()
         
-        cp.read(directory + pc_name + '.conf')
-        self._serial_number = cp.get('FPGA', 'serial_number')
-        self._num_boards = int(cp.get('DDS', 'number_of_boards'))
+        self.dds = DDS(self._serial_number)
+        
+    def _getSerialNumber_from_Config(self):
+        self._serial_number = self.cp.get('dds', 'serial_number')
+        self._num_boards = int(self.cp.get('dds', 'num_boards'))
         
         for board_idx in range(self._num_boards):
             self._current_settings[board_idx+1] = {"current": [0, 0], "freq_in_MHz": [0, 0], "power": [0, 0]}

@@ -8,14 +8,12 @@ Tel. 010-9600-3392
 from PyQt5.QtCore import QIODevice, QByteArray, QDataStream, pyqtSignal
 from PyQt5.QtNetwork import QTcpSocket
 
-import sys, os
-
-
 class ClientSocket(QTcpSocket):
     
     device_dict = {}
     conn_buffer = []
     _message_signal = pyqtSignal(list)
+    _break_con_signal = pyqtSignal(bool)
     
     def __init__(self, parent, user_name):
         super().__init__()
@@ -24,7 +22,6 @@ class ClientSocket(QTcpSocket):
         
         self.readyRead.connect(self.receiveMessage)
         self.disconnected.connect(self.breakConnection)
-        print("Client Ready")
 
     def makeConnection(self, host, port):
         self.connectToHost(host, int(port), QIODevice.ReadWrite)
@@ -45,6 +42,17 @@ class ClientSocket(QTcpSocket):
             self.sendMessage(message)
             self.disconnectFromHost()
             print("Disconnected from the server.")
+        print(self.state())
+        self._break_con_signal.emit(self.state())  # This will reset the status of the devices.
+            
+    def checkConnection(self):
+        print(self.state())
+        self._break_con_signal.emit(self.state())
+
+        
+    def checkHardState(self):
+        message = ["Q", "SRV", "CON", []]
+        self.sendMessgae(message)
 
     def sendMessage(self, msg):
         if not self.isOpen():
@@ -65,6 +73,7 @@ class ClientSocket(QTcpSocket):
         self.write(block)
 
     def receiveMessage(self):
+
         stream = QDataStream(self)
         stream.setVersion(QDataStream.Qt_5_0)
         while(self.bytesAvailable() >= 2):
@@ -83,6 +92,7 @@ class ClientSocket(QTcpSocket):
                 
                 self._message_signal.emit([control, device, command, data])
                 self.my_data = [control, device, command, data]
+
             except:
                 pass
 

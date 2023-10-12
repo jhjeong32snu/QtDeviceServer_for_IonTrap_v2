@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-@author: KMLee
+@author: Junho Jeong
+@Tel: 010-9600-3392
+@email1: jhjeong32@snu.ac.kr
+@mail2: bugbear128@gmail.com
 """
 
-import time, sys, traceback, os
+import time, os
 from PyQt5.QtCore import QThread
 from configparser import ConfigParser
 from serial.tools import list_ports
 import numpy as np
 from queue import Queue
 # from DummyRFdevice import *
-from RFdevice import *
+from RFdevice import (SynthNV, SynthHD, SG384, APSYN420)
 from RFsettings import Device_list
-from copy import deepcopy
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
-class RFController(QThread):
+class RF_Controller(QThread):
     
     _work_list = []
     _client_list = []
@@ -27,6 +29,7 @@ class RFController(QThread):
                             'synthhd':SynthHD, 
                             'sg384':SG384, 
                             'apsyn420':APSYN420}
+    _device_dict = {}
     
     def logger_decorator(func):
         """
@@ -56,6 +59,9 @@ class RFController(QThread):
 
         self.logger = logger
         self.queue = Queue()
+
+    def __call__(self):
+        return self._device_dict
 
     @logger_decorator
     def _readRFconfig(self):

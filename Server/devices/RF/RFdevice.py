@@ -2,12 +2,13 @@
 Created on Aug 26, 2021.
 @author: Jiyong Kang
 @Editor: Kyungmin Lee
+@Editor: Junho Jeong
 This file includes concrete classes implementing actual or virtual RF source device.
 Included classes:
     - Windfreak SynthNV(SerialPortRFSource)
 """
 
-import serial, socket, math
+import serial, math
 import numpy as np
 from RFbase import SerialPortRFSource, SocketRFSource
 
@@ -34,7 +35,8 @@ def check_range(val, min_, max_, label=None):
         raise ValueError('{}{} is out of range: min={}, max={}.'
                          .format('' if label is None else label + '=',
                                  val, min_, max_))
-        
+
+
 def print_msg(src, msg):
     """Prints msg followed by src, in format
     [src]: msg
@@ -43,9 +45,6 @@ def print_msg(src, msg):
         msg - message body.
     """
     print("[{}]: {}".format(src, msg))
-
-def find_nearest_idx(array, value):
-    return (np.abs(array - value)).argmin()
 
 class WindfreakTech(SerialPortRFSource):
     """
@@ -57,7 +56,7 @@ class WindfreakTech(SerialPortRFSource):
         - frequency:    Hz
         - attenuator:   dBm
     """
-    def __init__(self, min_power, max_power, min_freq, max_freq, port=None, device_name=None):
+    def __init__(self, min_power, max_power, min_freq, max_freq, port=None):
         """
         The serial port can be assigned later by set_port(port_name).
         """
@@ -65,136 +64,10 @@ class WindfreakTech(SerialPortRFSource):
                          port=port, baudrate=9600, bytesize=serial.EIGHTBITS,
                          parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_TWO)
         self.__power = min_power
-        self.device_name = device_name[-2:]
-        if self.device_name == 'HD':
-            self.__phase = [0, 0]
-        
-        if self.device_name == 'NV':
-            self.__power_dbm_list = np.linspace(-13.49, 18.35, 64)
-        
-        
-    @requires_connection
-    def enableOutput(self, output_type:int=0):
-        """Enables the output by applying the power as self.__power.
-        Raises:
-            AssertError - power must be set before enabling the output.
-        """
-        if not self.is_output_enabled(output_type):
-            if self.device_name == 'NV':
-                self.__send_command('o1')
-            if self.device_name == 'HD':
-                self.setChannel(output_type)
-                self.__send_command('E1r1')
 
-    @requires_connection
-    def disableOutput(self, output_type:int=0):
-        """Simply applies the power to be zero.
-        """
-        if self.is_output_enabled(output_type):
-            if self.device_name == 'NV':
-                self.__send_command('o0')
-            if self.device_name == 'HD':
-                self.setChannel(output_type)
-                self.__send_command('E0r0')
-
-    @requires_connection
-    def setPower(self, power: float, output_type:int=0):
-        """Sends the command only if the output is currently enabled.
-        Raises:
-            ValueError - power is out of range.
-        """
-        self.setChannel(output_type)
-        check_range(power, self.min_power, self.max_power, 'power')
-        if self.device_name == 'NV':
-            power = round(power, 2)
-            self.__power_idx = find_nearest_idx(self.__power_dbm_list, power)
-            self.__power = self.__power_dbm_list[self.__power_idx]
-            self.__send_command('a{}'.format(self.__power_idx))
+    def find_nearest_idx(self, array, value):
+        return (np.abs(array - value)).argmin()
         
-        elif self.device_name == 'HD':
-            power = round(power, 2)
-            self.__power = power
-            self.__send_command('W{:.2f}'.format(power))
-
-    @requires_connection
-    def setFrequency(self, freq: float, output_type:int=0):
-        """
-        Raises:
-            ValueError - freq is out of range.
-        """
-        self.setChannel(output_type)
-        freq = round(freq, 1)
-        check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
-        self.__send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
-    
-    @requires_connection
-    def setPhase(self, phase: float, output_type:int=0):
-        self.setChannel(output_type)
-        net_phase = float(phase % 360)
-        self.__phase[output_type] = net_phase
-        if self.device_name == 'HD':
-            self.__send_command('~{:.2f}'.format(net_phase))
-        else:
-            pass
-        
-    @requires_connection
-    def setChannel(self, chan):
-        if self.device_name == 'HD':
-            if chan == 'A' or chan == 'a' or chan == 0:
-                self.__send_command('C0')
-            elif chan == 'B' or chan == 'b' or chan == 1:
-                self.__send_command('C1')
-            else:
-                raise Exception('Wrong Channel Index')
-        else:
-            pass
-        
-    @requires_connection
-    def getPower(self, output_type:int=0) -> float:
-        """Caution: this may return None when the output has been disabled
-        during the whole connection and the power has never been set.
-        """
-        if self.device_name == 'NV':
-            power = self.__query_command('a?')
-            self.__power_idx = int(power)
-            self.__power = self.__power_dbm_list[self.__power_idx]
-            return round(self.__power,2)
-
-        elif self.device_name == 'HD':
-            self.setChannel(output_type)
-            power = self.__query_command('W?')
-            self.__power = float(power)
-            return round(self.__power,2)
-    
-    @requires_connection
-    def getFrequency(self, output_type:int=0) -> float:
-        self.setChannel(output_type)
-        freq = self.__query_command('f?') # Return MHz scale
-        return float(freq) * 1e6 # Turn to Hz
-    
-    @requires_connection
-    def getChannel(self) -> int:
-        if self.device_name == 'HD':
-            chan = self.__query_command('C?') # 0(A) or 1(B)
-            return chan
-        else:
-            pass
-        
-    def getPhase(self, output_type:int=0) -> float:
-        if self.device_name == 'HD':
-            # Synth HD doesn't support querying phase
-            # Return latest set value
-            return self.__phase[output_type]
-        else:
-            pass
-
-    @requires_connection
-    def is_output_enabled(self, output_type:int=0) -> bool:
-        if self.device_name == 'NV':
-            return '1' == self.__query_command('o?')
-        if self.device_name == 'HD':
-            self.setChannel(output_type)
-            return '1' == self.__query_command('r?')
 
     """
     Following two private methods are wrappers for the protected methods
@@ -217,15 +90,8 @@ class WindfreakTech(SerialPortRFSource):
         end of the command, just like self.__send_command does.
         """
         return self._query_command(cmd, encoding='ascii',
-                                   terminator='\n', size=size, trim=trim)
+                                   terminator='', size=size, trim=trim)
     
-    @property
-    def power_dbm_list(self):
-        if self.device_name == 'NV':
-            return self.__power_dbm_list
-        elif self.device_name == 'HD':
-            print('SynthHD has no power dbm list')
-
 class SynthNV(WindfreakTech):
     """
     Power range: [0 63] for [-13.49, +18.55] dBm
@@ -252,7 +118,102 @@ class SynthNV(WindfreakTech):
             'freq':{0:'Single'},
             'phase':{0:'Single'}
             }
+        self._num_channels = 1
+        self.__power_dbm_list = np.linspace(-13.49, 18.35, 64)
+        
+        
+    @requires_connection
+    def enableOutput(self, output_type:int=0):
+        """Enables the output by applying the power as self.__power.
+        Raises:
+            AssertError - power must be set before enabling the output.
+        """
+        self.__send_command('o1')
+        
+        
+    @requires_connection
+    def disableOutput(self, output_type:int=0):
+        """Simply applies the power to be zero.
+        """
+        self.__send_command('o0')
+        
+        
+    @property
+    def power_dbm_list(self):
+        return self.__power_dbm_list
 
+        
+    @requires_connection
+    def setPower(self, power: float, output_type:int=0):
+        """Sends the command only if the output is currently enabled.
+        Raises:
+            ValueError - power is out of range.
+        """
+        check_range(power, self.min_power, self.max_power, 'power')
+
+        power = round(power, 2)
+        self.__power_idx = self.find_nearest_idx(self.__power_dbm_list, power)
+        self.__power = self.__power_dbm_list[self.__power_idx]
+        self.__send_command('a{}'.format(self.__power_idx))
+        
+    @requires_connection
+    def setFrequency(self, freq: float, output_type:int=0):
+        """
+        Raises:
+            ValueError - freq is out of range.
+        """
+        freq = round(freq, 1)
+        check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
+        self.__send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
+        
+        
+    @requires_connection
+    def setPhase(self, phase: float, output_type:int=0):
+        raise ValueError ("This function is not supported for this device (synthNV).")
+        
+    @requires_connection
+    def getPower(self, output_type:int=0) -> float:
+        """Caution: this may return None when the output has been disabled
+        during the whole connection and the power has never been set.
+        """
+        power = self.__query_command('a?')
+        self.__power_idx = int(power)
+        self.__power = self.__power_dbm_list[self.__power_idx]
+        
+        return round(self.__power,2)
+    
+    @requires_connection
+    def setChannel(self, chan):
+        raise NotImplementedError ("SynthNV does not support multiple channels.")
+        
+    @requires_connection
+    def getFrequency(self, output_type:int=0) -> float:
+        freq = self.__query_command('f?') # Return MHz scale
+        return int(float(freq) * 1e6) # Turn to Hz
+    
+    @requires_connection
+    def getPhase(self, output_type:int=0) -> float:
+        raise ValueError ("SynthNV does not support phase settings.")
+
+    @requires_connection
+    def is_output_enabled(self, output_type:int=0) -> bool:
+        return '1' == self.__query_command('o?')
+    
+    @requires_connection
+    def lockFrequency(self, external_flag=0, ext_ref_freq=10e6):
+        """
+        External source: 0, internal source: 1
+        """
+        self.__send_command("x%d" % (not external_flag))
+
+    @requires_connection
+    def is_locked(self) -> bool:
+        """
+        External source: 0, internal source: 1
+        """
+        return "0" == self.__query_command("x?")
+        
+        
 class SynthHD(WindfreakTech):
     """
     Power range: [0 63] for [-50, +20] dBm 0.001dB resolution
@@ -267,7 +228,10 @@ class SynthHD(WindfreakTech):
         assert min_power <= max_power, 'min_power is greater than max_power.'
         assert min_freq <= max_freq, 'min_frequency is greater than max_frequency.'
         self.__output_mapping()
+        self.__phase = [0, 0]
+        self._num_channels = 2
         super().__init__(min_power, max_power, min_freq, max_freq, port=port, device_name='SynthHD')
+
  
     def __output_mapping(self):
         # Possible output number for power/freq/phase
@@ -279,6 +243,128 @@ class SynthHD(WindfreakTech):
             'freq':{0:'Channel A', 1:'Channel B'},
             'phase':{0:'Channel A', 1:'Channel B'}
             }
+        
+    @requires_connection
+    def enableOutput(self, output_type:int=0):
+        """Enables the output by applying the power as self.__power.
+        Raises:
+            AssertError - power must be set before enabling the output.
+        """
+        self.setChannel(output_type)
+        self.__send_command('E1r1')
+        
+        
+    @requires_connection
+    def disableOutput(self, output_type:int=0):
+        """Simply applies the power to be zero.
+        """
+        self.setChannel(output_type)
+        self.__send_command('E0r0')
+        
+    @property
+    def power_dbm_list(self):
+        return [self.__power]
+
+        
+    @requires_connection
+    def setPower(self, power: float, output_type:int=0):
+        """Sends the command only if the output is currently enabled.
+        Raises:
+            ValueError - power is out of range.
+        """
+        self.setChannel(output_type)
+        power = round(power, 2)
+        self.__power = power
+        self.__send_command('W{:.2f}'.format(power))
+        
+    @requires_connection
+    def setFrequency(self, freq: float, output_type:int=0):
+        """
+        Raises:
+            ValueError - freq is out of range.
+        """
+        self.setChannel(output_type)
+        freq = round(freq, 1)
+        check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
+        self.__send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
+        
+    @requires_connection
+    def setPhase(self, phase: float, output_type:int=0):
+        self.setChannel(output_type)
+        net_phase = float(phase % 360)
+        self.__phase[output_type] = net_phase
+        self.__send_command('~{:.2f}'.format(net_phase))
+        
+        
+    @requires_connection
+    def getPower(self, output_type:int=0) -> float:
+        """Caution: this may return None when the output has been disabled
+        during the whole connection and the power has never been set.
+        """
+        self.setChannel(output_type)
+        power = self.__query_command('W?')
+        self.__power = float(power)
+        return round(self.__power,2)
+    
+    @requires_connection
+    def getFrequency(self, output_type:int=0) -> float:
+        self.setChannel(output_type)
+        freq = self.__query_command('f?') # Return MHz scale
+        return int(float(freq) * 1e6) # Turn to Hz
+    
+    @requires_connection
+    def setChannel(self, chan):
+        if chan == 'A' or chan == 'a' or chan == 0:
+            self.__send_command('C0')
+        elif chan == 'B' or chan == 'b' or chan == 1:
+            self.__send_command('C1')
+        else:
+            raise ValueError ('Wrong Channel Index')
+            
+    @requires_connection
+    def getChannel(self) -> int:
+        if self.device_name == 'HD':
+            chan = self.__query_command('C?') # 0(A) or 1(B)
+            return chan
+        else:
+            raise Warning ("This device does not support multiple channels (%s)." % self.device_name)
+            return 0
+        
+    @requires_connection
+    def getPhase(self, output_type:int=0) -> float:
+        return self.__phase[output_type]
+
+    @requires_connection
+    def is_output_enabled(self, output_type:int=0) -> bool:
+        self.setChannel(output_type)
+        return '1' == self.__query_command('r?')
+    
+    
+    @requires_connection
+    def lockFrequency(self, external_flag=0, ext_ref_freq=10e6):
+        """
+        External source: 0, internal source: 1
+        The reference frequency should be either 27 MHz or 10 MHz.
+        """
+        if not external_flag:
+            if ext_ref_freq == 10e6:
+                external_flag = 2
+            elif ext_ref_freq == 27e6:
+                external_flag = 1
+            else:
+                raise Warning("An unknown frequency of the internal reference is detected! (%d)" % (int(ext_ref_freq)))
+            
+        if external_flag:
+            external_flag = 0
+        self.__send_command("x%d" % (external_flag))
+
+    @requires_connection
+    def is_locked(self) -> bool:
+        """
+        External source: 0, internal source: 1
+        """
+        return "0" == self.__query_command("x?")
+    
 
 
 
@@ -367,7 +453,7 @@ class APSYNxxx(SocketRFSource):
         return float(self.__query_command(":PHASe?")) * 180 / math.pi
 
     @requires_connection
-    def lockFrequency(self, ext_ref_freq=10e6):
+    def lockFrequency(self, external_flag=0, ext_ref_freq=10e6):
         """
         Conveys the expected reference frequency value of an externally applied reference
         to the signal generator.
@@ -414,12 +500,16 @@ class APSYN420(APSYNxxx):
     Phase resolution: 0.1 deg
     """
     def __init__(
-            self, min_power=23.0, max_power=23.0, min_freq=10e6, max_freq=20.0e9, tcp_ip="", tcp_port=""):
+            self, min_power=23.0, max_power=23.0, min_freq=10e6, max_freq=20.0e9, tcp_ip="", tcp_port=18):
         assert min_freq >= 10e6, "min_frequency should be at least 10MHz."
         assert max_freq <= 20.0e9, "max_frequency shuold be at most 20.0GHz."
         assert min_freq <= max_freq, "min_frequency is greater than max_frequency."
         self.__output_mapping()
+        self._num_channels = 1
+        self.tcp_port = tcp_port
         super().__init__(min_power, max_power, min_freq, max_freq, tcp_ip=tcp_ip, tcp_port=tcp_port)
+
+
 
     def __output_mapping(self):
         # Possible output number for power/freq/phase
@@ -452,6 +542,7 @@ class SG38x(SocketRFSource):
         """
         super().__init__(min_power, max_power, min_freq, max_freq,
                          tcp_ip=tcp_ip, tcp_port=tcp_port)
+        
         
     @requires_connection
     def enableOutput(self, output_type:int=0):
@@ -576,7 +667,7 @@ class SG384(SG38x):
     """
     def __init__(
             self, min_power=-47, max_power=13, min_freq=950e3, max_freq=62.5e6,
-            tcp_ip="", tcp_port=""):
+            tcp_ip="", tcp_port=5025):
         assert min_power >= -47, "min_power should be at least -47dBm."
         assert max_power <= 13, "max_power should be at most 16.50dBm."
         assert min_freq >= 950e3, "min_frequency should be at least 950kHz."
@@ -584,8 +675,10 @@ class SG384(SG38x):
         assert min_power <= max_power, "min_power is greater than max_power."
         assert min_freq <= max_freq, "min_frequency is greater than max_frequency."
         self.__output_mapping()
+        self._num_channels = 2
         super().__init__(min_power, max_power, min_freq,
                          max_freq, tcp_ip=tcp_ip, tcp_port=tcp_port)
+        self.tcp_port = tcp_port
         
     def __output_mapping(self):
         # Possible output number for power/freq/phase
@@ -597,3 +690,86 @@ class SG384(SG38x):
             'freq':{0:'Common'},
             'phase':{0:'Common'}
             }
+        
+        
+        
+class Dummy_RF(SocketRFSource):
+    """
+    This class is a dummy class that can simulate actual devices.
+    """
+    
+    def __init__(self, min_power=-50, max_power=10, min_freq=10e6, max_freq=15e9, port="", tcp_ip="", tcp_port=5512):
+        assert min_power >= -50, "min_power should be at least -50 dBm."
+        assert max_power <= 10, "max_power should be at most 10 dBm."
+        assert min_freq >= 10e6, "min_frequency should be at least 10 MHz."
+        assert max_freq <= 15e9, "max_frequency shuold be at most 15 GHz."
+        assert min_power <= max_power, "min_power is greater than max_power."
+        assert min_freq <= max_freq, "min_frequency is greater than max_frequency."
+        self.__output_dict = {0: False, 1: False}
+        self.__power_dict = {0: False, 1: False}
+        self.__freq_dict = {0: False, 1: False}
+        self.__phase_dict = {0: False, 1: False}
+        self.__locked = False
+        self.__connected = False
+        super().__init__(min_power, max_power, min_freq,
+                         max_freq, tcp_ip=tcp_ip, tcp_port=tcp_port)
+        self._num_channels = 2
+
+    def connect(self):
+        """Connects to the device."""
+        self.__connected = True
+
+    def disconnect(self):
+        """Disconnects from the device."""
+        self.__connected = False
+        
+    def is_connected(self):
+        return self.__connected
+        
+    def enableOutput(self, output_type=0):
+        """Enables the output of the device."""
+        self.__output_dict[output_type] = True
+
+    def disableOutput(self, output_type=0):
+        """Disables the output of the device."""
+        self.__output_dict[output_type] = False
+
+    def is_output_enabled(self, output_type=0) -> bool:
+        """Returns whether the device output is currently enabled."""
+        return self.__output_dict[output_type]
+
+    def setPower(self, power: float, output_type=0):
+        """Applies power as given, in dBm."""
+        self.__power_dict[output_type] = max(min(power, self.max_power), self.min_power)
+
+    def setFrequency(self, freq: float, output_type=0):
+        """Applies frequency as given, in Hz."""
+        self.__freq_dict[output_type] = max(min(freq, self.max_frequency), self.min_frequency)
+
+    def setPhase(self, phase: float, output_type=0):
+        """Applies phase as given, in degrees."""
+        self.__phase_dict[output_type] = phase
+
+    def getPower(self, output_type=0) -> float:
+        """Returns the current power of the output in dBm."""
+        return self.__power_dict[output_type]
+
+    def getFrequency(self, output_type=0) -> float:
+        """Returns the current frequency of the output in Hz."""
+        return self.__freq_dict[output_type]
+
+    def getPhase(self, output_type=0) -> float:
+        """Returns the current phase of the output in degrees."""
+        return self.__phase_dict[output_type]
+
+    def lockFrequency(self, external_flag=0, ext_ref_freq=10e6):
+        if ext_ref_freq == 10e6:
+            self.__locked = True
+
+    def is_locked(self, output_type=0) -> bool:
+        """Returns whether the current output is locked."""
+        return self.__locked
+    
+    def _get_comport(self, serial_number):
+        import random
+        return "COM%d" % random.randint(1, 100)

@@ -8,8 +8,7 @@ Some modification requires if you want to controll the oven in local with USB.
 
 v0.02: It gets theme color from the parent.
 """
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QWidget
+from PyQt5 import QtWidgets
 from PyQt5.QtCore    import pyqtSignal, QThread
 
 import socket
@@ -169,8 +168,6 @@ class OvenClient(QThread):
         self.mirror = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.mirror.connect(('172.22.22.34', 52000))
         self.mirror.settimeout(1)
-        
-        
         
     def run(self):
         while self.OC.ON:

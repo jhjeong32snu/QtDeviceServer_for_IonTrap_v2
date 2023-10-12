@@ -33,7 +33,7 @@ class CCD_controller_Base:
     
     _gain = 20
     _temperature = 30
-    _sensor_size = (1392, 1040)
+    _sensor_size = (3840, 2160)
     _exposure_time = 100
     _trigger_count = 0
     

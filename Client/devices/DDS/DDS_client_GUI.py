@@ -5,9 +5,7 @@ Created on Sat Aug 21 23:22:02 2021
 @author: JHJeong
 """
 
-from __future__ import unicode_literals
 import os, sys
-from configparser import ConfigParser
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
@@ -20,9 +18,9 @@ for each_path in new_path_list:
         sys.path.append(each_path)
 
 # PyQt libraries
-from PyQt5 import uic, QtWidgets, QtGui, QtCore
+from PyQt5 import uic, QtWidgets
 from PyQt5.QtCore import QRect, pyqtSignal
-from PyQt5.QtWidgets import QMessageBox, QHBoxLayout, QLabel, QVBoxLayout, QFileDialog
+from PyQt5.QtWidgets import QFileDialog
 
 main_ui_file = dirname + "/ui_resources/TripleBoard_AD9912_GUI_main_v0_01.ui"
 sub_ui_file  = dirname + "/ui_resources/TripleBoard_AD9912_sub_ui_v0_01.ui"

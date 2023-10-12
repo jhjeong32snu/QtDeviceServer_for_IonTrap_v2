@@ -2,21 +2,23 @@
 """
 Created on Sat Aug 21 23:22:02 2021
 
-@author: JHJeong
+@author: Junho Jeong
+@Tel: 010-9600-3392
+@email1: jhjeong32@snu.ac.kr
+@mail2: bugbear128@gmail.com
 """
 
 from __future__ import unicode_literals
-import os, sys, datetime
+import os, datetime
 import pandas as pd
-from configparser import ConfigParser
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
 # PyQt libraries
-from PyQt5 import uic, QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QRect, pyqtSignal
-from PyQt5.QtWidgets import QMessageBox, QHBoxLayout, QLabel, QVBoxLayout, QFileDialog
+from PyQt5 import uic, QtWidgets
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QFileDialog
 
 main_ui_file = dirname + "/DAC_16ch_v0_02.ui"
 
@@ -191,7 +193,7 @@ class MainWindow(QtWidgets.QWidget, main_ui, DAC_GuiBase):
         for item in self.sft_scroll_list:
             item.setValue(0)
         self.user_update = True
-        self.toStauts("Reset the DAC.")
+        self.toStatus("Reset the DAC.")
         
         
     def sliderValueChanged(self, sft_step):

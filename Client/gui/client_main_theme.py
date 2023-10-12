@@ -22,8 +22,9 @@ class client_gui_theme_base():
     
     _tabbar_stylesheet = {"white": "",
                           "black": """ 
-                                    QTabBar {border-radus:5px;}
+                                    QTabBar {border-radius:5px;}
                                     QTabBar::tab:selected {background:rgb(40, 40, 40); color:rgb(180, 180, 180);}
+                                    QTabBar::tab:hover {background:rgb(180, 90, 8); color:rgb(180, 180, 180);}
                                     QTabBar::tab{background:rgb(70, 70, 70); color:rgb(180, 180, 180);}
                                     QTabWidget::pane { border: 0; }
                                     QTabWidget>QWidget>QWidget{background:rgb(80, 80, 80);}
@@ -47,7 +48,6 @@ class client_gui_theme_base():
                           QWidget{
                                  background-color:rgb(255,255,255);
                                  selection-background-color:rgb(130,150,200);
-                                 pressed-background-color:rgb(130,150,200);
                                  gridline-color:rgb(120,120,120);
                                  color:rgb(0,0,0);
                                  }
@@ -103,7 +103,6 @@ class client_gui_theme_base():
                           QWidget{
                                  background-color:rgb(40,40,40);
                                  selection-background-color:rgb(240,180,60);
-                                 pressed-background-color:rgb(240,180,60);
                                  color:rgb(180,180,180);
                                  gridline-color:rgb(120,120,120);
                                  } 
@@ -123,7 +122,6 @@ class client_gui_theme_base():
                          QListWidget::item{background-color:rgb(80,80,80);}
                          QListWidget::item::selection{background-color:rgb(210,120,20);color:rgb(255,255,255);}
                          QTableCornerButton::section{background-color:rgb(80,80,80);}
-                         QTableView::item{align:center;}
                          QLineEdit{background-color:rgb(0,0,0);color:rgb(180,180,180);border:none;}
              			 QSlider::handle:horizontal {
                                                      background:rgb(200, 95, 10);

@@ -34,7 +34,6 @@ class runner_panel_theme_base():
                                      QHeaderView::section{background-color:rgb(80,80,80);}
                                      QHeaderView::section::checked{background-color:rgb(210,120,20);color:rgb(255,255,255);}
                                      QTableCornerButton::section{background-color:rgb(80,80,80);}
-                                     QTableView::item{align:center;}
                                       """}
     
     _pushbutton_stylesheet = {"white": """

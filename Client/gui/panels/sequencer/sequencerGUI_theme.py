@@ -34,7 +34,6 @@ class SequencerGUI_theme_base():
                                      QHeaderView::section{background-color:rgb(80,80,80);}
                                      QHeaderView::section::checked{background-color:rgb(210,120,20);color:rgb(255,255,255);}
                                      QTableCornerButton::section{background-color:rgb(40,40,40);}
-                                     QTableView::item{align:center;}
                                      QComboBox{background-color:rgb(80,80,80);}
                                      QPushButton{background-color:rgb(40,40,40);}
                                      """}

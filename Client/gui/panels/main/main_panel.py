@@ -42,9 +42,9 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
         self._initUi()
         
     def _initUi(self):
-        self.TXT_ip.setText(self.parent.cp.get("server", "ip"))
-        self.TXT_port.setText(self.parent.cp.get("server", "port"))
-        self.TXT_config.setText(self.parent.cp.get("server", "conf_file"))
+        self.TXT_ip.setText(self.parent.cp.get("win_dds", "ip"))
+        self.TXT_port.setText(self.parent.cp.get("win_dds", "port"))
+        self.TXT_config.setText(self.parent.cp.get("client", "conf_file"))
         
         for idx_switch_button in range(self.num_switches):
             switch_button = getattr(self, "BTN_switch__%d" % idx_switch_button)

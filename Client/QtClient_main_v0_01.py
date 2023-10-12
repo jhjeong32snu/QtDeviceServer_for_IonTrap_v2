@@ -6,7 +6,8 @@ Created on Mon Sep 27 17:01:22 2021
 E-mail: jhjeong32@snu.ac.kr
 Tel. 010-9600-3392
 """
-from QtClient_basic_v0_01 import ClientSocket
+from QtClient_Handler_v0_01 import SocketHandler
+
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject
@@ -35,8 +36,10 @@ class ClientMain(QObject):
     def __init__(self, gui=True):
         super().__init__()
         self._readConfig()
-        self.socket = ClientSocket(self, self.user_name)
-        self.socket._message_signal.connect(self.receivedMessage)
+        self.socket = None
+        self.socketHandler = SocketHandler(self, self.cp)
+        # self.socket = ClientSocket(self, self.user_name)
+        # self.socket._message_signal.connect(self.receivedMessage)
 
         self._setupDevices()
         if gui:
@@ -49,7 +52,6 @@ class ClientMain(QObject):
     def _readConfig(self):
         PC_name = os.getenv('COMPUTERNAME', 'defaultValue')
         config_file = dirname + '/config/%s.ini' % PC_name
-        print(config_file)
         # import os
         if not os.path.isfile(config_file):
             from shutil import copyfile
@@ -58,11 +60,8 @@ class ClientMain(QObject):
         
         self.cp = ConfigParser()
         self.cp.read(config_file)
-        
-        self.IP = self.cp.get("server", "ip")
-        self.PORT = int(self.cp.get("server", "port"))
-        self.user_name = self.cp.get("server", "nickname")
-        self.cp.set("server", "conf_file", config_file)
+        self.cp.set("client", "conf_file", config_file)
+        self.user_name = self.cp.get("client", "nickname")
 
     def _setupDevices(self):
         sys.path.append(dirname + "/devices")
@@ -102,12 +101,14 @@ class ClientMain(QObject):
                 
     
 if __name__ == "__main__":
-    app = QtWidgets.QApplication.instance()
+    app = QtWidgets.QApplication(sys.argv)
     if app is None:
         app = QtWidgets.QApplication([])
     client = ClientMain()
     if not client.gui == None:
         client.gui.show()
+    # app.exec_()
+    # sys.exit(app.exec())
     # print(client.socket.makeConnection(client.IP, client.PORT))
 # client.socket.sendMessage(["C", "DAC", "ON", []])
 # client.socket.sendMessage(["C", "DAC", "SETV", [0, 0.3, 1, -4, 2, -0.7, 12, 8]])
