@@ -11,7 +11,7 @@ from ArtyS7_v1_02 import ArtyS7
 import HardwareDefinition_SNU_v4_02 as hd
 
 T_100us = 10000-3-2
-EXPOSURE_TIME_IN_100US = 10
+EXPOSURE_TIME_IN_MS = 1
 NUM_REPEAT = 50
 
 s = SequencerProgram()
@@ -27,7 +27,7 @@ s.continue_exposure = \
 \
 s.wait_n_clocks(T_100us, 'Wait for 100 * 10 ns = 1us unconditionally')
 s.add(reg[1], reg[1], 1)
-s.branch_if_less_than('continue_exposure', reg[1], EXPOSURE_TIME_IN_100US)
+s.branch_if_less_than('continue_exposure', reg[1], int(10*EXPOSURE_TIME_IN_MS))
 
 s.set_output_port(hd.counter_control_port, [(hd.PMT_counter_enable, 0), ], 'Stop counter')
 

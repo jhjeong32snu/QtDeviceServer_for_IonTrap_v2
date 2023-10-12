@@ -54,7 +54,6 @@ class DeviceServer(DeviceServerBase):
             config_file = self._default_ini_path + self._getHostName() + '.ini'
         else:
             config_file = QFileDialog.getOpenFileName(None, 'Open .ini file.', self._default_ini_path, 'ini files(*.ini)')[0]
-        5
         if not os.path.isfile(config_file):
             self._makeDefault_ini(self._default_ini_path + "default.ini", self._default_ini_path + self._getHostName() + '.ini')
         
@@ -65,13 +64,18 @@ class DeviceServer(DeviceServerBase):
         
     def _setupDevices(self):
         sys.path.append(dirname + "/devices")
+        # Added in the new version
+        device_dir_list = os.listdir(dirname + "/devices")
+        for device_dir in device_dir_list:
+            if os.path.isdir(dirname + "/devices/" + device_dir):
+                sys.path.append(dirname + "/devices/" + device_dir)
+        
         device_list = self.cp['device']
         for device in device_list:
             # get the device nickname and its folder name from the section "device"
-            sys.path.append(dirname + "/devices/%s" % (device))
             
             exec( "from %s import %s" % (self.cp.get(device, 'file'), self.cp.get(device, 'class')) )
-            exec( "self.device_dict['%s'] = %s(self, self.cp, logger=self.logger.getChild('%s'), device='%s')" % (device.upper(), self.cp.get(device, 'class'), device, self.cp.get("device", device)))
+            exec( "self.device_dict['%s'] = %s(self, self.cp, logger=self.logger.getChild('%s'), device='%s')" % (device.upper(), self.cp.get(device, 'class'), device, device))
 
             print("Opened %s" % device)
 
@@ -100,8 +104,9 @@ class DeviceServer(DeviceServerBase):
             print("Error: %s" % ee)
         
 if __name__ == "__main__":
-    app = QtWidgets.QApplication.instance()
+    app = QtWidgets.QApplication(sys.argv)
     if app is None:
         app = QtWidgets.QApplication([])
     srv = DeviceServer(True)
-     
+    # app.exec_()
+    # sys.exit(app.exec())

@@ -89,6 +89,7 @@ class CCD_Interface(QThread):
                 self.toStatusBar("The CCD is successfully opened.")
                 
                 self._initParams()
+                self.setROI(["x", "y"], [[0, self._param_dict["SIZE"][1]], [0, self._param_dict["SIZE"][0]]])
                 print("initial parameters are set.")
                 
             else:
@@ -319,7 +320,7 @@ class CCD_ImageHandler(QThread):
         
         self.running_flag = False
         
-        self.image_buffer = np.zeros((1340, 1040))
+        self.image_buffer = np.random.random((1340, 1040))
         self.image_datetime = datetime.now()
         self.raw_min = 0
         self.raw_max = 0

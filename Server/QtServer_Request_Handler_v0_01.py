@@ -8,6 +8,19 @@ Tel. 010-9600-3392
 from PyQt5.QtCore import QByteArray, QDataStream, QIODevice, pyqtSignal, QObject
 from PyQt5.QtNetwork import QTcpServer, QHostAddress
 
+def logger_decorator(func):
+    """
+    It writes logs when an exception happens.
+    """
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except Exception as err:
+            if not self.logger == None:
+                self.logger.error("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
+            else:
+                print("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
+    return wrapper
 
 class RequestHandler(QTcpServer):
     
@@ -20,17 +33,21 @@ class RequestHandler(QTcpServer):
     - Most methods are overridden on our purpose, especially for handling client requets.
     """
     client_list = []
+      
     
-    def closeSession(self):
-        for client in self.client_list:
-            client.sendMessage(['C', 'DCN', []])
-        self.close()
-
     def __init__(self, device_dict, logger=None):
         super().__init__()
         self.device_dict = device_dict
         self.logger = logger
 
+    
+    @logger_decorator
+    def closeSession(self):
+        for client in self.client_list:
+            client.sendMessage(['C', 'DCN', []])
+        self.close()
+
+    @logger_decorator
     def openSession(self, address='local', port=55555):
         """
         Opens a session with user-defined port.
@@ -61,17 +78,19 @@ class RequestHandler(QTcpServer):
         print("Server opened at (%s, %d)." % (host.toString(), port))
         return 1
 
+    @logger_decorator
     def createNewConnection(self):
         """
         Called whenever a new connection request arrives
         """
         client_connection = self.nextPendingConnection()
-        new_client = MessageHandler(self, client_connection)
+        new_client = MessageHandler(self, client_connection, self.logger.getChild('client'))
         new_client._sig_kill_me.connect(self.killSocket)
         self.client_list.append(new_client)
         print("Number of clients: %d." % len(self.client_list))
         self.toLog("info", "A new connection from (%s, %d)" % (new_client.socket.peerAddress().toString(), new_client.socket.peerPort()))
 
+    @logger_decorator
     def killSocket(self, user_name):
         for client in self.client_list:
             if client.user_name == user_name:
@@ -81,7 +100,8 @@ class RequestHandler(QTcpServer):
                 self.client_list.remove(client)
                 self.toLog("info", "A client (%s, %d) has been disconnected." % (client.socket.peerAddress().toString(), client.socket.peerPort()))
                 break
-            
+        
+    @logger_decorator
     def poolDevice(self, msg):
         """
         It distrubutes the command following the request.
@@ -123,10 +143,11 @@ class MessageHandler(QObject):
     _msg_list = []
     _fire_signal = pyqtSignal()
 
-    def __init__(self, parent, clientsocket):
+    def __init__(self, parent, clientsocket, logger=None):
         super().__init__()
         self.socket = clientsocket
         self.server = parent
+        self.logger = logger
         self.user_name = ""
         self.status = "standby"
         self.socket.readyRead.connect(self.receiveMessage)
@@ -151,6 +172,7 @@ class MessageHandler(QObject):
     def port(self):
         return self._port
 
+    @logger_decorator
     def sendMessage(self, msg):
         block = QByteArray()
         self.debugging_msg = msg
@@ -165,7 +187,6 @@ class MessageHandler(QObject):
         output.device().seek(0)
         output.writeUInt16(block.size()-2)
         res = self.socket.write(block)
-        print(res)
         if res < 0:
             self._num_failure += 1
             if self._num_failure >= 10:
@@ -174,18 +195,21 @@ class MessageHandler(QObject):
             self._numFailure = 0
         # print("To the client(%s, %d):" % (self.socket.peerAddress().toString(), self.socket.peerPort()), msg)
         
+    @logger_decorator
     def toMessageList(self, msg):
         self._msg_list.append(msg)
         if self.status == "standby":
             self.status = "sending"
             self._fire_signal.emit()
         
+    @logger_decorator
     def dealMessageList(self):
         while len(self._msg_list):
             msg = self._msg_list.pop(0)
             self.sendMessage(msg)
         self.status = "standby"
-        
+     
+    @logger_decorator
     def receiveMessage(self):
         stream = QDataStream(self.socket)
         stream.setVersion(QDataStream.Qt_5_0)
@@ -206,7 +230,7 @@ class MessageHandler(QObject):
             if device == "SRV":
                 if control =="C" and command == "CON":
                     self.user_name, self._name_duplicate = self.fixUserName(data[0])
-                    self.toMessageList(["D", "SRV", "HELO", list(self.server.device_dict.keys())])
+                    self.toMessageList(["D", "SRV", "HELO", self.getDeviceList()])
                     
                 elif control =="C" and command == "DCN":
                     if self._name_duplicate == 0:
@@ -232,6 +256,11 @@ class MessageHandler(QObject):
                     user_name = user_name + "(" + str(index) + ")"
         return user_name, index
     
+    def getDeviceList(self):
+        dev_list = []
+        for nickname, device in self.server.device_dict.items():
+            dev_list += [nickname, device.description]
+        return dev_list
 
 
 if __name__ == "__main__":

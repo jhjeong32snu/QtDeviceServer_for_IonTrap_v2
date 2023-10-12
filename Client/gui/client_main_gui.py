@@ -9,7 +9,7 @@ filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
 # PyQt libraries
-from PyQt5 import uic, QtWidgets, QtGui
+from PyQt5 import uic, QtWidgets
 from PyQt5.QtWidgets import QTabWidget, QVBoxLayout
 
 from client_main_theme import client_gui_theme_base
@@ -95,10 +95,15 @@ class MainWindow(QtWidgets.QMainWindow, main_ui, client_gui_theme_base):
             exec( "from %s import %s" % (self.cp.get(app, 'file'), self.cp.get(app, 'class')) )
             exec( "self.application_dict['%s'] = %s(self.device_dict, self, self._theme)" % (app, self.cp.get(app, 'class')))
             exec( "self.application_dict['%s'].setStyleSheet(self._theme_base[self._theme])" % (app))
-            exec( "self.application_dict['%s'].show()" % app)
+            
+            if "changeTheme" in dir(self.application_dict[app]):
+                print("yes for (%s)" % app)
+                self.application_dict[app].changeTheme(self._theme)
 
-        else:
-            self.application_dict[app].show()
+        self.application_dict[app].showNormal()
+        self.application_dict[app].raise_()
+        self.application_dict[app].activateWindow()
+        self.application_dict[app].show()
         
     def _guiControl(self):
         '''
@@ -110,12 +115,18 @@ class MainWindow(QtWidgets.QMainWindow, main_ui, client_gui_theme_base):
                 if not self.device_dict[device]._gui_opened:
                     self.device_dict[device].openGui()
 
-                self.device_dict[device].gui.show()
-                if "changeTheme" in dir(self.device_dict[device].gui):
-                    self.device_dict[device].gui.changeTheme(self._theme)
+                    if "changeTheme" in dir(self.device_dict[device].gui):
+                        self.device_dict[device].gui.changeTheme(self._theme)
+                    else:
+                        self.device_dict[device].gui.setStyleSheet(self._theme_base[self._theme])
+                        
                 else:
-                    self.device_dict[device].gui.setStyleSheet(self._theme_base[self._theme])
-                return
+                    self.device_dict[device].gui.showNormal()
+                    self.device_dict[device].gui.raise_()
+                    self.device_dict[device].gui.activateWindow()
+                    
+                self.device_dict[device].gui.show()
+                
             
     def _initUi(self):
         self.setWindowTitle("QtClient GUI v%s" % version)
@@ -126,7 +137,6 @@ class MainWindow(QtWidgets.QMainWindow, main_ui, client_gui_theme_base):
         self._addTabWidgets(self.panel_dict)
         
     def _addTabWidgets(self, tab_dict=None):
-        print(self.panel_dict.keys())
         if tab_dict == None:
             tab_dict = self.tab_widgets
             
