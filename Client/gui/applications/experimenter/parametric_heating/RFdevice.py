@@ -26,16 +26,6 @@ def requires_connection(func):
                                % func.__name__)
     return wrapper
 
-def check_range(val, min_, max_, label=None):
-    """Checks the given value fits in the range [min_, max_].
-    Raises:
-        ValueError - val does not fit in the range.
-    """
-    if val > max_ or val < min_:
-        raise ValueError('{}{} is out of range: min={}, max={}.'
-                         .format('' if label is None else label + '=',
-                                 val, min_, max_))
-
 
 def print_msg(src, msg):
     """Prints msg followed by src, in format
@@ -149,7 +139,7 @@ class SynthNV(WindfreakTech):
         Raises:
             ValueError - power is out of range.
         """
-        check_range(power, self.min_power, self.max_power, 'power')
+        self.check_range(power, self.min_power, self.max_power, 'power')
 
         power = round(power, 2)
         self.__power_idx = self.find_nearest_idx(self.__power_dbm_list, power)
@@ -163,7 +153,7 @@ class SynthNV(WindfreakTech):
             ValueError - freq is out of range.
         """
         freq = round(freq, 1)
-        check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
+        self.check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
         self.__send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
         
         
@@ -285,7 +275,7 @@ class SynthHD(WindfreakTech):
         """
         self.setChannel(output_type)
         freq = round(freq, 1)
-        check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
+        self.check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
         self.__send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
         
     @requires_connection
@@ -409,7 +399,7 @@ class APSYNxxx(SocketRFSource):
         Raises:
             ValueError - target frequency is out of range.
         """
-        check_range(freq, self.min_frequency, self.max_frequency, "frequency")
+        self.check_range(freq, self.min_frequency, self.max_frequency, "frequency")
         self.__send_command(f":FREQuency {freq:.2f}")
 
 
@@ -461,7 +451,7 @@ class APSYNxxx(SocketRFSource):
         Raises:
             ValueError - ext_ref_freq is out of range.
         """
-        check_range(ext_ref_freq, 1e6, 250e6, "external reference frequency")
+        self.check_range(ext_ref_freq, 1e6, 250e6, "external reference frequency")
         self.__send_command(f":ROSCillator:EXTernal:FREQuency {ext_ref_freq:.0f}")
 
     @requires_connection
@@ -500,8 +490,8 @@ class APSYN420(APSYNxxx):
     Phase resolution: 0.1 deg
     """
     def __init__(
-            self, min_power=23.0, max_power=23.0, min_freq=10e6, max_freq=20.0e9, tcp_ip="", tcp_port=18):
-        assert min_freq >= 10e6, "min_frequency should be at least 10MHz."
+            self, min_power=23.0, max_power=23.0, min_freq=10e3, max_freq=20.0e9, tcp_ip="", tcp_port=18):
+        assert min_freq >= 10e3, "min_frequency should be at least 10kHz."
         assert max_freq <= 20.0e9, "max_frequency shuold be at most 20.0GHz."
         assert min_freq <= max_freq, "min_frequency is greater than max_frequency."
         self.__output_mapping()
@@ -577,7 +567,7 @@ class SG38x(SocketRFSource):
         Raises:
             ValueError - power is out of range.
         """
-        check_range(power, self.min_power, self.max_power, "power")
+        self.check_range(power, self.min_power, self.max_power, "power")
         if output_type == 0: # BNC
             self.__send_command("AMPL {:.2f}".format(power))
         elif output_type == 1: # N-Type
@@ -592,7 +582,7 @@ class SG38x(SocketRFSource):
         Raises:
             ValueError - frequency is out of range.
         """
-        check_range(freq, self.min_frequency, self.max_frequency, "frequency")
+        self.check_range(freq, self.min_frequency, self.max_frequency, "frequency")
         if freq >= 3e9:
             print_msg(self, "Warning - power may decrease above 3 GHz.")
         self.__send_command("FREQ {:.3f}".format(freq))
@@ -666,11 +656,11 @@ class SG384(SG38x):
     ==> I Set Power & Frequency Range with narrower bound
     """
     def __init__(
-            self, min_power=-47, max_power=13, min_freq=950e3, max_freq=62.5e6,
+            self, min_power=-47, max_power=13, min_freq=10e3, max_freq=62.5e6,
             tcp_ip="", tcp_port=5025):
         assert min_power >= -47, "min_power should be at least -47dBm."
         assert max_power <= 13, "max_power should be at most 16.50dBm."
-        assert min_freq >= 950e3, "min_frequency should be at least 950kHz."
+        assert min_freq >= 10e3, "min_frequency should be at least 10kHz."
         assert max_freq <= 62.5e6, "max_frequency shuold be at most 62.5MHz."
         assert min_power <= max_power, "min_power is greater than max_power."
         assert min_freq <= max_freq, "min_frequency is greater than max_frequency."

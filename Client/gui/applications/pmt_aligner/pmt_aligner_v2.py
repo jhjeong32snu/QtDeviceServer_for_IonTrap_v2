@@ -53,6 +53,7 @@ class PMTAlignerMain(QObject):
         self.device_dict = device_dict
         self.parent = parent
         self._theme = theme
+        self.pmt_aligner_gui = None
         self.cp = self.parent.cp
         
     def openOpener(self):
@@ -70,9 +71,20 @@ class PMTAlignerMain(QObject):
     def show(self):
         if not self._opened_module:
             self.openOpener()
-        
         else:
             self.pmt_aligner_gui.show()
+            
+    def showNormal(self):
+        if not self.pmt_aligner_gui == None:
+            self.pmt_aligner_gui.showNormal()
+    
+    def raise_(self):
+        if not self.pmt_aligner_gui == None:
+            self.pmt_aligner_gui.raise_()
+            
+    def activateWindow(self):
+        if not self.pmt_aligner_gui == None:
+            self.pmt_aligner_gui.activateWindow()
     
     def initiateUi(self):
         try:

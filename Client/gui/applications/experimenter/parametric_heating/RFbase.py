@@ -105,6 +105,17 @@ class RFSource:
     def max_frequency(self) -> float:
         """Returns maximum frequency limit of the device in Hz."""
         return self.__max_freq
+    
+    def check_range(self, val, min_, max_, label=None):
+        """Checks the given value fits in the range [min_, max_].
+        Raises:
+            ValueError - val does not fit in the range.
+        """
+        if val > max_ or val < min_:
+            raise ValueError('{}{} is out of range: min={}, max={}.'
+                             .format('' if label is None else label + '=',
+                                     val, min_, max_))
+
 
 
 class SerialPortRFSource(RFSource):

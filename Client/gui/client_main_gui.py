@@ -97,7 +97,6 @@ class MainWindow(QtWidgets.QMainWindow, main_ui, client_gui_theme_base):
             exec( "self.application_dict['%s'].setStyleSheet(self._theme_base[self._theme])" % (app))
             
             if "changeTheme" in dir(self.application_dict[app]):
-                print("yes for (%s)" % app)
                 self.application_dict[app].changeTheme(self._theme)
 
         self.application_dict[app].showNormal()
