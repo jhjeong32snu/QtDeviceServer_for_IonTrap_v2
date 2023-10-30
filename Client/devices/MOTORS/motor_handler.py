@@ -2,45 +2,30 @@
 """
 Created on Mon Aug 22 10:27:50 2022
 
-@author: QCP32
+@author: Junho Jeong
+
 """
 from PyQt5.QtCore import QThread, pyqtSignal
 from queue import Queue
-version = "1.1"
-
-def ignoreWhenBusy(func):
-    """
-    A decorator that checks if the thread is busy.
-    If it is busy, it ignores any commands.
-    This is gonna prevent a long-scheduled queue.
-    """
-    def wrapper(self, *args):
-        if self.isRunning():
-            raise RuntimeWarning("The device is busy. ignore the command.")
-        else:
-            self._que.put([func, *args])
-            self.start()
-        
-    return wrapper
+version = "2.1"
 
 
 class MotorHandler(QThread):
     """
-    The controller class uses QThread class as a base, handling commands and the device is done by QThread.
-    This avoids being delayed by the main thread's task.
-    
-    The logger decorate automatically record the exceptions when a bug happens.
+    This class is an API that can easily handle the motor with Qt classes.    
+    This handler class handles the motor with a thread and the controller controls all the motors but in signal based operations.
     """
+    _motor = None
     _position = 0
-    _status = "standby"
+    _status = "closed"
     _nickname = "motor"
     _serial = None
     _is_opened = False
     
-    _sig_motor_initialized = pyqtSignal(bool)
+    _sig_motor_initialized = pyqtSignal(str)
     _sig_motor_error = pyqtSignal(str)
-    _sig_motor_move_done = pyqtSignal()
-    _sig_motor_homed = pyqtSignal()
+    _sig_motor_move_done = pyqtSignal(str, float)
+    _sig_motor_homed = pyqtSignal(str)
     
     def __init__(self, controller=None, ser=None, dev_type="Dummy", nick="motor"):  # cp is ConfigParser class
         super().__init__()
@@ -49,8 +34,8 @@ class MotorHandler(QThread):
         
         self.serial = ser
         self.nickname = nick
+        self.target = 0
         self._que = Queue()
-        
         
     @property
     def serial(self):
@@ -62,6 +47,12 @@ class MotorHandler(QThread):
             self._serial = ser
         else:
             print("The serial of the motor cannot be None.")
+            
+    def info(self):
+        return {"serial_number": self.serial,
+                "position": self.position,
+                "status": self._status,
+                "type": self.dev_type}
         
     @property
     def nickname(self):
@@ -79,60 +70,77 @@ class MotorHandler(QThread):
     def position(self, pos):
         self._position = pos
         
+    def getPosition(self):
+        self.position = round(self._motor.get_position(), 3)
+        return self.position
     
-    @ignoreWhenBusy
+    def setTargetPosition(self, target):
+        self._target = target
+        
+        
     def openDevice(self):
         """
         If the force flag is true even if the device is already opened, it will be restarted.
         """
         if self.dev_type == "Dummy":
-            from Dummy_motor import DummyMotor as KDC101
+            from Dummy_motor import DummyKDC101 as KDC101
         elif self.dev_type == "KDC101":
             from KDC101 import KDC101
         
         if self._is_opened:
-            self._sig_motor_error.emit("%s is already opened." % self.nickname)
+            self._sig_motor_error.emit("KDC101 Motor %s is already opened." % self.nickname)
             return True
                  
         try:
             self._motor = KDC101(self.serial)
             self._status = "initiating"
             self._motor.open_and_start_polling()
-            self.position = self._motor.get_position()
-            self._sig_motor_initialized.emit(True)
+            self._is_opened = True
+            self._sig_motor_initialized.emit(self.nickname)
             
         except Exception as e:
             self._sig_motor_error.emit("An error while loading a motor %s.(%s)" % (self.nickname, e))
 
-    @ignoreWhenBusy
-    def testFunction(self, a, b):
-        print(a+b)
-        
-    @ignoreWhenBusy
     def moveToPosition(self, target_position):
         self._status = "moving"
         self._motor.move_to_position(target_position)
-        self.position = self._motor.get_position()
-        self._sig_motor_move_done.emit()
+        self.position = self.getPosition()
+        self._sig_motor_move_done.emit(self.nickname, self.position)
         
-    @ignoreWhenBusy
     def forceHome(self):
         self._status = "homing"
         self._motor.home(force=True, verbose=False)
-        self._sig_motor_homed.emit()
+        self._sig_motor_homed.emit(self.nickname)
            
     def closeDevice(self):
         if self._is_opened:
             self._motor.close()
+            self._motor = None
             self._is_opened = False
-            self._sig_motor_initialized.emit(False)
+            self._status = "closed"
         else:
             self._sig_motor_error.emit("The motor %s is not opened yet!" % self.nickname)
-
+            
+            
+    def toWorkList(self, cmd):
+        self.queue.put(cmd)
+        if not self.isRunning():
+            self.start()
+            
     def run(self):
-        while self._que.qsize():
-            data = self._que.get()
-            func = data[0]
-            args = data[1:]
-            self._status  = "running"
-            func(self, *args)
+        while self.queue.qsize():
+            work = self.queue.get()
+            
+            if work == "O": # Open device
+                self.openDevice()
+                
+            elif work == "M": # Move position
+                self.moveToPosition(self.target)
+                
+            elif work == "D": # Disconnect
+                self.closeDevice()
+                
+            elif work == "H": # Homing
+                self.forceHome()
+
+            self._status = "standby"

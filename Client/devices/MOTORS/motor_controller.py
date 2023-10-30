@@ -76,12 +76,13 @@ class MotorController(QThread):
         """
         def wrapper(self, *args):
             try:
-                func(self, *args)
+                return func(self, *args)
             except Exception as err:
                 if not self.logger == None:
                     self.logger.error("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
                 else:
-                    print("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
+                    print("An error ['%s'] occured while handling motor ['%s']." % (err, func.__name__))
+                return
         return wrapper
     
     @logger_decorator
@@ -115,7 +116,7 @@ class MotorController(QThread):
             
     @logger_decorator          
     def run(self):
-        while True:
+        while self.queue.qsize():
             work = self.queue.get()
             self._status  = "running"
             # decompose the job

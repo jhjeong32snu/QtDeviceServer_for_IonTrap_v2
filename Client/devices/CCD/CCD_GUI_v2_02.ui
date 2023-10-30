@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>908</width>
-    <height>726</height>
+    <width>909</width>
+    <height>665</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,55 +63,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QGroupBox" name="GBOX_log">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>90</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>90</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color:rgb(140, 140, 140)</string>
-        </property>
-        <property name="title">
-         <string>LOG</string>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
-          <number>3</number>
-         </property>
-         <item>
-          <widget class="QTextBrowser" name="TXT_log">
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
      </layout>
     </item>
     <item>
@@ -122,88 +73,6 @@
       <property name="sizeConstraint">
        <enum>QLayout::SetFixedSize</enum>
       </property>
-      <item>
-       <widget class="QGroupBox" name="GBOX_chamber">
-        <property name="minimumSize">
-         <size>
-          <width>310</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>310</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color:rgb(140, 140, 140)</string>
-        </property>
-        <property name="title">
-         <string>Chamber</string>
-        </property>
-        <widget class="QComboBox" name="CBOX_target">
-         <property name="geometry">
-          <rect>
-           <x>140</x>
-           <y>30</y>
-           <width>141</width>
-           <height>22</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color:rgb(180, 180, 180); color:rgb(10, 10, 10)</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="NON_Target">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>30</y>
-           <width>101</width>
-           <height>18</height>
-          </rect>
-         </property>
-         <property name="font">
-          <font>
-           <family>Arial</family>
-           <pointsize>9</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true"/>
-         </property>
-         <property name="text">
-          <string>Target Chamber</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="textInteractionFlags">
-          <set>Qt::NoTextInteraction</set>
-         </property>
-        </widget>
-       </widget>
-      </item>
-      <item>
-       <spacer name="verticalSpacer_5">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item>
        <widget class="QGroupBox" name="GBOX_viewopt">
         <property name="sizePolicy">
@@ -236,85 +105,6 @@
         <property name="title">
          <string>View Options</string>
         </property>
-        <widget class="QPushButton" name="BTN_view_full">
-         <property name="geometry">
-          <rect>
-           <x>85</x>
-           <y>30</y>
-           <width>70</width>
-           <height>30</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color:rgb(60, 60, 60)</string>
-         </property>
-         <property name="text">
-          <string>Full View</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="BTN_view_zoom">
-         <property name="geometry">
-          <rect>
-           <x>15</x>
-           <y>30</y>
-           <width>70</width>
-           <height>30</height>
-          </rect>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>8</pointsize>
-           <kerning>true</kerning>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color:rgb(60, 60, 60)</string>
-         </property>
-         <property name="text">
-          <string>Zoom In</string>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="BTN_draw_rectangle">
-         <property name="geometry">
-          <rect>
-           <x>155</x>
-           <y>30</y>
-           <width>70</width>
-           <height>30</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color:rgb(60, 60, 60)</string>
-         </property>
-         <property name="text">
-          <string>Draw</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="BTN_view_clear">
-         <property name="geometry">
-          <rect>
-           <x>225</x>
-           <y>30</y>
-           <width>70</width>
-           <height>30</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color:rgb(60, 60, 60)</string>
-         </property>
-         <property name="text">
-          <string>Clear</string>
-         </property>
-        </widget>
         <widget class="QLabel" name="NON_Pos22">
          <property name="geometry">
           <rect>
@@ -361,7 +151,7 @@
           <string notr="true"/>
          </property>
          <property name="text">
-          <string>Rregion of Interest</string>
+          <string>Region of Interest</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -542,6 +332,105 @@
          </property>
          <property name="text">
           <string>Flip(V)</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="BTN_Zoom_Out">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>30</y>
+           <width>90</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>9</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color:rgb(60, 60, 60); color:rgb(140, 140, 140)</string>
+         </property>
+         <property name="text">
+          <string>Full View</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="BTN_draw_rect">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>30</y>
+           <width>90</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>9</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color:rgb(60, 60, 60); color:rgb(140, 140, 140)</string>
+         </property>
+         <property name="text">
+          <string>Draw Rect</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="BTN_Zoom_In">
+         <property name="geometry">
+          <rect>
+           <x>200</x>
+           <y>30</y>
+           <width>90</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>9</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color:rgb(60, 60, 60); color:rgb(140, 140, 140)</string>
+         </property>
+         <property name="text">
+          <string>Zoom In</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
          </property>
         </widget>
        </widget>
@@ -1883,6 +1772,36 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>CBOX_flip_horizontal</tabstop>
+  <tabstop>CBOX_flip_vertical</tabstop>
+  <tabstop>LBL_ROI_x1</tabstop>
+  <tabstop>LBL_ROI_x2</tabstop>
+  <tabstop>LBL_ROI_y1</tabstop>
+  <tabstop>LBL_ROI_y2</tabstop>
+  <tabstop>STATUS_min_unit</tabstop>
+  <tabstop>LBL_max</tabstop>
+  <tabstop>STATUS_max_unit</tabstop>
+  <tabstop>LBL_gain</tabstop>
+  <tabstop>CBOX_auto</tabstop>
+  <tabstop>LBL_min</tabstop>
+  <tabstop>LBL_temp</tabstop>
+  <tabstop>CBOX_Autosave</tabstop>
+  <tabstop>CBOX_file_format</tabstop>
+  <tabstop>LBL_directory</tabstop>
+  <tabstop>BTN_directory</tabstop>
+  <tabstop>BTN_save</tabstop>
+  <tabstop>CBOX_Full</tabstop>
+  <tabstop>BTN_acquisition</tabstop>
+  <tabstop>STATUS_exp_time</tabstop>
+  <tabstop>CBOX_single_scan</tabstop>
+  <tabstop>LBL_scan_length</tabstop>
+  <tabstop>RDO_171</tabstop>
+  <tabstop>RDO_174</tabstop>
+  <tabstop>BTN_oven_on</tabstop>
+  <tabstop>CBOX_turn_off</tabstop>
+  <tabstop>BTN_oven_settings</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -1892,8 +1811,8 @@
    <slot>StartAcquisition()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>724</x>
-     <y>493</y>
+     <x>786</x>
+     <y>465</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -1908,8 +1827,8 @@
    <slot>ChangeMin()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>680</x>
-     <y>292</y>
+     <x>686</x>
+     <y>221</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -1924,8 +1843,8 @@
    <slot>MinSliderMoved()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>629</x>
-     <y>299</y>
+     <x>701</x>
+     <y>240</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -1941,7 +1860,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>816</x>
-     <y>312</y>
+     <y>240</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -1956,8 +1875,8 @@
    <slot>ChangeMax()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>772</x>
-     <y>290</y>
+     <x>801</x>
+     <y>221</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -1973,7 +1892,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>832</x>
-     <y>408</y>
+     <y>339</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -1989,7 +1908,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>685</x>
-     <y>475</y>
+     <y>410</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -2005,7 +1924,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>871</x>
-     <y>262</y>
+     <y>190</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -2021,7 +1940,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>861</x>
-     <y>408</y>
+     <y>339</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -2037,75 +1956,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>662</x>
-     <y>408</y>
+     <y>339</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
      <y>394</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BTN_view_zoom</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>ZoomIn()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>676</x>
-     <y>141</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>907</x>
-     <y>151</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BTN_view_full</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>ZoomOut()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>746</x>
-     <y>141</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>907</x>
-     <y>194</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BTN_draw_rectangle</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>DrawActive()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>816</x>
-     <y>141</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>907</x>
-     <y>142</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BTN_view_clear</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>ClearDrawing()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>877</x>
-     <y>131</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>907</x>
-     <y>132</y>
     </hint>
    </hints>
   </connection>
@@ -2117,7 +1972,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>701</x>
-     <y>196</y>
+     <y>120</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -2133,7 +1988,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>746</x>
-     <y>196</y>
+     <y>120</y>
     </hint>
     <hint type="destinationlabel">
      <x>459</x>
@@ -2149,7 +2004,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>841</x>
-     <y>196</y>
+     <y>120</y>
     </hint>
     <hint type="destinationlabel">
      <x>459</x>
@@ -2165,7 +2020,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>886</x>
-     <y>196</y>
+     <y>120</y>
     </hint>
     <hint type="destinationlabel">
      <x>459</x>
@@ -2181,7 +2036,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>891</x>
-     <y>408</y>
+     <y>339</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -2197,7 +2052,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>869</x>
-     <y>527</y>
+     <y>462</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -2212,8 +2067,8 @@
    <slot>SetScanLength()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>895</x>
-     <y>472</y>
+     <x>898</x>
+     <y>410</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -2228,8 +2083,8 @@
    <slot>setFlip()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>787</x>
-     <y>162</y>
+     <x>812</x>
+     <y>92</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
@@ -2244,12 +2099,60 @@
    <slot>setFlip()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>866</x>
-     <y>163</y>
+     <x>882</x>
+     <y>93</y>
     </hint>
     <hint type="destinationlabel">
      <x>907</x>
      <y>145</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BTN_Zoom_Out</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>clickedZoomOut()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>674</x>
+     <y>52</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1382</x>
+     <y>40</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BTN_draw_rect</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>clickedDrawRect()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>756</x>
+     <y>53</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1241</x>
+     <y>29</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BTN_Zoom_In</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>clickedZoomIn()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>859</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1121</x>
+     <y>105</y>
     </hint>
    </hints>
   </connection>
@@ -2267,17 +2170,14 @@
   <slot>ChangeGain()</slot>
   <slot>SelectFilepath()</slot>
   <slot>SetRecord()</slot>
-  <slot>ZoomIn()</slot>
-  <slot>ZoomOut()</slot>
-  <slot>DrawActive()</slot>
-  <slot>ClearDrawing()</slot>
   <slot>ROISet()</slot>
   <slot>FlipSet()</slot>
   <slot>SelectSavepath()</slot>
-  <slot>ZoomActive()</slot>
   <slot>ChangeExposureTime()</slot>
   <slot>SetScanLength()</slot>
-  <slot>changeTheme()</slot>
   <slot>setFlip()</slot>
+  <slot>clickedZoomOut()</slot>
+  <slot>clickedZoomIn()</slot>
+  <slot>clickedDrawRect()</slot>
  </slots>
 </ui>

@@ -8,9 +8,8 @@ Some modification requires if you want to controll the oven in local with USB.
 
 v0.02: It gets theme color from the parent.
 """
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore    import pyqtSignal, QThread
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import pyqtSignal, QThread
 
 import socket
 import time
