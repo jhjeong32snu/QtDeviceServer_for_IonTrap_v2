@@ -18,21 +18,18 @@ from PyQt5 import uic
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
-qt_designer_file = dirname + '/CCD_GUI_v2_01.ui'
+qt_designer_file = dirname + '/CCD_GUI_v2_02.ui'
 Ui_Form, QtBaseClass = uic.loadUiType(qt_designer_file)
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QVBoxLayout, QFileDialog
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtGui import QColor
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer, QRectF
 
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.widgets import RectangleSelector
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import pyqtgraph as pg
 
 from Libs.CCD_oven_v0_03 import Oven_controller
 
-mpl.style.use("fast")
 
 class CCD_UI_base:
     
@@ -50,7 +47,8 @@ class CCD_UI_base:
     _auto_save = False
     _slow_mode = False
     
-    plot_handler = None
+    _update_interval = 50 # ms
+    _update_enable_flag = False
     
     _theme = "white"    
     _theme_color = {
@@ -98,13 +96,9 @@ class CCD_UI_base:
     
 class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
     
-    _closing = pyqtSignal(int)
     
     def closeEvent(self, e):
-        self._closing.emit(1)
-        self.oc.close_oven()
-        self.cam.close_device()
-        print("Released the camera")
+        pass
             
     def changeEvent(self, event):
         """
@@ -116,22 +110,18 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         QEvent::WindowTitleChange	33	The window title has changed.
         QEvent::WindowUnblocked	    104	The window is unblocked after a modal dialog exited.
         """
-        if not self.plot_handler == None:
-            if self.isActiveWindow():
-                self.plot_handler.setSlowMode(False)
-            else:
-                self.plot_handler.setSlowMode(True)
         
     def showEvent(self, e):
         if not self.BTN_acquisition.isChecked():
             self.updatePlot()
     
-    def __init__(self, controller=None):
+    def __init__(self, controller=None, theme="white"):
         QtWidgets.QMainWindow.__init__(self)
         # cam
         self._readConfig(os.getenv('COMPUTERNAME', 'defaultValue'))
         self.cam = controller
         self.image_handler = self.cam.image_thread
+        self._theme = theme
         
         self.setupUi(self)
         self._init_params()
@@ -150,28 +140,26 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         
         #
         self._initUi()
-        self.CBOX_target.currentTextChanged.connect(self._changeChamber)
         
         # self.oc = Oven_controller(self)
         self.cam.image_thread._img_recv_signal.connect(self._countPlot)
         
         self._img_cnt = 0
         self.im_min = 0
-        self.im_max = 0
+        self.im_max = 250
+        self.raw_min = 0
+        self.raw_max = 250
         
-        self.plot_handler = PlotHandler(self, self.cam, self.image_handler)
-        self.plot_handler._sig_plot_update.connect(self.updatePlot)
-        
+        # QTimer settings
+        self.update_timer = QTimer()
+        self.update_timer.setSingleShot(True)
+        self.update_timer.timeout.connect(self._timedOutUpdateTimer)
+
         self.LBL_directory.setText(dirname + "/data")
         
         
     #%% Initialization
-    def _initUi(self):
-        pc_name = os.getenv('COMPUTERNAME', 'defaultValue')
-        for chamber in self._available_ccd:
-            self.CBOX_target.addItem("Chamber_%s" % chamber)
-        self.CBOX_target.setCurrentText("Chamber_%s" % pc_name)
-        
+    def _initUi(self):       
         self.LBL_ROI_x1.setText("%d" % (self.zoom_x1))
         self.LBL_ROI_x2.setText("%d" % (self.zoom_x2))
         self.LBL_ROI_y1.setText("%d" % (self.zoom_y1))
@@ -181,12 +169,6 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         self.BTN_oven_settings.setIcon(QtGui.QIcon(dirname + '/Libs/gui_settings.ico'))
         self._makePlot(self.CCD_image_label)
         
-        # if self._camera_type == "CCD":
-        #     self.NON_temp.setHidden(True)
-        #     self.LBL_temp.setHidden(True)
-        # else:
-        #     self.LBL_temp.returnPressed.connect(self.CoolingOn)
-        #     self._cooler_thread = Cooling_Thread(self)
         
     def _init_params(self):
         self.LBL_gain.setText(str(self.cam._param_dict["GAIN"]))
@@ -231,25 +213,22 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             elif "TXT_" in item:
                 getattr(self, item).setStyleSheet(self._theme_color[self._theme]["TXT"])
 
-        self.fig.set_facecolor(self._theme_color[self._theme]["fig_face_color"])
-        self.ax.set_facecolor(self._theme_color[self._theme]["ax_face_color"])
-        self.ax.tick_params(axis='x', colors=self._theme_color[self._theme]["tick_color"], length=0)
-        self.ax.tick_params(axis='y', colors=self._theme_color[self._theme]["tick_color"], length=0)
-        for spine in ['bottom', 'top', 'right', 'left']:
-            self.ax.spines[spine].set_color(self._theme_color[self._theme]["tick_color"])
-            
-        # Colorbar color
-        self.colorbar.ax.yaxis.set_tick_params(color=self._theme_color[self._theme]["tick_color"])
-        self.colorbar.ax.tick_params(axis='y', colors=self._theme_color[self._theme]["tick_color"], length=3)
-        self.colorbar.outline.set_edgecolor(self._theme_color[self._theme]["tick_color"])
-        self.zoom_rs.artists[0].set_edgecolor(self._theme_color[self._theme]["tick_color"])
-        
-        
         self.updatePlot()
         
     def _makePlot(self, frame):
-        self.fig = plt.Figure(tight_layout=True)
-        self.canvas = FigureCanvas(self.fig)
+        if self._theme == "black":
+            pg.setConfigOption('background', QColor(60, 60, 60))
+            
+        else:
+            pg.setConfigOption('background', 'w')
+            pg.setConfigOption('foreground', 'k')
+        
+        self.canvas = pg.GraphicsLayoutWidget()
+        self.plot = self.canvas.addPlot()
+        self.plot.setDefaultPadding(0)
+        self.plot.sigRangeChanged.connect(self.zoom_callback)
+
+        self.canvas.scene().sigMouseClicked.connect(self.mouseClickedEvent)
         
         layout = QVBoxLayout()
         layout.layoutLeftMargin = 0
@@ -259,18 +238,27 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         layout.addWidget(self.canvas)
         frame.setLayout(layout)
         
+        
         self._plot_im = np.zeros((self._height, self._width))
         
-        self.ax = self.fig.add_subplot(1,1,1)
-        self.im = self.ax.imshow(self._plot_im)
-        self.colorbar = self.fig.colorbar(self.im, ax=self.ax)
+        self.plot.vb.setLimits(xMin=0,
+                               xMax=self._width,
+                               yMin=0,
+                               yMax=self._height)
+        # self.plot.vb.setAspectLocked()
+        # self.draw_box = self.plot.addViewBox()
         
-        self.zoom_rs = RectangleSelector(self.ax, self.zoom_rs_callback, button=[1], props={"fill": False})
-        self.zoom_rs.set_active(False)
-  
-        self.canvas.mpl_connect('button_press_event', self.on_click)
-        self.canvas.mpl_connect('button_release_event', self.on_release)
-
+        self.im = pg.ImageItem(self._plot_im, axisOrder="row-major", autoRange=False)
+        self.im.setAutoDownsample(True)
+        
+        self.plot.addItem(self.im)
+        self.plot.installEventFilter(self)
+        
+        cmap = pg.colormap.getFromMatplotlib( self._theme_color[self._theme]["color_map"] )
+        
+        self.colorbar = pg.ColorBarItem(colorMap=cmap, interactive=False)
+        self.colorbar.setImageItem(self.im, insert_in=self.plot)
+        
         
     def StartAcquisition(self, acq_flag):
         self._enableObjects(acq_flag)
@@ -278,15 +266,12 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             self._img_cnt = 0
             
             self.cam.toWorkList(["C", "RUN", []])
-            # if not self._image_thread.isRunning():
-            #     self._image_thread.start()
-            self.plot_handler.start()
+            self.update_timer.start(self._update_interval)
             
         else:
             self.cam.toWorkList(["C", "STOP", []])
             
     def _enableObjects(self, flag):
-        self.CBOX_target.setEnabled(not flag)
         self.CBOX_single_scan.setEnabled(not flag)
         self.CBOX_Autosave.setEnabled(not flag)
         
@@ -334,18 +319,26 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
         self.ChangeMax()
         
     def ROISet(self):
-        try:
-            # value_list = []
-            for roi_pos in ["x1", "x2", "y1", "y2"]:
-                roi_label = getattr(self, "LBL_ROI_%s" % roi_pos)
-    
+        for roi_pos in ["x1", "x2", "y1", "y2"]:
+            roi_label = getattr(self, "LBL_ROI_%s" % roi_pos)
+            try:
                 value = int(roi_label.text())
-                setattr(self, "zoom_" + roi_pos, value)
-            self.ZoomIn()
-        except Exception as err:
-            self.toStatusBar("ROI positions must be integers. (%s)" % err)
+            except:
+                self.toStatusBar("ROI positions must be integers. (%s)" % roi_pos)
+                return
+            setattr(self, "zoom_" + roi_pos, value)
         
+        if self.zoom_x1 > self.zoom_x2:
+            self.zoom_x2 = self.zoom_x1
+            self.zoom_x1 = int(self.LBL_ROI_x2.text())
         
+        if self.zoom_y1 > self.zoom_y2:
+            self.zoom_y2 = self.zoom_y1
+            self.zoom_y1 = int(self.LBL_ROI_y2.text())
+            
+        self._zoom_in_flag = True
+        self.plot.setRange( QRectF(self.zoom_x1, self.zoom_y1, self.zoom_x2 - self.zoom_x1, self.zoom_y2 - self.zoom_y1) )
+                    
     #%% Gain
     def ChangeGain(self):
         gain = int(float(self.LBL_gain.text()))
@@ -424,147 +417,94 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             
     def toStatusBar(self, msg):
         self.statusBar.showMessage(msg)
-        
-    def toLog(self, msg):
-        if not msg[1] == "\n":
-            msg += "\n"
-        self.TXT_log.insertPlainText(msg)
-    
+           
             
     #%% Mouse Interaction
-    def ZoomIn(self):
-        self._zoom_in_flag = True
-        self.LBL_ROI_x1.setText(str(self.zoom_x1))
-        self.LBL_ROI_x2.setText(str(self.zoom_x2))
-        self.LBL_ROI_y1.setText(str(self.zoom_y1))
-        self.LBL_ROI_y2.setText(str(self.zoom_y2))
-        
-        x_roi1, x_roi2 = self.zoom_x1, self.zoom_x2
-        y_roi1, y_roi2 = self._height - self.zoom_y2, self._height - self.zoom_y1
-        
-        if self.CBOX_flip_horizontal.isChecked():
-            x_roi1 = self._width - self.zoom_x2
-            x_roi2 = self._width - self.zoom_x1
-        if self.CBOX_flip_vertical.isChecked():
-            y_roi1 = self.zoom_y1
-            y_roi2 = self.zoom_y2
-        
-        self.cam.toWorkList(["C", "ROI", [["x", "y"], [(x_roi1, x_roi2), (y_roi1, y_roi2)]]])
-        
-            
-    def ZoomOut(self):
-        self._zoom_in_flag = False
-        self.LBL_ROI_x1.setText(str(0))
-        self.LBL_ROI_x2.setText(str(self._width))
-        self.LBL_ROI_y1.setText(str(0))
-        self.LBL_ROI_y2.setText(str(self._height))
-        # self._plot_update()
-        self.cam.toWorkList(["C", "ROI", [["x", "y"], [(0, self._width), (0, self._height)]]])
-        
-    def ClearDrawing(self):
-        pass
-        
-#    def DrawRoi(self, idx, x, y, w, h):
-#        self.delete_roi(idx)
-#        rect = Rectangle((x, y), w, h, fill=False)
-#        self.ax.add_patch(rect)
-#        self.roi_list[idx] = rect
-#        self.BTN_view_clear.setChecked(False)
-#        self.canvas.draw()
-
-#    def delete_roi(self, idx):
-#        self.BTN_view_clear.setChecked(False)
-#        if self.roi_list[idx] is not None:
-#            self.roi_list[idx].remove()
-#            self.roi_list[idx] = None
-#            self.canvas.draw()
-
-    def zoom_rs_callback(self, eclick, erelease):
-        self.zoom_x1 = int(min(eclick.xdata, erelease.xdata))
-        self.zoom_x2 = int(max(eclick.xdata, erelease.xdata))
-        self.zoom_y1 = int(min(eclick.ydata, erelease.ydata))
-        self.zoom_y2 = int(max(eclick.ydata, erelease.ydata))
-
-        self.ZoomIn()
-
-#    def _roi_rs_callback_maker(self):
-#        def roi_rs_callback(eclick, erelease):
-#            x = int(min(eclick.xdata, erelease.xdata))
-#            y = int(min(eclick.ydata, erelease.ydata))
-#            w = int(max(eclick.xdata, erelease.xdata)) - x
-#            h = int(max(eclick.ydata, erelease.ydata)) - y
-#
-#            self.LBL_position1.setText("(%d,%d)" % (x, y))
-#            self.LBL_position2.setText("(%d,%d)" % (w, h))
-#        
-#        return roi_rs_callback
-
-    def on_click(self, event):
-        if self.BTN_draw_rectangle.isChecked():
-            self.plot_handler.setSlowMode(True)
-
-    def on_release(self, event):
-        
-        if event.xdata == None or event.ydata == None:
-            return
-        x = int(round(event.xdata))
-        y = int(round(event.ydata))
-        
-        if not (self.BTN_draw_rectangle.isChecked() and self.BTN_view_zoom.isChecked()):
-            if self._zoom_in_flag:
-                delta_x = self.zoom_x1
-                delta_y = self.zoom_y1
-               
-            else:
-                delta_x = 0
-                delta_y = self._height
-                
-            pnt_y = delta_y - y
-            pnt_x = x - delta_x
-            
-            # if self.CBOX_flip_horizontal.isChecked():
-            #     pnt_x = self._width - pnt_x
-            # if self.CBOX_flip_vertical.isChecked():
-            #     pnt_y = self._height - pnt_y
-            
-            QtWidgets.QToolTip.showText(QtGui.QCursor().pos(),
-                                        "x: {}\ny: {}\ncount: {}".format(x, y, self.im.get_array()[pnt_y][pnt_x]))
-        self.BTN_view_zoom.setChecked(False)
-        self.BTN_draw_rectangle.setChecked(False)
-        
-        self.plot_handler.setSlowMode(False)
-        return
-        
-    def ZoomActive(self, zoom_flag):
-        self.zoom_rs.set_active(zoom_flag)
-        
-    def DrawActive(self, draw_flag):
-        self.zoom_rs.set_active(draw_flag)
+    def clickedZoomIn(self):
+        self.plot.setRange( QRectF(self.zoom_x1, self.zoom_y1, self.zoom_x2 - self.zoom_x1, self.zoom_y2 - self.zoom_y1) )
+        if self.BTN_draw_rect.isChecked():
+            self.BTN_draw_rect.setChecked(False)
     
+    def clickedZoomOut(self):
+        self.plot.setRange( QRectF(0, 0, self._width, self._height) )
+        if self.BTN_draw_rect.isChecked():
+            self.BTN_draw_rect.setChecked(False)
+    
+    def clickedDrawRect(self, flag):
+        if flag:
+            self.plot.vb.setMouseMode(self.plot.vb.RectMode)
+        else:
+            self.plot.vb.setMouseMode(self.plot.vb.PanMode)
+    
+    def zoom_callback(self):
+        if self._zoom_in_flag:
+            self._zoom_in_flag = False
+            return
+        (x1, x2), (y1, y2) = [[int(x[0]), int(x[1])] for x in self.plot.getViewBox().viewRange()]
+        
+        if not (x1 == 0 and x2 == self._width and y1 == 0 and y2 == self._height):
+            self.zoom_x1 = x1
+            self.zoom_x2 = x2
+            self.zoom_y1 = y1
+            self.zoom_y2 = y2
+        
+        self.LBL_ROI_x1.setText("%d" % x1)
+        self.LBL_ROI_x2.setText("%d" % x2)
+        self.LBL_ROI_y1.setText("%d" % y1)
+        self.LBL_ROI_y2.setText("%d" % y2)
+        
+        if self.BTN_draw_rect.isChecked():
+            self.BTN_draw_rect.setChecked(False)
+
+    def mouseClickedEvent(self, event):
+        scene_coords = event.scenePos()
+        if self.plot.sceneBoundingRect().contains(scene_coords):
+            mouse_point = self.plot.vb.mapSceneToView(scene_coords)
+
+            x = int(mouse_point.x())
+            y = int(mouse_point.y())
+            
+            QtWidgets.QToolTip.showText(QtGui.QCursor().pos(), "x: {}\ny: {}\ncount: {}".format(x, y, self._plot_im[y][x]))
+
     def ChangeExposureTime(self):
         exp_time = float(self.STATUS_exp_time.text())
         self.cam.toWorkList(["C", "EXPT", [exp_time]])
         
+    def _timedOutUpdateTimer(self):
+        if self._update_enable_flag:
+            self.updatePlot()
+            self._update_enable_flag = False
+        if self.BTN_acquisition.isChecked():
+            self.update_timer.start(self._update_interval)
+        
     def _countPlot(self, raw_min, raw_max):
         self._img_cnt += 1
+        self.raw_min, self.raw_max = raw_min, raw_max
+        self._update_enable_flag = True
         
         if self.CBOX_single_scan.isChecked():
             if self._img_cnt == int(self.LBL_scan_length.text()):
                 self._enableObjects(False)
                 self.BTN_acquisition.setChecked(False)
-                self.SaveImage()
+                if self.CBOX_Autosave.isChecked():
+                    self.SaveImage()
                 
     def updatePlot(self):
         if (not self.isHidden() and not self.isMinimized()):
             if self.CBOX_auto.isChecked():
+                self.im_min, self.im_max = self.raw_min, self.raw_max
                 self.LBL_min.setText(str(self.im_min))
                 self.LBL_max.setText(str(self.im_max))
                 
-            self.STATUS_raw_min.setText(str(self.image_handler.raw_min))
-            self.STATUS_raw_max.setText(str(self.image_handler.raw_max))
+            self.STATUS_raw_min.setText(str(self.raw_min))
+            self.STATUS_raw_max.setText(str(self.raw_max))
             
-            self.canvas.draw()
-            self.plot_handler.update_enabled = True
+            self.colorbar.setLevels( (self.im_min, self.im_max) )
+            self._plot_im = self.image_handler.image_buffer
+            
+            self.im.setImage(self._plot_im, autoLevels=False)
+            
+            QtWidgets.QApplication.processEvents()
                             
     #%% for EMCCD
     def CoolingOn(self):
@@ -583,112 +523,7 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             print("Cooler off.")
             self.LBL_temp.setStyleSheet(self._theme_color[self._theme]["LBL"])
             
-    # #%% For QTimer
-    # def processImage(self):
-    #     # self.ax.clear()
-    #     self.im.set_data(self.image_handler.image_buffer)
-        
-    #     if self.CBOX_auto.isChecked():
-    #         self.im_min = self.image_handler.raw_min
-    #         self.im_max = self.image_handler.raw_max
-    #     else:
-    #         self.im_min = int(self.LBL_min.text())
-    #         self.im_max = int(self.LBL_max.text())
-        
-    #     self.im.set_clim(self.im_min, self.im_max)
-    #     self.im.set_cmap(self._theme_color[self._theme]["color_map"])
-        
-    #     if self._zoom_in_flag:
-    #         extent = np.array([self.zoom_x1, self.zoom_x2,
-    #                         self.zoom_y1, self.zoom_y2]).astype(np.float16)
-    #     else:
-    #         extent = np.array([0, self.cam._param_dict["SIZE"][1],
-    #                            0, self.cam._param_dict["SIZE"][0]]).astype(np.float16)
-    #     self.im.set_extent(extent)
-        
-    #     self.updatePlot()
             
-        
-class PlotHandler(QThread):
-    
-    _sig_plot_update = pyqtSignal()
-    
-    def __init__(self, parent=None, cam=None, image_handler=None):
-        super().__init__()
-        self.GUI = parent
-        self.im = self.GUI.im
-        self.slow_count = 0
-        self.slow_mode = False
-        
-        self.cam = cam
-        self.image_handler = image_handler        
-        self.setMinimumInterval(1.12) # minimum update rate of the CCD image
-        
-        self.update_enbaled = True
-        
-        self.cam._sig_im_size_changed.connect(self._adjustMinimumInterval)
-        
-        
-    def setSlowMode(self, flag):
-        self.slow_mode = flag
-        if flag:
-            self.slow_count = 0
-        interval = self.calculateProperInterval(self.image_handler.image_buffer.size)
-        self.setMinimumInterval(interval)
-        
-        
-    def setMinimumInterval(self, interval=0.1):
-        self.minimum_interval = interval
-        
-        
-    def calculateProperInterval(self, im_size):
-        process_time = 4.621e-8*im_size + 0.102        
-        return np.max( (process_time, 0.15) )
-        
-    def run(self):
-        while self.GUI.BTN_acquisition.isChecked():
-            if self.update_enabled:
-                
-                if self.slow_mode:
-                    self.slow_count += 1
-                    if not self.slow_count >= 3:
-                        continue
-                    else:
-                        self.slow_count = 0
-                print(self.slow_count)
-                self.processImage()
-                self.update_enabled = False
-                self._sig_plot_update.emit()
-            time.sleep(self.minimum_interval)
-
-    
-    def processImage(self):
-        # self.ax.clear()
-        self.im.set_data(self.image_handler.image_buffer)
-        
-        if self.GUI.CBOX_auto.isChecked():
-            self.GUI.im_min = self.image_handler.raw_min
-            self.GUI.im_max = self.image_handler.raw_max
-        else:
-            self.GUI.im_min = int(self.GUI.LBL_min.text())
-            self.GUI.im_max = int(self.GUI.LBL_max.text())
-        
-        self.im.set_clim(self.GUI.im_min, self.GUI.im_max)
-        self.im.set_cmap(self.GUI._theme_color[self.GUI._theme]["color_map"])
-        
-        if self.GUI._zoom_in_flag:
-            extent = np.array([self.GUI.zoom_x1, self.GUI.zoom_x2,
-                            self.GUI.zoom_y1, self.GUI.zoom_y2]).astype(np.uint16)
-        else:
-            extent = np.array([0, self.cam._param_dict["SIZE"][1],
-                               0, self.cam._param_dict["SIZE"][0]]).astype(np.uint16)
-        self.im.set_extent(extent)
-        
-    def _adjustMinimumInterval(self, im_size_x, im_size_y):
-        min_interval = self.calculateProperInterval(im_size_x*im_size_y)
-        self.setMinimumInterval(min_interval)
-
-
         
 class Cooling_Thread(QThread):
     
@@ -710,107 +545,14 @@ class Cooling_Thread(QThread):
             if not self.GUI.BTN_acquisition.isChecked():
                 self.GUI.update()
                 
-# class ImageTimer(QTimer):
-    
-#     def __init__(self, parent=None, ):
-        
-#     def run(self):
-        
-        
-#     def processImage(self):
-#         # self.ax.clear()
-#         self.im.set_data(self.GUI._plot_im)
-#         self.im.set_clim(self.GUI._im_min, self.GUI._im_max)
-#         self.im.set_cmap(self.GUI._theme_color[self.GUI._theme]["color_map"])
-        
-#         if self.GUI._zoom_in_flag:
-#             extent = np.array([self.GUI.zoom_x1, self.GUI.zoom_x2,
-#                             self.GUI.zoom_y1, self.GUI.zoom_y2]).astype(np.float16)
-#         else:
-#             extent = np.array([0, self.controller._param_dict["SIZE"][1],
-#                                0, self.controller._param_dict["SIZE"][0]]).astype(np.float16)
-#         self.im.set_extent(extent)
-    
-class BlitManager:
-    def __init__(self, canvas, animated_artists=()):
-        """
-        Parameters
-        ----------
-        canvas : FigureCanvasAgg
-            The canvas to work with, this only works for subclasses of the Agg
-            canvas which have the `~FigureCanvasAgg.copy_from_bbox` and
-            `~FigureCanvasAgg.restore_region` methods.
-
-        animated_artists : Iterable[Artist]
-            List of the artists to manage
-        """
-        self.canvas = canvas
-        self._bg = None
-        self._artists = []
-
-        for a in animated_artists:
-            self.add_artist(a)
-        # grab the background on every draw
-        self.cid = canvas.mpl_connect("draw_event", self.on_draw)
-
-    def on_draw(self, event):
-        """Callback to register with 'draw_event'."""
-        cv = self.canvas
-        if event is not None:
-            if event.canvas != cv:
-                raise RuntimeError
-        self._bg = cv.copy_from_bbox(cv.figure.bbox)
-        self._draw_animated()
-
-    def add_artist(self, art):
-        """
-        Add an artist to be managed.
-
-        Parameters
-        ----------
-        art : Artist
-
-            The artist to be added.  Will be set to 'animated' (just
-            to be safe).  *art* must be in the figure associated with
-            the canvas this class is managing.
-
-        """
-        if art.figure != self.canvas.figure:
-            raise RuntimeError
-        art.set_animated(True)
-        self._artists.append(art)
-
-    def _draw_animated(self):
-        """Draw all of the animated artists."""
-        fig = self.canvas.figure
-        for a in self._artists:
-            fig.draw_artist(a)
-
-    def update(self):
-        """Update the screen with animated artists."""
-        cv = self.canvas
-        fig = cv.figure
-        # paranoia in case we missed the draw event,
-        if self._bg is None:
-            self.on_draw(None)
-        else:
-            # restore the background
-            cv.restore_region(self._bg)
-            # draw all of the animated artists
-            self._draw_animated()
-            # update the GUI state
-            cv.blit(fig.bbox)
-        # let the GUI event loop process anything it has to do
-        cv.flush_events()
-
-
+  
     
 if __name__ == "__main__":
     app = QtWidgets.QApplication.instance()
     if app is None:
         app = QtWidgets.QApplication([])
-    CCD = CCD_UI(instance_name='QuIQCL_CCD_v1.02')
-    CCD.setWindowTitle('QuIQCL_CCD_v1.02')
+    CCD = CCD_UI(instance_name='QuIQCL_CCD_v2.02')
+    CCD.setWindowTitle('QuIQCL_CCD_v2.02')
     CCD.show()
 
 #CCD.cam._thor_cam.set_trigger_count(10)

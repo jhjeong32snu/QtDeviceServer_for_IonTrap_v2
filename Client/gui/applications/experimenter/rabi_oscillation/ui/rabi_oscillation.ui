@@ -43,7 +43,7 @@
           </size>
          </property>
          <property name="title">
-          <string>Initial Modulation Freq. [MHz]</string>
+          <string>Total MW Driving Time [μs]</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
@@ -71,7 +71,7 @@
           </size>
          </property>
          <property name="title">
-          <string>End Modulation Freq. [MHz]</string>
+          <string>MW Driving Time Step [μs]</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
@@ -99,7 +99,7 @@
           </size>
          </property>
          <property name="title">
-          <string>Delta Freq. [kHz]</string>
+          <string>Threshold</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
@@ -131,7 +131,7 @@
           </size>
          </property>
          <property name="title">
-          <string>Modulation V peak peak [V]</string>
+          <string>Initialization Time [μs]</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_11">
           <item>
@@ -143,7 +143,7 @@
              </size>
             </property>
             <property name="text">
-             <string>0.01</string>
+             <string>150</string>
             </property>
            </widget>
           </item>
@@ -159,7 +159,7 @@
           </size>
          </property>
          <property name="title">
-          <string>Laser Frequency [THz]</string>
+          <string>Detection Time [μs]</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_12">
           <item>
@@ -171,7 +171,7 @@
              </size>
             </property>
             <property name="text">
-             <string>811.291280</string>
+             <string>150</string>
             </property>
            </widget>
           </item>
@@ -187,7 +187,7 @@
           </size>
          </property>
          <property name="title">
-          <string>RF Freq. [MHz]</string>
+          <string>Number of average</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_13">
           <item>
@@ -199,7 +199,7 @@
              </size>
             </property>
             <property name="text">
-             <string>32.424</string>
+             <string>2000</string>
             </property>
            </widget>
           </item>
@@ -249,7 +249,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox_2">
+      <widget class="QGroupBox" name="GBOX_curve_fitting_settings">
        <property name="minimumSize">
         <size>
          <width>220</width>
@@ -263,143 +263,13 @@
         </size>
        </property>
        <property name="title">
-        <string>Y-Axis Settings</string>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QCheckBox" name="CBOX_Auto">
-          <property name="text">
-           <string>Auto</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,2,1">
-          <item>
-           <widget class="QLabel" name="NON_y_min">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>y_min: </string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="TXT_ymin">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="BTN_ymin">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <family>Arial Black</family>
-              <pointsize>10</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Set</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2,1">
-          <item>
-           <widget class="QLabel" name="NON_y_max">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>y_max:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="TXT_ymax">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>100</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="BTN_ymax">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <family>Arial Black</family>
-              <pointsize>10</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Set</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="groupBox_7">
-       <property name="minimumSize">
-        <size>
-         <width>220</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>240</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>PMT Settings</string>
+        <string>Curve Fitting Settings</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,2">
           <item>
-           <widget class="QLabel" name="NON_exp_time">
+           <widget class="QLabel" name="NON_amplitude">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -413,8 +283,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Exposure
-Time[ms]</string>
+             <string>Amplitude</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -422,7 +291,7 @@ Time[ms]</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="TXT_exp_time">
+           <widget class="QLineEdit" name="TXT_amplitude">
             <property name="minimumSize">
              <size>
               <width>60</width>
@@ -439,7 +308,7 @@ Time[ms]</string>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,2">
           <item>
-           <widget class="QLabel" name="NON_avg_num">
+           <widget class="QLabel" name="NON_rabi_freq">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -453,8 +322,8 @@ Time[ms]</string>
              </size>
             </property>
             <property name="text">
-             <string>Average
-Number</string>
+             <string>Rabi Freq.
+[kHz]</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -462,7 +331,7 @@ Number</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="TXT_avg_num">
+           <widget class="QLineEdit" name="TXT_rabi_freq">
             <property name="minimumSize">
              <size>
               <width>60</width>
@@ -475,6 +344,48 @@ Number</string>
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="BTN_fit">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial Black</family>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Fit</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="BTN_save_fig">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial Black</family>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Save Fig</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -491,13 +402,6 @@ Number</string>
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="CBOX_precise">
-       <property name="text">
-        <string>I want precise result</string>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QGroupBox" name="groupBox_3">
@@ -579,38 +483,6 @@ Number</string>
     <hint type="destinationlabel">
      <x>1017</x>
      <y>887</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BTN_ymin</sender>
-   <signal>clicked()</signal>
-   <receiver>Form</receiver>
-   <slot>changedYLimit()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>853</x>
-     <y>161</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1131</x>
-     <y>253</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BTN_ymax</sender>
-   <signal>clicked()</signal>
-   <receiver>Form</receiver>
-   <slot>changedYLimit()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>868</x>
-     <y>197</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1120</x>
-     <y>189</y>
     </hint>
    </hints>
   </connection>

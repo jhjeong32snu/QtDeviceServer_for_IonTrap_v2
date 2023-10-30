@@ -68,8 +68,8 @@ class CCD_Interface(QThread):
         self.toStatusBar("Closed the device.")
         
     def openGui(self):
-        from CCD_GUI_v2_01 import CCD_UI        
-        self.gui = CCD_UI(controller=self)
+        from CCD_GUI_v2_02 import CCD_UI
+        self.gui = CCD_UI(self, self.sc.gui._theme)
         self._gui_opened = True
 
     def openDevice(self):
@@ -331,9 +331,8 @@ class CCD_ImageHandler(QThread):
             self._status = "receieving"
             raw_min, raw_max, image_buffer = self.data_p.recv()
             
-            self.raw_min, self.raw_max, self.image_buffer = raw_min, raw_max, image_buffer
-        
-            self.image_datetime = datetime.now()
+            self.raw_min, self.raw_max, self.image_buffer = raw_min, raw_max, image_buffer[::-1]
+
             self._img_recv_signal.emit(self.raw_min, self.raw_max)
             self._status = "standby"
 

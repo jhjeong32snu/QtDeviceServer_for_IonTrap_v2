@@ -1,12 +1,14 @@
 """
-A module for controlling KDC101 motor device.
+A module for simulating KDC101 motor device.
 
-@author: Jiyong Kang
-@email: kangz12345@snu.ac.kr
+@author: Junho Jeong
+@email: jhjeong32@snu.ac.kr
 """
 import time
+from threading import Thread
+import numpy as np
 
-class DummyMotor:
+class DummyKDC101:
     """
     A class representing a KDC101 instance
 
@@ -35,6 +37,15 @@ class DummyMotor:
     acc = 5
     vel = 5
     is_opened = False
+    
+    def __init__(self, serno="dummy"):
+        """
+        Parameters
+        ----------
+        serno : str
+            The serial number of the device
+        """
+        self.serno = serno
 
 
     def get_position(self):
@@ -133,8 +144,8 @@ class DummyMotor:
         """Stops the internal polling loop.
 
         """
-        self.__lib.CC_StopPolling(self.__serno)
-
+        pass
+    
     def open_and_start_polling(self, interval=200):
         """Opens and starts polling.
 
@@ -184,7 +195,11 @@ class DummyMotor:
         if verbose:
             self.print_msg("start homing...")
 
-        time.sleep(2)
+        pos_thread = Thread(target=self._moving_simulation, args=(self.position, 0))
+        pos_thread.daemon = False
+        pos_thread.start()
+        pos_thread.join()
+        
         return True
 
     def move_to_position(self, pos, in_devunit=False, verbose=False):
@@ -207,11 +222,13 @@ class DummyMotor:
             raise ValueError ("The position must be positive.")
             return
         
-        diff = abs(pos - self.position)
-        time.sleep(diff)
-        self.position = pos
-
+        pos_thread = Thread(target=self._moving_simulation, args=(self.position, pos))
+        pos_thread.daemon = False
+        pos_thread.start()
+        pos_thread.join()
+        
         return True
+    
 
     def move_relative(self, disp, in_devunit=False, verbose=False):
         """Moves the motor relatively by the given displacement.
@@ -235,16 +252,16 @@ class DummyMotor:
         """Stop the device with its motion profile.
         """
         pass
+    
+    def _moving_simulation(self, cur_pos, tar_pos, velocity=0.05):
+        position_list = np.arange(cur_pos, tar_pos, (-1)**(cur_pos > tar_pos)*velocity)
+        
+        for pos in position_list:
+            self.position = pos
+            time.sleep(0.1)
+        self.position = tar_pos
+        return
 
-
-    def __init__(self, serno: str):
-        """
-        Parameters
-        ----------
-        serno : str
-            The serial number of the device
-        """
-        self.serno = serno
 
 
 class FailedException(Exception):

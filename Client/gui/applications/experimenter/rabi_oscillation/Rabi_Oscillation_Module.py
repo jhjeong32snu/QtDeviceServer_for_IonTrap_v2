@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Oct  6 19:27:08 2023
+Created on Thu Oct 12 16:10:01 2023
 
 @author: QCP75
 """
@@ -46,7 +46,7 @@ def checkError(func):
     return wrapper
 
 
-class ParametricHeatingGUI(QtWidgets.QWidget, ph_ui):
+class RabiOscillationGUI(QtWidgets.QWidget, ph_ui):
     
     
     def __init__(self, device_dict={}, parent=None, theme="white"):
@@ -96,7 +96,7 @@ class ParametricHeatingGUI(QtWidgets.QWidget, ph_ui):
             self.custom_con.hide()
             self.non_custom_con.show()
             self.con = self.non_custom_con
-       
+            
     @checkError
     def pressedStartButton(self, flag):
         if flag:
@@ -104,34 +104,26 @@ class ParametricHeatingGUI(QtWidgets.QWidget, ph_ui):
                 self.toStatusBar("The FPGA is not opened!")
                 self.BTN_start.setChecked(False)
             else:
-                try:
-                    f_init, f_end, f_step = float(self.TXT_init_freq.text())*1e6, \
-                                            float(self.TXT_end_freq.text())*1e6,  \
-                                            float(self.TXT_delta_freq.text())*1e3
-                    exposure_time = int(self.TXT_exp_time.text())
-                    average_number = int(self.TXT_avg_num.text())
-                    power_in_dBm = vpp_to_dBm(float(self.TXT_Vpp.text()))
-                    
-                    self.plot_handler.switchingDevice(flag, power_in_dBm)
-                    self.plot_handler.setFrequencyRange(f_init, f_end, f_step)
-                    self.con.setFrequency(f_init)
-                    self.plot_handler._resetProgress()
-                    self.plot_handler._setSequencerFile(exposure_time, average_number)
-                    self.changeXLimit()
-                except Exception as ee:
-                    self.toStatusBar("An error while setting the experiment (%s)." % ee)
-                    self.BTN_start.setChecked(False)
-                    return
+                f_init, f_end, f_step = float(self.TXT_init_freq.text())*1e6, \
+                                        float(self.TXT_end_freq.text())*1e6,  \
+                                        float(self.TXT_delta_freq.text())*1e3
+                exposure_time = int(self.TXT_exp_time.text())
+                average_number = int(self.TXT_avg_num.text())
+                power_in_dBm = vpp_to_dBm(float(self.TXT_Vpp.text()))
                 
+                
+                self.plot_handler.switchingDevice(flag, power_in_dBm)
+                self.plot_handler.setFrequencyRange(f_init, f_end, f_step)
+                self.plot_handler._resetProgress()
+                self.plot_handler._setSequencerFile(exposure_time, average_number)
                 self.sequencer.occupant = "parametric_heating"
-                self.sequencer.sig_occupied.emit(True)                    
+                self.sequencer.sig_occupied.emit(True)
                 self.plot_handler.start()
+                    
                 self.toStatusBar("Started heating.")
                 
         else:
             self.plot_handler.wakeupThread()  # This make sure the thread stops
-            self.sequencer.occupant = ""
-            self.sequencer.sig_occupied.emit(False)
 
     @checkError
     def cancelStartButton(self, no_input=True):
@@ -315,6 +307,7 @@ class PlotHandler(QThread):
     @checkError
     def run(self):
         while self.parent.BTN_start.isChecked():
+            self.status = "hmm"
             self.mutex.lock()
             self.status = "running"
             if self.scan_idx <= self.total_length:
@@ -325,10 +318,10 @@ class PlotHandler(QThread):
                     while not (self.current_frequency == self.con.readFrequency()):
                         time.sleep(0.3)
                 
-                self.status = "ready for sequencer"
+                self.status = "about_to_run_seq"
                 self.runSequencer()
                 
-                self.status = "wait for mutex"
+                self.status = "wait_for_mutex"
                 self.cond.wait(self.mutex)
                 self.mutex.unlock()
                 
@@ -351,6 +344,7 @@ class PlotHandler(QThread):
         detail_string = self._makeDetails()
         df = pd.DataFrame({"frequency[MHz]": self.x_data,
                            "Photon counts": self.y_data})
+        
         
         with open (save_file_name + ".csv", "w") as fp:
             fp.write(detail_string)
