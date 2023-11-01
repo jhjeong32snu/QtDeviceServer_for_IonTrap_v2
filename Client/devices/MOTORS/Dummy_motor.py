@@ -106,6 +106,7 @@ class DummyKDC101:
         KDC101
             returns self
         """
+        time.sleep(1.2)
         self.is_opened = True
         return self
 
@@ -258,7 +259,7 @@ class DummyKDC101:
         
         for pos in position_list:
             self.position = pos
-            time.sleep(0.1)
+            time.sleep(0.05)
         self.position = tar_pos
         return
 

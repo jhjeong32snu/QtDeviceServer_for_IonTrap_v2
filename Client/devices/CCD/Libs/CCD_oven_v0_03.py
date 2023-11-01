@@ -51,8 +51,6 @@ class Oven_controller(QtWidgets.QWidget):
     def HeaterON(self, on_flag):
         if on_flag:
             self.ON = True
-            self.BTN_ON.setStyleSheet(self.GUI._theme_color[self.GUI._theme]["BTN_ON"])
-
             try:
                 self.OVEN.oven.sendall(bytes("SHUTTER:1:OPEN\n", 'latin-1'))
             except:
@@ -119,8 +117,6 @@ class Oven_controller(QtWidgets.QWidget):
         """
         RestoreACT resets the GUI button and functions
         """
-        self.BTN_ON.setChecked(False)
-        self.BTN_ON.setStyleSheet(self.GUI._theme_color[self.GUI._theme]["BTN_OFF"])
         self.BTN_ON.setEnabled(True)
         
         self.volLABEL(0)

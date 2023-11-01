@@ -27,6 +27,8 @@ class MotorHandler(QThread):
     _sig_motor_move_done = pyqtSignal(str, float)
     _sig_motor_homed = pyqtSignal(str)
     
+    _sig_motors_changed_status = pyqtSignal(str, str)
+    
     def __init__(self, controller=None, ser=None, dev_type="Dummy", nick="motor"):  # cp is ConfigParser class
         super().__init__()
         self.parent = controller
@@ -35,7 +37,7 @@ class MotorHandler(QThread):
         self.serial = ser
         self.nickname = nick
         self.target = 0
-        self._que = Queue()
+        self.queue = Queue()
         
     @property
     def serial(self):
@@ -43,7 +45,7 @@ class MotorHandler(QThread):
     
     @serial.setter
     def serial(self, ser):
-        if not ser == None:    
+        if not ser == None:
             self._serial = ser
         else:
             print("The serial of the motor cannot be None.")
@@ -70,13 +72,21 @@ class MotorHandler(QThread):
     def position(self, pos):
         self._position = pos
         
+    @property
+    def status(self):
+        return self._status
+    
+    @status.setter
+    def status(self, status):
+        self._status = status
+        self._sig_motors_changed_status.emit(self.nickname, status)
+        
     def getPosition(self):
         self.position = round(self._motor.get_position(), 3)
         return self.position
     
     def setTargetPosition(self, target):
-        self._target = target
-        
+        self._target = target 
         
     def openDevice(self):
         """
@@ -93,8 +103,8 @@ class MotorHandler(QThread):
                  
         try:
             self._motor = KDC101(self.serial)
-            self._status = "initiating"
-            self._motor.open_and_start_polling()
+            self.status = "initiating"
+            self._motor.open()
             self._is_opened = True
             self._sig_motor_initialized.emit(self.nickname)
             
@@ -102,13 +112,13 @@ class MotorHandler(QThread):
             self._sig_motor_error.emit("An error while loading a motor %s.(%s)" % (self.nickname, e))
 
     def moveToPosition(self, target_position):
-        self._status = "moving"
+        self.status = "moving"
         self._motor.move_to_position(target_position)
         self.position = self.getPosition()
         self._sig_motor_move_done.emit(self.nickname, self.position)
         
     def forceHome(self):
-        self._status = "homing"
+        self.status = "homing"
         self._motor.home(force=True, verbose=False)
         self._sig_motor_homed.emit(self.nickname)
            
@@ -117,7 +127,7 @@ class MotorHandler(QThread):
             self._motor.close()
             self._motor = None
             self._is_opened = False
-            self._status = "closed"
+            self.status = "closed"
         else:
             self._sig_motor_error.emit("The motor %s is not opened yet!" % self.nickname)
             
@@ -135,7 +145,7 @@ class MotorHandler(QThread):
                 self.openDevice()
                 
             elif work == "M": # Move position
-                self.moveToPosition(self.target)
+                self.moveToPosition(self._target)
                 
             elif work == "D": # Disconnect
                 self.closeDevice()
@@ -143,4 +153,4 @@ class MotorHandler(QThread):
             elif work == "H": # Homing
                 self.forceHome()
 
-            self._status = "standby"
+            self.status = "standby"
