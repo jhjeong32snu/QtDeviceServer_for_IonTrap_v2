@@ -24,92 +24,15 @@ Ui_Form, QtBaseClass = uic.loadUiType(qt_designer_file)
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QVBoxLayout, QFileDialog
 from PyQt5.QtGui import QColor
-from PyQt5.QtCore import QThread, pyqtSignal, QTimer, QRectF
+from PyQt5.QtCore import QThread, QTimer, QRectF
 
 import pyqtgraph as pg
 
-from Libs.CCD_oven_v0_03 import Oven_controller
+from Libs.CCD_oven_v0_04 import Oven_controller
+from CCD_UI_Base_Abstract import CCD_UI_base
 
 
-class CCD_UI_base:
-    
-    _img_cnt = 0
-    
-    _camera_type = "CCD"
-    
-    _slider_min = 0
-    _slider_max = 0
-    
-    _im_min = 19
-    _im_max = 216
-    
-    _zoom_in_flag = False
-    _auto_save = False
-    _slow_mode = False
-    
-    _update_interval = 50 # ms
-    _update_enable_flag = False
-    
-    _theme = "white"    
-    _theme_color = {
-                    "white": {"main":   "",
-                              "GBOX":   "",
-                              "BTN_ON": "",
-                              "BTN_OFF":"",
-                              "LBL":    "background-color:rgb(180, 180, 180);",
-                              "STATUS": "background-color:rgb(10, 10, 10); color:rgb(255, 255, 255);",
-                              "TXT": "background-color:rgb(240, 240, 240); color:rgb(0, 0, 0);",
-                              
-                              "fig_face_color": "w",
-                              "ax_face_color": "w",
-                              "tick_color": "k",
-                              "color_map": "gist_earth"
-                              },
-                    
-                    "black": {"main":   "background-color:rgb(30,30,30); color:rgb(140, 140, 140);",
-                              "GBOX":   "color:rgb(140, 140, 140);",
-                              "BTN_ON" :"background-color:rgb(180, 50, 50);",
-                              "BTN_OFF":"background-color:rgb(60, 60, 60);",
-                              "LBL":    "background-color:rgb(0, 0, 0);",
-                              "STATUS": "background-color:rgb(180, 180, 180); color:rgb(10, 10, 10);",
-                              "TXT": "background-color:rgb(30,30,30); color:rgb(140, 140, 140);",
-                              
-                              "fig_face_color": [0.235, 0.235, 0.235],
-                              "ax_face_color": [0.118, 0.118, 0.118],
-                              "tick_color": [0.7, 0.7, 0.7],
-                              "color_map": "afmhot"
-                              }
-        }
-    
-    _emccd_cooler_theme = {
-                            "white": {"blue": "background-color:rgb(65, 150, 80)",
-                                      "red": "background-color:rgb(150, 60, 140)"
-                                      },
-                            "black": {"blue": "background-color:rgb(0, 100, 20)",
-                                      "red": "background-color:rgb(120, 40, 120)"
-                                      }
-        }
-    
-    
-    _available_ccd = []
-        
-    
 class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
-    
-    
-    def closeEvent(self, e):
-        pass
-            
-    def changeEvent(self, event):
-        """
-        QEvent::WindowActivate	    24	Window was activated.
-        QEvent::WindowBlocked	    103	The window is blocked by a modal dialog.
-        QEvent::WindowDeactivate	25	Window was deactivated.
-        QEvent::WindowIconChange	34	The window's icon has changed.
-        QEvent::WindowStateChange	105	The window's state (minimized, maximized or full-screen) has changed (QWindowStateChangeEvent).
-        QEvent::WindowTitleChange	33	The window title has changed.
-        QEvent::WindowUnblocked	    104	The window is unblocked after a modal dialog exited.
-        """
         
     def showEvent(self, e):
         if not self.BTN_acquisition.isChecked():
@@ -205,7 +128,7 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             if "GBOX_" in item:
                 getattr(self, item).setStyleSheet(self._theme_color[self._theme]["GBOX"])
             elif "BTN_" in item:
-                getattr(self, item).setStyleSheet(self._theme_color[self._theme]["BTN_OFF"])
+                getattr(self, item).setStyleSheet(self._theme_color[self._theme]["BTN"])
             elif "LBL_" in item:
                 getattr(self, item).setStyleSheet(self._theme_color[self._theme]["LBL"])
             elif "STATUS_" in item:
@@ -245,8 +168,7 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
                                xMax=self._width,
                                yMin=0,
                                yMax=self._height)
-        # self.plot.vb.setAspectLocked()
-        # self.draw_box = self.plot.addViewBox()
+        self.plot.vb.setAspectLocked()
         
         self.im = pg.ImageItem(self._plot_im, axisOrder="row-major", autoRange=False)
         self.im.setAutoDownsample(True)
@@ -274,11 +196,6 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
     def _enableObjects(self, flag):
         self.CBOX_single_scan.setEnabled(not flag)
         self.CBOX_Autosave.setEnabled(not flag)
-        
-        if flag:
-            self.BTN_acquisition.setStyleSheet(self._theme_color[self._theme]["BTN_ON"])
-        else:
-            self.BTN_acquisition.setStyleSheet(self._theme_color[self._theme]["BTN_OFF"])
             
     #%% Image Min & Max
     def ChangeMin(self):
@@ -289,14 +206,14 @@ class CCD_UI(QtWidgets.QMainWindow, CCD_UI_base, Ui_Form):
             
         self.LBL_min.setText(str(min_val))
         self.cam.d_min = min_val
-        self._im_min = min_val
+        self.im_min = min_val
         
     def ChangeMax(self):
         max_val = int(float(self.LBL_max.text()))
             
         self.LBL_max.setText(str(max_val))
         self.cam.d_max = max_val
-        self._im_max = max_val
+        self.im_max = max_val
         
     def MinSliderMoved(self, slider_val):
         min_val = int(float(self.LBL_min.text()))

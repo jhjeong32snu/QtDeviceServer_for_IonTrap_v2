@@ -18,20 +18,19 @@ class MotorController(QObject):
     _status = "standby"
     _motors = {}
     _is_opened = False
+    _gui_opened = False
     _motors_under_request = []
     _motors_under_homing  = []
     _motors_under_loading = []
     
-    _sig_motors_initialized = pyqtSignal(int, int, str)
+    _sig_motors_initialized = pyqtSignal(int, str)
     _sig_motors_positions = pyqtSignal(dict)
     
-    def __init__(self, parent=None, gui=None):  # cp is ConfigParser class
+    def __init__(self, socket=None, gui=None):  # cp is ConfigParser class
         super().__init__()
-        self.parent = parent
+        self.parent = socket
         self.cp = self.parent.cp
         self.gui = gui
-        self.motor_dict = {}
-
         # Setting motor initiator
         self.device = self.cp.get("device", "motors")
         self._motors = self._getMotorDictToLoad()
@@ -42,10 +41,10 @@ class MotorController(QObject):
         
         print("Motor Controller v%s" % version)
         
-    # def openGui(self):
-    #     from Motor_Controller_GUI import MotorController_GUI
-    #     self.gui = MainWindow(controller=self)
-    #     self._gui_opened = True
+    def openGui(self):
+        from Motor_Controller_GUI_v2 import MotorController_GUI
+        self.gui = MotorController_GUI(controller=self)
+        self._gui_opened = True
 
     def _receiveMotors(self, motor_dict):
         for nickname, motor in self._motors.items():
@@ -59,17 +58,17 @@ class MotorController(QObject):
             if "_serno" in option:
                 nickname = option[:option.find("_serno")]
                 serno = self.cp.get("motors", option)
-                
-                motor_dict[nickname] = self._addMotor(self, serno, mtype, nickname)
+                                
+                motor_dict[nickname] = self._addMotor(serno, mtype, nickname)
                 
         return motor_dict
     
-    def _addMotor(self, serno, dev_type, nickname):
+    def _addMotor(self, serno, dev_type, nickname):        
         motor = MotorHandler(self, serno, dev_type=dev_type, nick=nickname)
         
         motor._sig_motor_initialized.connect(self._initializedMotor)
         motor._sig_motor_move_done.connect(self._completedMotorMoving)
-        motor._sig_motor_error.connect(self._errorReported)
+        motor._sig_motor_error.connect(self.toGUI)
         motor._sig_motor_homed.connect(self._homedMotor)
         
         return motor
@@ -80,31 +79,41 @@ class MotorController(QObject):
             self._motors.pop(nickname)
     
     def _initializedMotor(self, nick):
-        self._motors_under_loading.remove(nick)
+        if nick in self._motors_under_loading:
+            self._motors_under_loading.remove(nick)            
         self._sig_motors_initialized.emit(len(self._motors_under_loading), nick)  # Let applications know how many motors are left.
     
     def getPosition(self, nickname):
         return self._motors[nickname].getPosition()
     
-    def moveToPosition(self, data_dict):
-        for motor_nick, target_position in data_dict.items():
-            self._motors[motor_nick].setTargetPosition(target_position)
-            self._motors[motor_nick].toWorkList("M")
-            self._motors_under_request.append(motor_nick)
-            
-        self.pos_checker.start(qtimer_interval) # Let the clients know the positions while moving.
+    def homePosition(self, motor_list):
+        for motor_nick in motor_list:
+            self._motors[motor_nick].toWorkList("H")
+            self._motors_under_homing.append(motor_nick)
+    
+    def moveToPosition(self, motor_dict):
+        print("initiated", motor_dict)
+        try:
+            for motor_nick, target_position in motor_dict.items():
+                self._motors[motor_nick].setTargetPosition(target_position)
+                self._motors_under_request.append(motor_nick)
+                self._motors[motor_nick].toWorkList("M")
+                
+            self.pos_checker.start(qtimer_interval) # Let the clients know the positions while moving.
+        except Exception as ee:
+            print(ee)
 
         
     def _completedMotorMoving(self, nick, position):
-        self._motors_under_request.remove(nick)
+        if nick in self._motors_under_request:
+            self._motors_under_request.remove(nick)
     
     def openDevice(self, motor_list):
         self._sig_motors_initialized.emit(len(motor_list), "")  # Let applications know how many motors to be open.
         for m_idx, m_nick in enumerate(motor_list):
-            self._motors[m_nick].toWorkList("O")
             self._motors_under_loading.append(m_nick)
-
-
+            self._motors[m_nick].toWorkList("O")
+            
     def closeDevice(self, motor_list):
         for m_idx, m_nick in enumerate(motor_list):
             self._motors[m_nick].toWorkList("D")
@@ -125,13 +134,10 @@ class MotorController(QObject):
                 
             self._sig_motors_positions.emit(position_dict)
             self.pos_checker.start(qtimer_interval)
-            
-            print(position_dict)
         
-            
     def toGUI(self, msg):
-        if not self.gui == None:
-            self.gui.toStatus(msg)
-        else:
-            print(msg)
+        # if not self.gui == None:
+        #     self.gui.toStatus(msg)
+        # else:
+        print(msg)
             
