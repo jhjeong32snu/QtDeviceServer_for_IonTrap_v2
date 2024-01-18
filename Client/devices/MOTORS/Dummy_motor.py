@@ -106,7 +106,8 @@ class DummyKDC101:
         KDC101
             returns self
         """
-        time.sleep(1.2)
+        sleep_time = np.random.choice(np.arange(1.8, 5.2, 0.2), 1)[0]
+        time.sleep(sleep_time)
         self.is_opened = True
         return self
 

@@ -1,45 +1,37 @@
 # -*- coding: utf-8 -*-
 """
-@author: KMLee
+@author: Junho Jeong
+@e-mail: jhjeong32@snu.ac.kr
+@e-mail2: bugbear128@gmail.com
 """
 
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, pyqtSignal
 from queue import Queue
-from configparser import ConfigParser
-import os, sys, traceback, time
+import os
 # from RFsettings import Device_list
+from RF_device_client import RF_Device_Client
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
-'''
-This wrapper uses the kwargs for device name
-So, when using the set/get functions, you should explicitly define the device name as
-func(val, dev_name=device name)
-'''        
 def requires_device_open(func):
     """Decorator that checks if the device is open.
 
-    Raises:
-        RuntimeError - the func is called before the device is open.
+    The error message will be printed on the GUI.
+    If the GUI is not opened, then it will be printed.
     """
-    def wrapper(self, *args, **kwargs):
-        if self._is_opened[kwargs['dev_name']]:
-            return func(self, *args, **kwargs)
+
+    def wrapper(self, *args):
+        if self.isOpened:
+            return func(self, *args)
         else:
-            raise RuntimeError('{} is called before the device is opened.'
-                               .format(func.__name__))
+            self.toGUI("%s is called before the device is opened." % func.__name__ )
     return wrapper
-    
 
 class RF_ClientInterface(QThread):
     
     device_type = "RF"
-    _status = "standby"
-    _is_opened = {}
-    _gui_opened = False
-    _rf_settings = {}
-    _init_flag = False
+    _gui_update_signal = pyqtSignal(str, str, list)
 
     def closeEvent(self, e):
         self._gui_opened = False
@@ -52,103 +44,141 @@ class RF_ClientInterface(QThread):
         self.gui = None
         self.que = Queue()
         
+        self.RF_dict = {}
+        
+        self.isOpened = False
+        self._status = "standby"
+        self._gui_opened = False
+
+
+    def __call__(self):
+        return self.RF_dict
+        
     def openGui(self):
-        sys.path.append(dirname + '/../')
-        from RF_client_GUI_v3 import MainController
-        self.gui = MainController(controller=self)
+        from RF_client_GUI_v2 import RF_ControllerGUI
+        self.gui = RF_ControllerGUI(self)
         self._gui_opened = True
+        self._gui_update_signal.connect(self.gui.updateGUI)
+        
+    def buildRF_Device(self, dev_nick, data_list):
+        num_channels = len(data_list)
+        RF_dev = RF_Device_Client(self, dev_nick, num_channels)
+        
+        for channel, data in enumerate(data_list):
+            for param, value in zip(data[::2], data[1::2]):
+                RF_dev.setValue(param, value, channel)
+                    
+        self.RF_dict[dev_nick] = RF_dev
+
     
     # When RF Controller is made, it automatically send the server a command to read info about rf devices connected to server
-    def initRF(self):
-        # self.toWorkList(['D','INIT',[Device_list,'rf']])
-        self.toSocket(['C','RF','INIT',[]])
-        
-    # If the rf info from server is read, create the device list
-    def createDeviceSettings(self, device_list):
-        self.dev_list = device_list
-        # Handling current rf values
-        for key in self.dev_list.keys():
-            self._rf_settings[key] = {'on': [False for i in range(self.dev_list[key]['num_power'])],
-                                      'power': [self.dev_list[key]['min_power'][i] for i in range(self.dev_list[key]['num_power'])],
-                                      'freq':[self.dev_list[key]['min_freq'][i] for i in range(self.dev_list[key]['num_freq'])],
-                                      'phase':[self.dev_list[key]['min_phase'][i] for i in range(self.dev_list[key]['num_phase'])]}
-        # Handling connection state of rf devices
-        for key in self.dev_list.keys():
-            self._is_opened[key] = False
-        self._init_flag = True
+    def connectRF(self):
+        if not self.isOpened:
+            self.toSocket(["C", "RF", "HELO", []])
+            self.toSocket(["Q", "RF", "STAT", ["ALL"]])
             
-    def openDevice(self, dev_name=None):
-        if not dev_name == None:
-            if self._is_opened[dev_name]:
-                raise RuntimeError ("The device is already open!")
-            else:
-                self.toSocket(["C", dev_name, "ON", []])
-                # self._is_opened[dev_name] = True
+    def disconnectRF(self):
+        self.toSocket(["C", "RF", "DCN", []])
+        self.isOpened = False
+                    
+    def openDevice(self, dev_nick=""):
+        if dev_nick in self.RF_dict.keys():
+            self.toSocket(["C", "RF", dev_nick, ["ON"]])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
         
+    def closeDevice(self, dev_nick=""):
+        if dev_nick in self.RF_dict.keys():
+            self.toSocket(["C", "RF", dev_nick, ["OFF"]])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
+
     @requires_device_open
-    def closeDevice(self, dev_name=None):
-        if not dev_name == None:
-            self.toSocket(["C", dev_name, "OFF", []])
-            # self._is_opened[dev_name] = False
-        
-    # Set functions
-    @requires_device_open
-    def enableOutput(self, odata:list, dev_name=None):
-        if not dev_name == None:
-            assert len(odata) == self.dev_list[dev_name]['num_power']
-            msg = ["C", dev_name, "OUT", odata]
-            self.toSocket(msg)        
-        for idx in range(len(odata)):
-            if odata[idx] != self._rf_settings[dev_name]['on'][idx] and self.gui != None:
-                self.gui._output_disable_signal.emit(dev_name, True, idx)
+    def setOutput(self, dev_nick, channel, flag):
+        if dev_nick in self.RF_dict.keys():
+            msg = ["SETO", channel, flag]
+            self.toSocket(["C", "RF", dev_nick, msg])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
     
     @requires_device_open
-    def setPower(self, pdata:list, dev_name=None):
-        if not dev_name == None:
-            assert len(pdata) == self.dev_list[dev_name]['num_power']
-            msg = ["C", dev_name, "POWER", pdata]
-            self.toSocket(msg)
-        if not self.gui == None:
-            self.gui._power_disable_signal.emit(dev_name, True)
+    def setPower(self, dev_nick, channel, power):
+        if dev_nick in self.RF_dict.keys():
+            msg = ["SETP", channel, power]
+            self.toSocket(["C", "RF", dev_nick, msg])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
                 
     @requires_device_open
-    def setFrequency(self, fdata:list, dev_name=None):
-        if not dev_name == None:
-            assert len(fdata) == self.dev_list[dev_name]['num_freq']
-            msg = ["C", dev_name, "FREQ", fdata]
-            self.toSocket(msg)
+    def setFrequency(self, dev_nick, channel, frequency):
+        if dev_nick in self.RF_dict.keys():
+            msg = ["SETF", channel, frequency]
+            self.toSocket(["C", "RF", dev_nick, msg])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
     
     @requires_device_open
-    def setPhase(self, phdata:list, dev_name=None):
-        if not dev_name == None:
-            assert len(phdata) == self.dev_list[dev_name]['num_phase']
-            msg = ["C", dev_name, "PHASE", phdata]
-            self.toSocket(msg)    
+    def setPhase(self, dev_nick, channel, phase):
+        if dev_nick in self.RF_dict.keys():
+            msg = ["SETPH", channel, phase]
+            self.toSocket(["C", "RF", dev_nick, msg])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
 
-    # Read functions
     @requires_device_open
-    def getPower(self, dev_name=None):
-        if not dev_name == None:
-             msg = ["Q", dev_name, "POWER", []]
-             self.toSocket(msg)
+    def setLock(self, dev_nick, flag, freq=10e6):
+        if dev_nick in self.RF_dict.keys():
+            msg = ["LOCK", flag, freq]
+            self.toSocket(["C", "RF", dev_nick, msg])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
             
     @requires_device_open
-    def getFrequency(self, dev_name=None):
-        if not dev_name == None:
-            msg = ["Q", dev_name, "FREQ", []]
-            self.toSocket(msg)
+    def getPower(self, dev_nick, channels=0):
+        if dev_nick in self.RF_dict.keys():
+            if not type(channels) == list:
+                channels = list(channels)
+            msg = ["SETP"] + channels
+            self.toSocket(["Q", "RF", dev_nick, msg])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
+            
+    @requires_device_open
+    def getFrequency(self, dev_nick, channels=0):
+        if dev_nick in self.RF_dict.keys():
+            if not type(channels) == list:
+                channels = list(channels)
+            msg = ["SETF"] + channels
+            self.toSocket(["Q", "RF", dev_nick, msg])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
     
     @requires_device_open
-    def getPhase(self, dev_name=None):
-        if not dev_name == None:
-            msg = ["Q", dev_name, "PHASE", []]
-            self.toSocket(msg)    
+    def getPhase(self, dev_nick, channels=0):
+        if dev_nick in self.RF_dict.keys():
+            if not type(channels) == list:
+                channels = list(channels)
+            msg = ["SETPH"] + channels
+            self.toSocket(["Q", "RF", dev_nick, msg])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
 
     @requires_device_open
-    def getOutput(self, dev_name=None):
-        if not dev_name == None:
-            msg = ["Q", dev_name, "OUT", []]
-            self.toSocket(msg)    
+    def getOutput(self, dev_nick, channels=0):
+        if dev_nick in self.RF_dict.keys():
+            if not type(channels) == list:
+                channels = list(channels)
+            msg = ["SETO"] + channels
+            self.toSocket(["Q", "RF", dev_nick, msg])
+        else:
+            self.toGUI("The device (%s) is missing!" % dev_nick)
+            
+    @requires_device_open
+    def getDeviceStatus(self, device_list):
+        if not type(device_list) == list:
+            device_list = [device_list]
+        msg = ["Q", "RF", "STAT", device_list]
+        self.toSocket(msg)
         
     def toWorkList(self, cmd):
         # cmd = ['D', Command, Result Data List with rf device name] 
@@ -156,110 +186,85 @@ class RF_ClientInterface(QThread):
         self.que.put(cmd)
         if not self.isRunning():
             self.start()
-            print("Thread started")
 
     def run(self):
-        while True:
+        while self.que.qsize():
             # Received Message has a form
             # ['D', Command, Result Data List with rf device name]
             work = self.que.get()
             self._status  = "running"
             # decompose the job
-            work_type, command = work[:2]
-            data_list = work[2] # list of data
-            data = data_list[:-1]
-            dev = data_list[-1]
-            if not command == 'INIT':
-                print("controller got", work)
-            # print('data: ', data)
-            # print('dev: ', dev)
+            work_type, cmd = work[:2]
+            data_list = work[2] # list of data            
+            
             if work_type == "D":
-                if command == "HELO":
+                
+                if cmd == "HELO":
                     """
                     Successfully received a response from the server
                     Got data of Server Device List
                     """
-                    for key in self.dev_list.keys():
-                        if key not in data:
-                            # Device is not on server
-                            del self.dev_list[key]
-                
-                elif command == "ON":
-                    assert len(data) == 2
-                    if data[0]==True:
-                        self._is_opened[dev] = True
-                        print(data[1])
-                        for key in data[1]:
-                            self._rf_settings[dev][key] = data[1][key]
-                        print('Successfully opened device')
-                        if not self.gui == None:
-                            self.gui._is_opened_signal.emit(dev, True)
-                    elif data[0]==False:
-                        self._is_opened[dev] = False
-                        print('Device not opened properly')
+                    self._status  = "HELO"
+
+                    dev_nick_list = data_list[::2]
+                    dev_type_list = data_list[1::2]
                     
-                elif command == "OFF":
-                    assert len(data) == 2
-                    if data[0]==True:
-                        self._is_opened[dev] = False
-                        for key in data[1]:
-                            self._rf_settings[dev][key] = data[1][key]
-                        print('Successfully closed device')
-                    elif data[0]==False:
-                        self._is_opened[dev] = True
-                        print('Device not closed properly')
-                    
-                elif command == "POWER":
-                    # List of channel powers
-                    power = data
-                    assert len(data) == self.dev_list[dev]['num_power']
-                    self._rf_settings[dev]['power'] = power
-                    if not self.gui == None:
-                        self.gui._power_disable_signal.emit(dev, False)
-                    
-                elif command == "FREQ":
-                    # List of channel frequencies
-                    freq = data
-                    assert len(data) == self.dev_list[dev]['num_freq']
-                    self._rf_settings[dev]['freq'] = freq
-                    
-                elif command == "PHASE":
-                    # List of channel phases
-                    phase = data
-                    assert len(data) == self.dev_list[dev]['num_phase']
-                    self._rf_settings[dev]['phase'] = phase
-                    
-                elif command == 'OUT':
-                    # List of channel output enabled
-                    is_on = data[0]['on']
-                    power = data[0]['power']
-                    self._rf_settings[dev]['power'] = power
-                    assert len(is_on) == self.dev_list[dev]['num_power']
-                    for idx in range(len(is_on)):
-                        if self._rf_settings[dev]['on'][idx] != is_on[idx] and self.gui != None:
-                            self.gui._output_disable_signal.emit(dev, False, idx)
-                    self._rf_settings[dev]['on'] = is_on
-                    
-                elif command == 'INIT':
-                    DEV_LIST = data[0]
-                    self.createDeviceSettings(DEV_LIST)
-                    if not self.gui == None:
-                        self.gui._init_signal.emit()
-                
-                elif command == 'REL':
-                    is_released = data[0]
-                    print(dev)
-                    print(is_released)
-                    if not self.gui == None:
-                        self.gui._is_released_signal.emit(dev, is_released)
-                    
-            if not self.gui == None:
-                if not command == 'INIT':
-                    self.gui._gui_callback.emit()
-                    print("Callback emitted")
-                    if command =='ON':
-                        self.gui._is_opened_signal.emit(dev, True)
+                    for dev_nick, dev_type in zip(dev_nick_list, dev_type_list):
+                        self.buildRF_Device(dev_nick, dev_type)
                         
+                    self.isOpened = True
+                    self._gui_update_signal.emit("RF", "CON", [])
+                    
+                elif cmd in self.RF_dict.keys():
+                    
+                    sub_cmd = data_list[0]
+                    sub_data = data_list[1:]
+                    
+                    self._status  = cmd + ":" + sub_cmd
+                    
+                    if sub_cmd == "STAT":
+                        self.RF_dict[cmd].setupDevice(len(sub_data))
+                        for ch, parameters in enumerate(sub_data):
+                            for param, value in zip(parameters[::2], parameters[1::2]):
+                                if value:
+                                    self.RF_dict[cmd].setValue(param, value, ch)
+                        self._gui_update_signal.emit(cmd, "STAT", [])
+                        
+                    elif sub_cmd == "ON":
+                        self.RF_dict[cmd].setValue("c", True)
+                        self._gui_update_signal.emit(cmd, "c", [True])
+                        
+                    elif sub_cmd == "OFF":
+                        self.RF_dict[cmd].setValue("c", False)
+                        self._gui_update_signal.emit(cmd, "c", [False])
+                        
+                    elif sub_cmd == "LOCK":
+                        flag = sub_data[0]
+                        self.RF_dict[cmd].setLocked(flag) # sub_data[0] is flag
+                        self._gui_update_signal.emit(cmd, "l", [flag])
+                        
+                    elif sub_cmd[:3] == "MAX" or sub_cmd[:3] == "MIN":
+                        for ch, val in zip(sub_data[::2], sub_data[1::2]):
+                            self.RF_dict[cmd].setValue(sub_cmd.lower(), val, ch)
+                        # self.RF_dict[cmd].setValue(param, val, ch) # value update
+                        
+                    elif sub_cmd[:3] == "SET":
+                        param = sub_cmd[3].lower()
+                        
+                        if sub_data[0] == "g":
+                            gradual = "g" if sub_data[1] else "r"
+                            self._gui_update_signal.emit(cmd, gradual, [sub_data[1]])
+                        else:
+                            for ch, val in zip(sub_data[::2], sub_data[1::2]):
+                                self.RF_dict[cmd].setValue(param, val, ch) # value update
+                            self._gui_update_signal.emit(cmd, param, sub_data[::2]) # gui update, sub_data[::2] indicates the channels
+
+
+            elif work_type == "E":
+                if data_list[0] == "CON":
+                    print("A connection error with device (RF:%s)" % cmd)
+                    self._gui_update_signal.emit(cmd, "e", ["con"])
+                    
             self._status = "standby"
     
     def toSocket(self, msg):
@@ -268,11 +273,11 @@ class RF_ClientInterface(QThread):
         else:
             print(msg)
             
-    # def toGUI(self, msg):
-    #     if not self.gui == None:
-    #         self.gui.toStatus(msg)
-    #     else:
-    #         print(msg)
+    def toGUI(self, msg):
+        if not self.gui == None:
+            self.gui.toStatusBar(msg)
+        else:
+            print(msg)
             
       
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ import HardwareDefinition_SNU_v4_02 as hd
 
 T_100us = 10000-3-2
 EXPOSURE_TIME_IN_MS = 1
-NUM_REPEAT = 50
+NUM_AVERAGE = 50
 
 s = SequencerProgram()
 s.load_immediate(reg[0], 0, 'reg[0]: measurement number')
@@ -35,5 +35,5 @@ s.read_counter(reg[2], hd.PMT_counter_result)
 s.write_to_fifo(reg[0], reg[1], reg[2], 10, '[measurement number, exposure time in us, PMT count')
 
 s.add(reg[0], reg[0], 1, 'measurement number++')
-s.branch_if_less_than('repeat_measurement', reg[0], NUM_REPEAT)
+s.branch_if_less_than('repeat_measurement', reg[0], NUM_AVERAGE)
 s.stop()

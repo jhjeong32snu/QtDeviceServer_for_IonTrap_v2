@@ -4,15 +4,25 @@ Created on Sat Oct 30 20:48:23 2021
 
 @author: QCP32
 """
-import os, time, datetime
-version = "1.4"
+import os, time, datetime, glob
+version = "1.08"
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
-from SequencerProgram_v1_07 import SequencerProgram, reg
-import SequencerUtility_v1_01 as su
-from ArtyS7_v1_02 import ArtyS7
+sequencer_program_list = [os.path.basename(x) for x in glob.glob(dirname + "/SequencerProgram_*.py")]
+sequencer_program_list.sort()
+print("Found the sequencer program file:", sequencer_program_list[-1])
 
+if sequencer_program_list[-1][-5:-3] == "08":
+    from SequencerProgram_v1_08 import SequencerProgram, reg
+    import SequencerUtility_v1_03 as su
+
+else:
+    from SequencerProgram_v1_07 import SequencerProgram, reg
+    import SequencerUtility_v1_01 as su
+
+
+from ArtyS7_v1_02 import ArtyS7
 from PyQt5.QtCore import pyqtSignal, QObject, QThread
 
 class SequencerRunner(QObject):
@@ -37,6 +47,7 @@ class SequencerRunner(QObject):
     user_stop = False
     device_sweep_flag = False 
     
+    
     def __init__(self, ser_num=None, hw_def=None, parent=None):
         super().__init__()
         self.parent = parent
@@ -58,6 +69,7 @@ class SequencerRunner(QObject):
         self.iter_end_time = None
         
         self.occupant = ""
+        self.verbose = False
         
     def openDevice(self, com_port=None):
         if com_port == None:
@@ -264,7 +276,8 @@ class Runner(QThread):
             self.data += controller.sequencer.read_fifo_data(data_count)
             data_count = controller.sequencer.fifo_data_length()
 
-        print(self.data)
+        if self.controller.verbose:
+            print(self.data)
             
         controller.data.append(self.data)
         self.status = "standby"

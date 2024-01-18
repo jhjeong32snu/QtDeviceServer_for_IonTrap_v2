@@ -22,6 +22,7 @@ class ClientSocket(QTcpSocket):
         
         self.readyRead.connect(self.receiveMessage)
         self.disconnected.connect(self.breakConnection)
+        self.isConnected = False
 
     def makeConnection(self, host, port):
         self.connectToHost(host, int(port), QIODevice.ReadWrite)
@@ -34,6 +35,7 @@ class ClientSocket(QTcpSocket):
         # Sends CON message to notify the name of the user
         message = ['C', 'SRV', 'CON', [self.user_name]]
         self.sendMessage(message)
+        self.isConnected = True
         return 0
 
     def breakConnection(self, spontaneous=False):
@@ -44,7 +46,8 @@ class ClientSocket(QTcpSocket):
             print("Disconnected from the server.")
         print(self.state())
         self._break_con_signal.emit(self.state())  # This will reset the status of the devices.
-            
+        self.isConnected = False    
+        
     def checkConnection(self):
         print(self.state())
         self._break_con_signal.emit(self.state())

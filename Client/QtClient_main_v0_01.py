@@ -6,12 +6,14 @@ Created on Mon Sep 27 17:01:22 2021
 E-mail: jhjeong32@snu.ac.kr
 Tel. 010-9600-3392
 """
-from QtClient_Handler_v0_01 import SocketHandler
+# from QtClient_Handler_v0_01 import SocketHandler
+from QtClient_basic_v0_01 import ClientSocket
 
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject
 from configparser import ConfigParser
+from queue import Queue
 
 import os, sys
 
@@ -28,7 +30,6 @@ class ClientMain(QObject):
     status = "standby"
     _fire_signal = pyqtSignal()
     _gui_signal = pyqtSignal(list)
-    _msg_list = []
     gui = None
     
     ccd_cnt = 0
@@ -37,9 +38,11 @@ class ClientMain(QObject):
         super().__init__()
         self._readConfig()
         self.socket = None
-        self.socketHandler = SocketHandler(self, self.cp)
-        # self.socket = ClientSocket(self, self.user_name)
-        # self.socket._message_signal.connect(self.receivedMessage)
+        # self.socketHandler = SocketHandler(self, self.cp)
+        self.socket = ClientSocket(self, self.user_name)
+        self.socket._message_signal.connect(self.receivedMessage)
+        
+        self.msg_queue = Queue()
 
         self._setupDevices()
         if gui:
@@ -75,14 +78,14 @@ class ClientMain(QObject):
             exec( "self.device_dict['%s'] = %s(socket=self)" % (device, self.cp.get(device, 'class')))
 
     def toMessageList(self, msg):
-        self._msg_list.append(msg)
+        self.msg_queue.put(msg)
         if self.status == "standby":
             self._fire_signal.emit()
         
     def dealMessageList(self):
         self.status = "sending"
-        while len(self._msg_list):
-            msg = self._msg_list.pop(0)
+        while self.msg_queue.qsize():
+            msg = self.msg_queue.get()
             self.socket.sendMessage(msg)
         self.status = "standby"
         
@@ -107,8 +110,8 @@ if __name__ == "__main__":
     client = ClientMain()
     if not client.gui == None:
         client.gui.show()
-    # app.exec_()
-    # sys.exit(app.exec())
+    app.exec_()
+    sys.exit(app.exec())
     # print(client.socket.makeConnection(client.IP, client.PORT))
 # client.socket.sendMessage(["C", "DAC", "ON", []])
 # client.socket.sendMessage(["C", "DAC", "SETV", [0, 0.3, 1, -4, 2, -0.7, 12, 8]])

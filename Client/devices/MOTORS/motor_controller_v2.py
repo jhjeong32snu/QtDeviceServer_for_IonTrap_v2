@@ -5,7 +5,7 @@ Created on Sun Nov 21 2021
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 from motor_handler import MotorHandler
 version = "2.1"
-qtimer_interval = 500 # ms
+qtimer_interval = 100 # ms
 
 class MotorController(QObject):
     """
@@ -42,7 +42,7 @@ class MotorController(QObject):
         print("Motor Controller v%s" % version)
         
     def openGui(self):
-        from Motor_Controller_GUI_v2 import MotorController_GUI
+        from Motor_Controller_GUI_v3 import MotorController_GUI
         self.gui = MotorController_GUI(controller=self)
         self._gui_opened = True
 
@@ -80,7 +80,7 @@ class MotorController(QObject):
     
     def _initializedMotor(self, nick):
         if nick in self._motors_under_loading:
-            self._motors_under_loading.remove(nick)            
+            self._motors_under_loading.remove(nick)
         self._sig_motors_initialized.emit(len(self._motors_under_loading), nick)  # Let applications know how many motors are left.
     
     def getPosition(self, nickname):
@@ -92,23 +92,23 @@ class MotorController(QObject):
             self._motors_under_homing.append(motor_nick)
     
     def moveToPosition(self, motor_dict):
-        print("initiated", motor_dict)
         try:
             for motor_nick, target_position in motor_dict.items():
                 self._motors[motor_nick].setTargetPosition(target_position)
                 self._motors_under_request.append(motor_nick)
                 self._motors[motor_nick].toWorkList("M")
-                
-            self.pos_checker.start(qtimer_interval) # Let the clients know the positions while moving.
+            if not self.pos_checker.isActive():
+                self.pos_checker.start(qtimer_interval) # Let the clients know the positions while moving.
         except Exception as ee:
             print(ee)
 
-        
     def _completedMotorMoving(self, nick, position):
         if nick in self._motors_under_request:
             self._motors_under_request.remove(nick)
     
     def openDevice(self, motor_list):
+        if type(motor_list) == str:
+            motor_list = [motor_list]
         self._sig_motors_initialized.emit(len(motor_list), "")  # Let applications know how many motors to be open.
         for m_idx, m_nick in enumerate(motor_list):
             self._motors_under_loading.append(m_nick)

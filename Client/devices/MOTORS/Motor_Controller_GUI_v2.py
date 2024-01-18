@@ -90,6 +90,11 @@ class MotorController_GUI(QtWidgets.QWidget, Ui_Form):
         text = self.tableWidget.item(row_idx, col_idx).text()
         return text
     
+    def showOnTop(self):
+        self.showNormal()
+        self.raise_()
+        self.activateWindow()
+    
 class IndividualMotorGUI(QObject):
     
     isChecked = False
@@ -119,7 +124,6 @@ class IndividualMotorGUI(QObject):
         self.motor._sig_motor_error.connect(self.erroredMotor)
         self.motor._sig_motor_move_done.connect(self.movedMotor)
         self.motor._sig_motor_homed.connect(self.homedMotor)
-        
         self.motor._sig_motors_changed_status.connect(self.changedStatus)
         
         
