@@ -34,7 +34,7 @@ from TripleBoard_GUI_base import DDS_gui_base
 class SubWindow(QtWidgets.QWidget, sub_ui):
     
     _freq_signal = pyqtSignal(int, float)
-    _curr_signal = pyqtSignal(int, int)
+    _curr_signal = pyqtSignal(int, float)
     _power_signal = pyqtSignal(int, bool)
     _phase_signal = pyqtSignal(int, int)
     

@@ -30,6 +30,7 @@ class ClientMain(QObject):
     _msg_list = []
     gui = None
     
+    
     ccd_cnt = 0
 
     def __init__(self, gui=True):
@@ -54,7 +55,7 @@ class ClientMain(QObject):
         if not os.path.isfile(config_file):
             from shutil import copyfile
             copyfile(dirname + "/config/default.ini", config_file)
-            print ("No such file has been found: %s. Copied the default ini file." % config_file)
+            
         
         self.cp = ConfigParser()
         self.cp.read(config_file)

@@ -242,7 +242,7 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
     def buttonDDSCONPressed(self, flag):
         if self.BTN_srv_connect.isChecked():
             if flag:
-                if self.device_dict["dds"].gui == None:
+                if self.device_dict["dds"].gui == None:  # This logic should be changed. This is just absurd
                     self.device_dict["dds"].openGui()
                 self.device_dict["dds"].openDevice()
             else:

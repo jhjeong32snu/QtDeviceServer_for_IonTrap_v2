@@ -144,8 +144,12 @@ class SerialPortRFSource(RFSource):
         Raises:
             serial.SerialException - port is None or given device is not found.
         """
-        self.__com.open()
-        self.__connected = True
+        try:
+            self.__com.open()
+            self.__connected = True
+            return 0
+        except:
+            return -1
 
     def disconnect(self):
         self.__com.close()
@@ -268,7 +272,7 @@ class SerialPortRFSource(RFSource):
         from serial.tools import list_ports
         for dev in list_ports.comports():
             if serial_number == dev.serial_number:
-                return self.device
+                return dev.device
             
         raise ValueError ("Couldn't find the device that has the serial number (%s)." % serial_number)
 
@@ -310,9 +314,13 @@ class SocketRFSource(RFSource):
         Args:
             Every argument will be passed to socket.create_connection().
         """
-        self.__socket = socket.create_connection(
-            (self.__tcp_ip, self.__tcp_port), *args, **kwargs)
-        self.__connected = True
+        try:
+            self.__socket = socket.create_connection(
+                (self.__tcp_ip, self.__tcp_port), *args, **kwargs)
+            self.__connected = True
+            return 0
+        except:
+            return -1
 
     def disconnect(self):
         self.__socket.close()

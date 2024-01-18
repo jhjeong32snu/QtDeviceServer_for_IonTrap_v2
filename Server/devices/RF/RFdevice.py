@@ -19,7 +19,7 @@ def requires_connection(func):
         RuntimeError - the func is called without connection.
     """
     def wrapper(self, *args, **kwargs):
-        if self.is_connected():
+        if self.is_connected:
             return func(self, *args, **kwargs)
         else:
             raise RuntimeError('{} is called with no connection.'
@@ -36,15 +36,6 @@ def check_range(val, min_, max_, label=None):
                          .format('' if label is None else label + '=',
                                  val, min_, max_))
 
-
-def print_msg(src, msg):
-    """Prints msg followed by src, in format
-    [src]: msg
-    Params:
-        src - source object who emits the message.
-        msg - message body.
-    """
-    print("[{}]: {}".format(src, msg))
 
 class WindfreakTech(SerialPortRFSource):
     """
@@ -67,30 +58,23 @@ class WindfreakTech(SerialPortRFSource):
 
     def find_nearest_idx(self, array, value):
         return (np.abs(array - value)).argmin()
-        
-
-    """
-    Following two private methods are wrappers for the protected methods
-    _send_command and _query_command, respectively.
-    These are just for convenience of writing codes.
-    """
-
-    def __send_command(self, cmd: str) -> bool:
+     
+    def send_command(self, cmd: str) -> bool:
         """Sends command in the device protocol, such as terminators, etc.
         This private method simply appends a space and a terminator.
         The device does not take the command if there is no space in front
         of the terminator.
         """
-        return self._send_command(cmd, encoding='ascii')
+        return self._send_command(cmd + "\n", encoding='ascii')
 
-    def __query_command(self, cmd: str, size=1, trim=True):
+    def query_command(self, cmd: str, size=1, trim=True):
         """Sends command and receives the response, through the device
         protocol.
         This private method simply appends a space and a terminator at the
         end of the command, just like self.__send_command does.
         """
-        return self._query_command(cmd, encoding='ascii',
-                                   terminator='', size=size, trim=trim)
+        return self._query_command(cmd + "\n", encoding='ascii',
+                                   terminator='\n', size=size, trim=trim)
     
 class SynthNV(WindfreakTech):
     """
@@ -106,7 +90,7 @@ class SynthNV(WindfreakTech):
         assert min_power <= max_power, 'min_power is greater than max_power.'
         assert min_freq <= max_freq, 'min_frequency is greater than max_frequency.'
         self.__output_mapping()
-        super().__init__(min_power, max_power, min_freq, max_freq, port=port, device_name='SynthNV')
+        super().__init__(min_power, max_power, min_freq, max_freq, port=port)
 
     def __output_mapping(self):
         # Possible output number for power/freq/phase
@@ -128,14 +112,14 @@ class SynthNV(WindfreakTech):
         Raises:
             AssertError - power must be set before enabling the output.
         """
-        self.__send_command('o1')
+        self.send_command('o1')
         
         
     @requires_connection
     def disableOutput(self, output_type:int=0):
         """Simply applies the power to be zero.
         """
-        self.__send_command('o0')
+        self.send_command('o0')
         
         
     @property
@@ -154,7 +138,7 @@ class SynthNV(WindfreakTech):
         power = round(power, 2)
         self.__power_idx = self.find_nearest_idx(self.__power_dbm_list, power)
         self.__power = self.__power_dbm_list[self.__power_idx]
-        self.__send_command('a{}'.format(self.__power_idx))
+        self.send_command('a{}'.format(self.__power_idx))
         
     @requires_connection
     def setFrequency(self, freq: float, output_type:int=0):
@@ -164,7 +148,7 @@ class SynthNV(WindfreakTech):
         """
         freq = round(freq, 1)
         check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
-        self.__send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
+        self.send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
         
         
     @requires_connection
@@ -188,7 +172,7 @@ class SynthNV(WindfreakTech):
         
     @requires_connection
     def getFrequency(self, output_type:int=0) -> float:
-        freq = self.__query_command('f?') # Return MHz scale
+        freq = self.query_command('f?') # Return MHz scale
         return int(float(freq) * 1e6) # Turn to Hz
     
     @requires_connection
@@ -197,21 +181,21 @@ class SynthNV(WindfreakTech):
 
     @requires_connection
     def is_output_enabled(self, output_type:int=0) -> bool:
-        return '1' == self.__query_command('o?')
+        return '1' == self.query_command('o?')
     
     @requires_connection
     def lockFrequency(self, external_flag=0, ext_ref_freq=10e6):
         """
         External source: 0, internal source: 1
         """
-        self.__send_command("x%d" % (not external_flag))
+        self.send_command("x%d" % (not external_flag))
 
     @requires_connection
     def is_locked(self) -> bool:
         """
         External source: 0, internal source: 1
         """
-        return "0" == self.__query_command("x?")
+        return "0" == self.query_command("x?")
         
         
 class SynthHD(WindfreakTech):
@@ -230,7 +214,7 @@ class SynthHD(WindfreakTech):
         self.__output_mapping()
         self.__phase = [0, 0]
         self._num_channels = 2
-        super().__init__(min_power, max_power, min_freq, max_freq, port=port, device_name='SynthHD')
+        super().__init__(min_power, max_power, min_freq, max_freq, port=port)
 
  
     def __output_mapping(self):
@@ -251,7 +235,7 @@ class SynthHD(WindfreakTech):
             AssertError - power must be set before enabling the output.
         """
         self.setChannel(output_type)
-        self.__send_command('E1r1')
+        self.send_command('E1r1')
         
         
     @requires_connection
@@ -259,7 +243,7 @@ class SynthHD(WindfreakTech):
         """Simply applies the power to be zero.
         """
         self.setChannel(output_type)
-        self.__send_command('E0r0')
+        self.send_command('E0r0')
         
     @property
     def power_dbm_list(self):
@@ -275,7 +259,7 @@ class SynthHD(WindfreakTech):
         self.setChannel(output_type)
         power = round(power, 2)
         self.__power = power
-        self.__send_command('W{:.2f}'.format(power))
+        self.send_command('W{:.2f}'.format(power))
         
     @requires_connection
     def setFrequency(self, freq: float, output_type:int=0):
@@ -286,14 +270,14 @@ class SynthHD(WindfreakTech):
         self.setChannel(output_type)
         freq = round(freq, 1)
         check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
-        self.__send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
+        self.send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
         
     @requires_connection
     def setPhase(self, phase: float, output_type:int=0):
         self.setChannel(output_type)
         net_phase = float(phase % 360)
         self.__phase[output_type] = net_phase
-        self.__send_command('~{:.2f}'.format(net_phase))
+        self.send_command('~{:.2f}'.format(net_phase))
         
         
     @requires_connection
@@ -315,16 +299,16 @@ class SynthHD(WindfreakTech):
     @requires_connection
     def setChannel(self, chan):
         if chan == 'A' or chan == 'a' or chan == 0:
-            self.__send_command('C0')
+            self.send_command('C0')
         elif chan == 'B' or chan == 'b' or chan == 1:
-            self.__send_command('C1')
+            self.send_command('C1')
         else:
             raise ValueError ('Wrong Channel Index')
             
     @requires_connection
     def getChannel(self) -> int:
         if self.device_name == 'HD':
-            chan = self.__query_command('C?') # 0(A) or 1(B)
+            chan = self.query_command('C?') # 0(A) or 1(B)
             return chan
         else:
             raise Warning ("This device does not support multiple channels (%s)." % self.device_name)
@@ -337,7 +321,7 @@ class SynthHD(WindfreakTech):
     @requires_connection
     def is_output_enabled(self, output_type:int=0) -> bool:
         self.setChannel(output_type)
-        return '1' == self.__query_command('r?')
+        return '1' == self.query_command('r?')
     
     
     @requires_connection
@@ -356,14 +340,14 @@ class SynthHD(WindfreakTech):
             
         if external_flag:
             external_flag = 0
-        self.__send_command("x%d" % (external_flag))
+        self.send_command("x%d" % (external_flag))
 
     @requires_connection
     def is_locked(self) -> bool:
         """
         External source: 0, internal source: 1
         """
-        return "0" == self.__query_command("x?")
+        return "0" == self.query_command("x?")
     
 
 
@@ -593,8 +577,6 @@ class SG38x(SocketRFSource):
             ValueError - frequency is out of range.
         """
         check_range(freq, self.min_frequency, self.max_frequency, "frequency")
-        if freq >= 3e9:
-            print_msg(self, "Warning - power may decrease above 3 GHz.")
         self.__send_command("FREQ {:.3f}".format(freq))
 
     @requires_connection
@@ -698,7 +680,7 @@ class Dummy_RF(SocketRFSource):
     This class is a dummy class that can simulate actual devices.
     """
     
-    def __init__(self, min_power=-50, max_power=10, min_freq=10e6, max_freq=15e9, port="", tcp_ip="", tcp_port=5512):
+    def __init__(self, min_power=-50, max_power=10, min_freq=10e6, max_freq=15e9, port="", tcp_ip="", tcp_port=5512, device_type=""):
         assert min_power >= -50, "min_power should be at least -50 dBm."
         assert max_power <= 10, "max_power should be at most 10 dBm."
         assert min_freq >= 10e6, "min_frequency should be at least 10 MHz."
@@ -714,10 +696,78 @@ class Dummy_RF(SocketRFSource):
         super().__init__(min_power, max_power, min_freq,
                          max_freq, tcp_ip=tcp_ip, tcp_port=tcp_port)
         self._num_channels = 2
+        
+        parameter_list = ["min_power", "max_power", "min_frequency", "max_frequency"]
+        self.device_type = device_type
+        target_device = device_type.split("_")[0]
+    
+        target_class = self._getTemporaryClass(target_device)
+        if target_class:
+            for param in parameter_list:
+                setattr(self, param, getattr(target_class, param))
+        
+    @property
+    def min_power(self):
+        return self._min_power
+    
+    @min_power.setter
+    def min_power(self, value):
+        self._min_power = value
+        
+    @property
+    def max_power(self):
+        return self._max_power
+    
+    @max_power.setter
+    def max_power(self, value):
+        self._max_power = value
+        
+    @property
+    def min_frequency(self):
+        return self._min_freq
+    
+    @min_frequency.setter
+    def min_frequency(self, value):
+        self._min_freq = value
+        
+    @property
+    def max_frequency(self):
+        return self._max_freq
+    
+    @max_frequency.setter
+    def max_frequency(self, value):
+        self._max_freq = value
+    
+                
+    def _getTemporaryClass(self, target_device=""):
+        if target_device == "synthnv":
+            target_class = SynthNV()
+            self._num_channels = 1
+        elif target_device == "synthhd":
+            self._num_channels = 2
+            target_class = SynthHD()
+        elif target_device == "sg384":
+            self._num_channels = 2
+            target_class = SG384()
+        elif target_device == "apsyn420":
+            self._num_channels = 1
+            target_class = APSYN420()
+        else:
+            target_class = None
+            self._num_channels = 2
+            
+        return target_class
+        
 
     def connect(self):
         """Connects to the device."""
-        self.__connected = True
+        import random
+        success = random.random()
+        if success > 0.5:
+            self.__connected = True
+            return 0
+        else:
+            return -1
 
     def disconnect(self):
         """Disconnects from the device."""

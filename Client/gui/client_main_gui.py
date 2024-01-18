@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Aug 21 23:22:02 2021
+
+Author: Junho Jeong
+To update: The connection open the GUI, which is absurd.
 """
 import os, sys
-version = "2.1"
+version = "2.2"
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
@@ -93,16 +96,15 @@ class MainWindow(QtWidgets.QMainWindow, main_ui, client_gui_theme_base):
         if not app in self.application_dict.keys():
             sys.path.append(dirname + "/applications/%s" % (self.cp.get("applications", app)))
             exec( "from %s import %s" % (self.cp.get(app, 'file'), self.cp.get(app, 'class')) )
-            exec( "self.application_dict['%s'] = %s(self.device_dict, self, self._theme)" % (app, self.cp.get(app, 'class')))
+            exec( "self.application_dict['%s'] = %s(self.device_dict, self, self._theme, '%s')" % (app, self.cp.get(app, 'class'), app))
             exec( "self.application_dict['%s'].setStyleSheet(self._theme_base[self._theme])" % (app))
-            
+
             if "changeTheme" in dir(self.application_dict[app]):
                 self.application_dict[app].changeTheme(self._theme)
 
         self.application_dict[app].showNormal()
         self.application_dict[app].raise_()
         self.application_dict[app].activateWindow()
-        self.application_dict[app].show()
         
     def _guiControl(self):
         '''
@@ -110,21 +112,22 @@ class MainWindow(QtWidgets.QMainWindow, main_ui, client_gui_theme_base):
         '''
         for device, action in self.menu_dict["device"].items():
             if self.sender() == action:
-                print("activated %s" % device)
-                if not self.device_dict[device]._gui_opened:
-                    self.device_dict[device].openGui()
+                self.openDeviceGui(device)
+                
+    def openDeviceGui(self, device):
+        print("activated %s" % device)
+        if not self.device_dict[device]._gui_opened:
+            self.device_dict[device].openGui()
 
-                    if "changeTheme" in dir(self.device_dict[device].gui):
-                        self.device_dict[device].gui.changeTheme(self._theme)
-                    else:
-                        self.device_dict[device].gui.setStyleSheet(self._theme_base[self._theme])
-                        
-                else:
-                    self.device_dict[device].gui.showNormal()
-                    self.device_dict[device].gui.raise_()
-                    self.device_dict[device].gui.activateWindow()
-                    
-                self.device_dict[device].gui.show()
+            if "changeTheme" in dir(self.device_dict[device].gui):
+                self.device_dict[device].gui.changeTheme(self._theme)
+            else:
+                self.device_dict[device].gui.setStyleSheet(self._theme_base[self._theme])
+                print("%s is changed by the main window" % device)
+                
+        self.device_dict[device].gui.showNormal()
+        self.device_dict[device].gui.raise_()
+        self.device_dict[device].gui.activateWindow()
                 
             
     def _initUi(self):

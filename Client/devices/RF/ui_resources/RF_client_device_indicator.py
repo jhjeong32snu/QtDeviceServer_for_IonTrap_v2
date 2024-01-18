@@ -28,18 +28,17 @@ class DeviceIndicator(QObject):
                             font: 87 9pt "Arial Black";
                             """}
     
-    def __init__(self, parent=None, device_name=""):
+    def __init__(self, parent=None, device_name="", device_setting=None):
         super().__init__()
         self.parent = parent
         self.device_name = device_name
-        
-    def connectSignal(self, signal):
-        signal.connect(self.toggleStatus)
+        self.device = device_setting
+
         
     def createLabel(self, container=None):
         if not container == None:
             self.label = QLabel()
-            self.label.setText(self.device_name)
+            self.label.setText(self.device_name.upper())
             self.label.setMaximumWidth(len(self.device_name)*12)
             self.label.setMinimumWidth(len(self.device_name)*12)
             self.label.setMaximumHeight(20)
@@ -47,16 +46,14 @@ class DeviceIndicator(QObject):
             
             container.addWidget(self.label)
             
-    def setFlagReferences(self, button):
-        if not type(button) == list:
-            button = [button]
-        self.flag_reference = button
-        self.toggleStatus()
+            stylesheet = self.__stylesheet[0]
+            self.label.setStyleSheet(stylesheet)
             
-    def toggleStatus(self):
+            
+    def checkDeviceOutput(self):
         flag = 0
-        for button in self.flag_reference:
-            flag += button.isChecked()
-        stylesheet = self.__stylesheet[flag]
+        for ch, setting in self.device.settings.items():
+            flag += setting["out"]
+        stylesheet = self.__stylesheet[flag > 0]
         self.label.setStyleSheet(stylesheet)
         

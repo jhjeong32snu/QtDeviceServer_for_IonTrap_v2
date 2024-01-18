@@ -56,6 +56,37 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
+        <widget class="QPushButton" name="BTN_Settings">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial Black</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>SETTINGS</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -149,7 +180,30 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="BTN_SET_pos">
+        <widget class="QLabel" name="NON_Z_pos">
+         <property name="text">
+          <string>Z</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="LBL_Z_pos">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>80</width>
+           <height>16777215</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="BTN_MOVE_pos">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -175,7 +229,7 @@
           </font>
          </property>
          <property name="text">
-          <string>SET</string>
+          <string>MOVE</string>
          </property>
         </widget>
        </item>
@@ -220,7 +274,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>BTN_SET_pos</sender>
+   <sender>BTN_MOVE_pos</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>pressedMovePosition()</slot>

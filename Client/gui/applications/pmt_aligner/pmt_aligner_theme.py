@@ -48,7 +48,6 @@ class pmt_aligner_theme_base():
                           QWidget{
                                  background-color:rgb(255,255,255);
                                  selection-background-color:rgb(130,150,200);
-                                 pressed-background-color:rgb(130,150,200);
                                  gridline-color:rgb(120,120,120);
                                  color:rgb(0,0,0);
                                  }
@@ -104,7 +103,6 @@ class pmt_aligner_theme_base():
                           QWidget{
                                  background-color:rgb(40,40,40);
                                  selection-background-color:rgb(240,180,60);
-                                 pressed-background-color:rgb(240,180,60);
                                  color:rgb(180,180,180);
                                  gridline-color:rgb(120,120,120);
                                  } 

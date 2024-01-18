@@ -79,6 +79,7 @@ class RFInterface(QThread):
                 self._port = local_com_list[dev_idx]
             else: 
                 self._port = None
+                
         elif self._conn_type == 'socket':
             self._ip = self.cp.get(self.device, 'ip')
             self._port = self.cp.get(self.device, 'port')

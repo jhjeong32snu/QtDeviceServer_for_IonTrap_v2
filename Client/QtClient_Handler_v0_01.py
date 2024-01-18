@@ -13,7 +13,6 @@ from queue import Queue
 
 class SocketHandler(QObject):
     
-    
     def __init__(self, parent=None, cp=None):
         self.socket_dict = {}
         ##

@@ -108,7 +108,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="BTN_open_2">
+      <widget class="QPushButton" name="BTN_home">
        <property name="minimumSize">
         <size>
          <width>80</width>
@@ -153,7 +153,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="BTN_open_3">
+      <widget class="QPushButton" name="BTN_close">
        <property name="minimumSize">
         <size>
          <width>80</width>
@@ -195,8 +195,42 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>BTN_home</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>pressedHomeMotors()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>294</x>
+     <y>49</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>305</x>
+     <y>289</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BTN_close</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>pressedCloseMotors()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>475</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>865</x>
+     <y>340</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>pressedOpenMotors()</slot>
+  <slot>pressedHomeMotors()</slot>
+  <slot>pressedCloseMotors()</slot>
  </slots>
 </ui>

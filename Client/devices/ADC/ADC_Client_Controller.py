@@ -28,12 +28,11 @@ def requires_device_open(func):
 
 class ADC_ClientInterface(QThread):
     
-    device_type = "ADC"    
+    device_type = "ADC"
     _status = "standby"
     _is_opened = False
     _gui_opened = False
     channelNumber = 0
-    
     
     def __init__(self, socket = None):
         

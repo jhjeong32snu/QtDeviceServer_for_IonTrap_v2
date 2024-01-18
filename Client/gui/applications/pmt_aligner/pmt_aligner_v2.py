@@ -44,59 +44,59 @@ from motor_opener import MotorOpener
 from pmt_aligner_theme import pmt_aligner_theme_base
 
 # class PMTAlignerMain(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
-class PMTAlignerMain(QObject):
+# class PMTAlignerMain(QObject):
     
-    _opened_module = False
+#     _opened_module = False
     
-    def __init__(self, device_dict=None, parent=None, theme="black"):
-        super().__init__()
-        self.device_dict = device_dict
-        self.parent = parent
-        self._theme = theme
-        self.pmt_aligner_gui = None
-        self.cp = self.parent.cp
+#     def __init__(self, device_dict=None, parent=None, theme="black"):
+#         super().__init__()
+#         self.device_dict = device_dict
+#         self.parent = parent
+#         self._theme = theme
+#         self.pmt_aligner_gui = None
+#         self.cp = self.parent.cp
         
-    def openOpener(self):
-        if not self._opened_module:
-            opener = MotorOpener(self.device_dict["motors"], self._theme)
-            opener.changeTheme(self._theme)
-            opener._finished_initialization.connect(self.initiateUi)
+#     def openOpener(self):
+#         if not self._opened_module:
+#             opener = MotorOpener(self.device_dict["motors"], self._theme)
+#             opener.changeTheme(self._theme)
+#             opener._finished_initialization.connect(self.initiateUi)
             
-            opener.show()
-            self.device_dict["motors"].openDevice(["px", "py"])
-        else:
-            self.initiUi()
+#             opener.show()
+#             self.device_dict["motors"].openDevice(["px", "py"])
+#         else:
+#             self.initiUi()
             
     
-    def show(self):
-        if not self._opened_module:
-            self.openOpener()
-        else:
-            self.pmt_aligner_gui.show()
+#     def show(self):
+#         if not self._opened_module:
+#             self.openOpener()
+#         else:
+#             self.pmt_aligner_gui.show()
             
-    def showNormal(self):
-        if not self.pmt_aligner_gui == None:
-            self.pmt_aligner_gui.showNormal()
+#     def showNormal(self):
+#         if not self.pmt_aligner_gui == None:
+#             self.pmt_aligner_gui.showNormal()
     
-    def raise_(self):
-        if not self.pmt_aligner_gui == None:
-            self.pmt_aligner_gui.raise_()
+#     def raise_(self):
+#         if not self.pmt_aligner_gui == None:
+#             self.pmt_aligner_gui.raise_()
             
-    def activateWindow(self):
-        if not self.pmt_aligner_gui == None:
-            self.pmt_aligner_gui.activateWindow()
+#     def activateWindow(self):
+#         if not self.pmt_aligner_gui == None:
+#             self.pmt_aligner_gui.activateWindow()
     
-    def initiateUi(self):
-        try:
-            self.pmt_aligner_gui = PMTAlginerGUI(self.device_dict, self, self._theme)
-            self.pmt_aligner_gui.changeTheme(self._theme)
-            self._opened_module = True
-            self.show()
-        except Exception as err:
-            print(err)
+#     def initiateUi(self):
+#         try:
+#             self.pmt_aligner_gui = PMTAlginerGUI(self.device_dict, self, self._theme)
+#             self.pmt_aligner_gui.changeTheme(self._theme)
+#             self._opened_module = True
+#             self.show()
+#         except Exception as err:
+#             print(err)
         
-    def setStyleSheet(self, stylesheet):
-        self.styleSheetString = stylesheet
+#     def setStyleSheet(self, stylesheet):
+#         self.styleSheetString = stylesheet
         
         
 class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
@@ -184,3 +184,7 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
         
     def _addTabWidget(self, widget, title):
         self.TabWidgetMain.addTab(widget, title)
+        
+if __name__ == "__main__":
+    pmt = PMTAlginerGUI()
+    pmt.show()

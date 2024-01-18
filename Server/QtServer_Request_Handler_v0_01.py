@@ -7,6 +7,7 @@ Tel. 010-9600-3392
 """
 from PyQt5.QtCore import QByteArray, QDataStream, QIODevice, pyqtSignal, QObject
 from PyQt5.QtNetwork import QTcpServer, QHostAddress
+from queue import Queue
 
 def logger_decorator(func):
     """
@@ -32,11 +33,12 @@ class RequestHandler(QTcpServer):
     - This class inherits QTcpServer as a base.
     - Most methods are overridden on our purpose, especially for handling client requets.
     """
-    client_list = []
+    
       
     
     def __init__(self, device_dict, logger=None):
         super().__init__()
+        self.client_list = []
         self.device_dict = device_dict
         self.logger = logger
 
@@ -140,7 +142,6 @@ class MessageHandler(QObject):
               
     """    
     _sig_kill_me  = pyqtSignal(str)
-    _msg_list = []
     _fire_signal = pyqtSignal()
 
     def __init__(self, parent, clientsocket, logger=None):
@@ -151,6 +152,7 @@ class MessageHandler(QObject):
         self.user_name = ""
         self.status = "standby"
         self.socket.readyRead.connect(self.receiveMessage)
+        self.msg_queue = Queue()
         
         # privates
         self._name_duplicate = 0
@@ -197,15 +199,15 @@ class MessageHandler(QObject):
         
     @logger_decorator
     def toMessageList(self, msg):
-        self._msg_list.append(msg)
+        self.msg_queue.put(msg)
         if self.status == "standby":
             self.status = "sending"
             self._fire_signal.emit()
         
     @logger_decorator
     def dealMessageList(self):
-        while len(self._msg_list):
-            msg = self._msg_list.pop(0)
+        while self.msg_queue.qsize():
+            msg = self.msg_queue.get()
             self.sendMessage(msg)
         self.status = "standby"
      

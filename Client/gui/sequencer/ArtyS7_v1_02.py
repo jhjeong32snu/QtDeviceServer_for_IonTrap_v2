@@ -443,7 +443,7 @@ class ArtyS7:
 if __name__ == '__main__':
     if 'dev' in vars(): # To close the previously opened device when re-running the script with "F5"
         dev.close()
-    dev = ArtyS7('COM7')
+    dev = ArtyS7('COM6')
     dev.send_command('*IDN?') # com.write(b'!5*IDN?\r\n')
     print(dev.read_next_message())
     dev.check_waveform_capture() # Check the status of trigger

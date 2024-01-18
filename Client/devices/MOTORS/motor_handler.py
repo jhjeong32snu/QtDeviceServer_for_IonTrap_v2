@@ -12,7 +12,7 @@ version = "2.1"
 
 class MotorHandler(QThread):
     """
-    This class is an API that can easily handle the motor with Qt classes.    
+    This class is an API-like class that can easily handle the motor with Qt classes.    
     This handler class handles the motor with a thread and the controller controls all the motors but in signal based operations.
     """
     _motor = None
@@ -25,8 +25,8 @@ class MotorHandler(QThread):
     _sig_motor_initialized = pyqtSignal(str)
     _sig_motor_error = pyqtSignal(str)
     _sig_motor_move_done = pyqtSignal(str, float)
-    _sig_motor_homed = pyqtSignal(str)
-    
+    _sig_motor_changed_position = pyqtSignal(str, float)
+    _sig_motor_homed = pyqtSignal(str) 
     _sig_motors_changed_status = pyqtSignal(str, str)
     
     def __init__(self, controller=None, ser=None, dev_type="Dummy", nick="motor"):  # cp is ConfigParser class
@@ -83,6 +83,7 @@ class MotorHandler(QThread):
         
     def getPosition(self):
         self.position = round(self._motor.get_position(), 3)
+        self._sig_motor_changed_position.emit(self.nickname, self.position)
         return self.position
     
     def setTargetPosition(self, target):
@@ -107,6 +108,8 @@ class MotorHandler(QThread):
             self._motor.open()
             self._is_opened = True
             self._sig_motor_initialized.emit(self.nickname)
+            self.status = "standby"
+            self.position = self.getPosition()
             
         except Exception as e:
             self._sig_motor_error.emit("An error while loading a motor %s.(%s)" % (self.nickname, e))
@@ -146,11 +149,15 @@ class MotorHandler(QThread):
                 
             elif work == "M": # Move position
                 self.moveToPosition(self._target)
+                                
+            elif work == "H": # Homing
+                self.forceHome()
+                
+            elif work == "Q": # Get position
+                self.getPosition()
                 
             elif work == "D": # Disconnect
                 self.closeDevice()
-                
-            elif work == "H": # Homing
-                self.forceHome()
+                return
 
             self.status = "standby"
