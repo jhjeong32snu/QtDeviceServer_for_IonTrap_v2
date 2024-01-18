@@ -13,6 +13,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from configparser import ConfigParser
 
 import os, sys
+from queue import Queue
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
@@ -27,7 +28,6 @@ class ClientMain(QObject):
     status = "standby"
     _fire_signal = pyqtSignal()
     _gui_signal = pyqtSignal(list)
-    _msg_list = []
     gui = None
     
     
@@ -38,6 +38,8 @@ class ClientMain(QObject):
         self._readConfig()
         self.socket = ClientSocket(self, self.user_name)
         self.socket._message_signal.connect(self.receivedMessage)
+        self._msg_queue = Queue()
+
 
         self._setupDevices()
         if gui:
@@ -50,7 +52,6 @@ class ClientMain(QObject):
     def _readConfig(self):
         PC_name = os.getenv('COMPUTERNAME', 'defaultValue')
         config_file = dirname + '/config/%s.ini' % PC_name
-        print(config_file)
         # import os
         if not os.path.isfile(config_file):
             from shutil import copyfile
@@ -77,19 +78,18 @@ class ClientMain(QObject):
             exec( "self.device_dict['%s'] = %s(socket=self)" % (device, self.cp.get(device, 'class')))
 
     def toMessageList(self, msg):
-        self._msg_list.append(msg)
+        self._msg_queue.put(msg)
         if self.status == "standby":
             self._fire_signal.emit()
         
     def dealMessageList(self):
         self.status = "sending"
-        while len(self._msg_list):
-            msg = self._msg_list.pop(0)
+        while self._msg_queue.qsize():
+            msg = self._msg_queue.get()
             self.socket.sendMessage(msg)
         self.status = "standby"
         
     def receivedMessage(self, msg_list):
-        print(msg_list)
         device = msg_list.pop(1)
         if not device == "SRV":
             if device.lower() in self.device_dict.keys():
@@ -100,7 +100,8 @@ class ClientMain(QObject):
         else:
             if not self.gui == None:
                 self._gui_signal.emit(msg_list)
-               
+
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     client = ClientMain()

@@ -22,8 +22,6 @@ class RFInterface(QThread):
     This is an interface class that controls multiple RF devices.
     """
     
-    _close_list = []
-    _open_list = []
     _status = "standby"
     # Available rf device model list
     rf_device_model_list = ['synthnv', 'synthhd', 'sg384', 'apsyn420', 'dummy_rf']
@@ -76,8 +74,11 @@ class RFInterface(QThread):
     def _readRFconfig(self):
         rf_device_str = self.cp.get("rf", "device_list")
         rf_device_list = "".join(rf_device_str.split()).split(",")
+        
 
-        for device in rf_device_list:
+        for device_idx, device in enumerate(rf_device_list):
+            print("Opening an RF device '%s'.... (%d/%d)" % (device, device_idx+1, len(rf_device_list)))
+
             device_class = RF_Controller(parent=self, 
                                          config=self.cp,
                                          logger=self.logger.getChild("%s" % device),
@@ -107,9 +108,7 @@ class RFInterface(QThread):
             work_type, rf_device = work[:2]
             operation = work[2]
             client = work[-1]
-            
-            print(work)
-            
+                        
             self.status = ":".join([rf_device, ":".join([str(op) for op in operation])])
             
             if work_type == "C":
@@ -129,8 +128,8 @@ class RFInterface(QThread):
                 # A new connection
                 elif rf_device == "HELO":
                     data = []
-                    for rf_class in self.device_dict.values():
-                        data += [rf_class.device, rf_class.device_type]
+                    for rf_handler in self.device_dict.values():
+                        data += [rf_handler.device, rf_handler.device_type, rf_handler.isConnected]
                     msg = ["D", "RF", "HELO", data]
                     self.AnnounceToClients(msg, client)
                     
@@ -148,19 +147,28 @@ class RFInterface(QThread):
                     sub_dev = self.device_dict[rf_device]
                     
                     if sub_cmd == "ON":
-                        con_flag = sub_dev.openDevice()
-                        if con_flag == -1:
-                            msg = ["E", "RF", rf_device, ["CON"]]
-                            self.AnnounceToClients(msg, self._client_list)
-                            continue
+
+                        if not sub_dev.isConnected:  # It is already connected
+                            con_flag = sub_dev.openDevice()
+                            if con_flag == -1:
+                                msg = ["E", "RF", rf_device, ["CON"]]
+                                self.AnnounceToClients(msg, client)
+                            else:
+                                msg = ["D", "RF", rf_device, ["ON"]]
+                                self.AnnounceToClients(msg, self._client_list)
+                        else:
+                            msg = ["D", "RF", rf_device, ["ON"]]
+                            self.AnnounceToClients(msg, client)
                             
-                        msg = ["D", "RF", rf_device, ["ON"]]
-                        self.AnnounceToClients(msg, self._client_list)
                         
                     elif sub_cmd == "OFF":
-                        sub_dev.closeDevice()
                         msg = ["D", "RF", rf_device, ["OFF"]]
-                        self.AnnounceToClients(msg, self._client_list)
+                        
+                        if sub_dev.isConnected:
+                            sub_dev.closeDevice()
+                            self.AnnounceToClients(msg, self._client_list)
+                        else:
+                            self.AnnounceToClients(msg, client)
                         
                     elif sub_cmd == "SETO": # power on
                         for channel, flag in zip(sub_oper[0::2], sub_oper[1::2]):
@@ -216,7 +224,7 @@ class RFInterface(QThread):
                     elif sub_cmd == "LOCK":
                         lock_flag, lock_freq = sub_oper
                         sub_dev.setFrequencyLock(lock_flag, lock_freq)                        
-                        flag = int(sub_dev.isLocked())
+                        flag = int(sub_dev.isLocked)
                         operation = ["LOCK", flag]
                         self.AnnounceToClients(["D", "RF", rf_device, operation], self._client_list)
                         
@@ -244,8 +252,8 @@ class RFInterface(QThread):
                         for rf_device in self.device_dict.keys():
                             msg = ["D", "RF", rf_device, ["STAT"] + self.device_dict[rf_device].getCurrentSettings()]
                             self.AnnounceToClients(msg, client)
-                        msg = ["D", "RF", rf_device, ["LOCK", self.device_dict[rf_device].isLocked]]
-                        self.AnnounceToClients(msg, client)
+                            msg = ["D", "RF", rf_device, ["LOCK", self.device_dict[rf_device].isLocked]]
+                            self.AnnounceToClients(msg, client)
                     else:
                         for rf_device in sub_oper:
                             msg = ["D", "RF", rf_device, ["STAT"] + self.device_dict[rf_device].getCurrentSettings()]
@@ -314,7 +322,7 @@ class RFInterface(QThread):
                         
                         
                     elif sub_cmd == "LOCK":
-                        flag = int(sub_dev.isLocked())
+                        flag = int(sub_dev.isLocked)
                         msg = ["D", "RF", rf_device, ["LOCK", flag]]
                         
                     else:

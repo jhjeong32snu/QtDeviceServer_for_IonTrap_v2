@@ -195,7 +195,7 @@ class RF_ClientInterface(QThread):
             self._status  = "running"
             # decompose the job
             work_type, cmd = work[:2]
-            data_list = work[2] # list of data            
+            data_list = work[2] # list of data
             
             if work_type == "D":
                 
@@ -205,15 +205,17 @@ class RF_ClientInterface(QThread):
                     Got data of Server Device List
                     """
                     self._status  = "HELO"
-
-                    dev_nick_list = data_list[::2]
-                    dev_type_list = data_list[1::2]
-                    
-                    for dev_nick, dev_type in zip(dev_nick_list, dev_type_list):
-                        self.buildRF_Device(dev_nick, dev_type)
-                        
                     self.isOpened = True
                     self._gui_update_signal.emit("RF", "CON", [])
+
+                    dev_nick_list = data_list[0::3]
+                    dev_type_list = data_list[1::3]
+                    dev_conn_list = data_list[2::3]
+                    
+                    for dev_nick, dev_type, dev_conn in zip(dev_nick_list, dev_type_list, dev_conn_list):
+                        self.buildRF_Device(dev_nick, dev_type)
+                        self.RF_dict[dev_nick].isConnected = dev_conn
+                        
                     
                 elif cmd in self.RF_dict.keys():
                     
@@ -252,8 +254,7 @@ class RF_ClientInterface(QThread):
                         param = sub_cmd[3].lower()
                         
                         if sub_data[0] == "g":
-                            gradual = "g" if sub_data[1] else "r"
-                            self._gui_update_signal.emit(cmd, gradual, [sub_data[1]])
+                            self._gui_update_signal.emit(cmd, "g", [sub_data[1]])
                         else:
                             for ch, val in zip(sub_data[::2], sub_data[1::2]):
                                 self.RF_dict[cmd].setValue(param, val, ch) # value update

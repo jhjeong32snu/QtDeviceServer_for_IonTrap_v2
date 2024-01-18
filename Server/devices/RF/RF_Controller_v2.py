@@ -80,7 +80,7 @@ class RF_Controller(QObject):
         self.readHardSettings()
         self._readRFconfig()
         
-        self._voltage_step = 0.01 # vpp
+        self.voltage_step = 0.01 # vpp
         self.init_power = -50
         self.final_power = -50
         self.power_list_dict = {}
@@ -90,6 +90,8 @@ class RF_Controller(QObject):
         self.power_timer.setInterval(250)
         self.power_timer.timeout.connect(self.setGradualPower)
         self.isUpdating = False
+        
+        self.openDevice()
                 
         
     @property
@@ -129,6 +131,7 @@ class RF_Controller(QObject):
 
         for channel_idx in range(self.num_channels):
             self.settings[channel_idx] = {key: None for key in self._device_parameters}
+            self.settings[channel_idx]["out"] = False
         
         if "ip" in self.cp.options(self.device):
             ip = self.cp.get(self.device, "ip")
@@ -140,12 +143,14 @@ class RF_Controller(QObject):
             serial_number = self.cp.get(self.device, "serial_number")
             comport = self.rf._get_comport(serial_number) # This function returns the comport from the serial number.
             self.con = self.rf.port = comport
-        elif "voltage_step" in self.cp.options(self.device):
-            self.voltage_step = float(self.cp.get(self.device, "voltage_step"))
-            
         else:
             raise ValueError ("A necessary information to connect to the device is missing!. Please provide any ip address or com port.")
-        
+
+            
+        if "voltage_step" in self.cp.options(self.device):
+            self.voltage_step = float(self.cp.get(self.device, "voltage_step"))
+            print("voltage step of device (%s): %f" % (self.device, self.voltage_step))
+            
         for param in self._default_parameters:
             for ch in range(len(self.settings)):
                 self.settings[ch][param] = getattr(self.rf, param)
@@ -161,25 +166,28 @@ class RF_Controller(QObject):
                         
     @logger_decorator
     def openDevice(self):
-        con_flag = self.rf.connect()
-        if con_flag == -1: # the connection failed. let the client know.
-            return -1
+        if not self.isConnected:
+            con_flag = self.rf.connect()
+            if con_flag == -1: # the connection failed. let the client know.
+                print("Failed connecting to the device (%s)" % self.device)
+                return -1
+            else:
+                self.isConnected = True
+                print("Opened the device (%s)" % self.device)
+    
+            for channel in self.settings.keys():
+                if "curr_freq_hz" in self.settings[channel].keys():
+                    frequency = self.settings[channel]["curr_freq_hz"]
+                    self.setFrequency(frequency, channel)
+                                        
+            self.readHardSettings()
         else:
-            self.isConnected = True
-        
-        for channel in self.settings.keys():
-            if "curr_freq_hz" in self.settings[channel].keys():
-                frequency = self.settings[channel]["curr_freq_hz"]
-                self.setFrequency(frequency, channel)
-                
-                self._dev_signal.emit(self.device, "f", [channel, frequency])
-                
-        self.readHardSettings()
+            print("The device (%s) is aleady opened." % self.device)
                                 
 
     @logger_decorator
     def closeDevice(self):
-        for ch in self.num_channels:
+        for ch in range(self.num_channels):
             if self.settings[ch]["out"]:
                 self.setPowerGradually(self.rf.min_power)
                 self.setOutput(ch, False)
@@ -230,22 +238,14 @@ class RF_Controller(QObject):
         dBm = 20*np.log10(vpp/np.sqrt(8)/(0.001 * 50)**0.5)
         return dBm
     
-    @property
-    def voltage_step(self):
-        return self._voltage_step
-    
-    @voltage_step.setter
-    def voltage_step(self, voltage_step=0.01):
-        self._voltage_step = voltage_step
-        
     
     @logger_decorator
     def setPowerList(self, power, ch_idx=0):
         self.init_power = self.settings[ch_idx]["power"]
-        if self.settings[ch_idx]["max_power"]:
+        if self.settings[ch_idx]["max_power"]: # if not the max_power is None
             max_power = self.settings[ch_idx]["max_power"]
         else:
-            max_power = self.rf.max_power
+            max_power = self.settings[ch_idx]["max_power"] = self.rf.max_power
             
         self.final_power = max( min(power, max_power), self.rf.min_power )
         
@@ -253,7 +253,10 @@ class RF_Controller(QObject):
         final_vpp = self.dBm_to_vpp(self.final_power)
         
         power_list = np.arange(init_vpp, final_vpp, (-1)**(init_vpp > final_vpp)*self.voltage_step).tolist()
+        # if not len(power_list):
+        #     power_list.append(init_vpp) # prevent malfunctioning due to the 'empty' list. This can be redundant if someone can find a better logic.
         power_list.append(final_vpp)
+        # print(power_list)
         
         self.power_list_dict[ch_idx] = self.vpp_to_dBm(power_list).tolist()
 
@@ -376,9 +379,10 @@ class RF_Controller(QObject):
     @logger_decorator
     def setFrequencyLock(self, lock_flag, lock_frequency=10e6):
         self.rf.lockFrequency(lock_flag, lock_frequency)
+        self.isLocked = self.checkIfLocked()
         
     def checkIfLocked(self):
-        return self.rf.is_locked
+        return self.rf.is_locked()
     
     
             
