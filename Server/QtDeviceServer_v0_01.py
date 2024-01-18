@@ -103,6 +103,15 @@ class DeviceServer(DeviceServerBase):
             raise FileNotFoundError ("No such file has been found: %s" % default_name)
             print("Error: %s" % ee)
         
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    if app is None:
+        app = QtWidgets.QApplication([])
+    srv = DeviceServer(True)
+    app.exec_()
+    sys.exit(app.exec())
+    
+    
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     if app is None:
@@ -110,3 +119,4 @@ if __name__ == "__main__":
     srv = DeviceServer(True)
     # app.exec_()
     # sys.exit(app.exec())
+    # main()

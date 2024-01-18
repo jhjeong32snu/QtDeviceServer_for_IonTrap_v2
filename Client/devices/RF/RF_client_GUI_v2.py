@@ -69,7 +69,7 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, main_ui):
                 self.tabWidget.addTab(layout_widget, device_name.upper())
                 di = DeviceIndicator(self, device_name, device_dict[device_name])
                 di.createLabel(self.IndicatorLayout)
-                # di.setFlagReferences(curr_dev.BTN_on)
+
                 curr_dev.sigOutputChanged.connect(di.checkDeviceOutput)
                 self.panel_dict[device_name] = curr_dev
                 self._di_dict[device_name] = di
@@ -143,6 +143,7 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
                     print("An error ['%s'] occured while handling ['%s']." % (err, func.__name__))
         return wrapper
     
+    
     def __init__(self, parent=None, device_name="", device_settings=None, config=None):
         QtWidgets.QWidget.__init__(self)
         self.main_gui = parent
@@ -209,8 +210,6 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
                     else:
                         self.CBOX_power.setCurrentIndex(2)
                      
-                     
-        
             
         self.CBOX_channel.currentIndexChanged.connect(self.changedChannel)
         self.CBOX_channel.setVisible(len(self.device.settings) > 1)
@@ -219,16 +218,20 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         self.CBOX_freq.currentTextChanged.connect(self.changedFreqUnit)
         self.CBOX_phase.currentTextChanged.connect(self.changedPhaseUnit)
         
+        self._interaction_objects = [self.SPB_power, self.SPB_freq, self.SPB_phase,
+                                     self.SLB_power, self.SLB_freq, self.SLB_phase,
+                                     self.BTN_lock, self.BTN_on]
+        
 
     def showEvent(self, evt):
         if self.isUiInitiated:
-            if not self.device.isConnected:
-                self.controller.openDevice(self.device_name)
-                
             self.updateAllParameters()
             
             
     def updateAllParameters(self):
+        con_flag = self.device.isConnected
+        self.BTN_connect.setChecked(con_flag)
+        self.enableInteractionObjects(con_flag)
         for key in self.device.settings[0].keys():
             self.updateParametersByKey(key)
             
@@ -305,13 +308,15 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
                 self.toStatusBar("Connected to the device (%s)." % self.device_name)
             else:
                 self.toStatusBar("Disonnected from the device (%s)." % self.device_name)
+            self.enableInteractionObjects(flag)
         elif cmd == "g":
-            self.disableWhileUpdating(True)
-        elif cmd == "r":
-            self.disableWhileUpdating(False)
+            flag = data[0]
+            self.disableWhileUpdating(flag)
+            print("gradual", flag)
         elif cmd == "e":
             if data[0] == "con":
                 self.toStatusBar("Could not connect to the device! (%s)" % self.device_name)
+                self.BTN_connect.setChecked(False)
         elif cmd == "l":
             flag = data[0]
             self.BTN_lock.setChecked(flag)
@@ -400,21 +405,15 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         power = self.device.settings[self.device_channel]["power"]
         min_power = self.device.settings[self.device_channel]["min_power"]
         max_power = self.device.settings[self.device_channel]["max_power"]
-        if power:
+        if not power == None:
             if unit == "Vpp":
                 p_value = self.dBm_to_vpp(power)
-                min_p_value = self.dBm_to_vpp(min_power)
-                max_p_value = self.dBm_to_vpp(max_power)
             elif unit == "dBm":
                 p_value = power
-                min_p_value = min_power
-                max_p_value = max_power
             elif unit == "mW":
                 p_value = self.dBm_to_mW(power)
-                min_p_value = self.dBm_to_mW(min_power)
-                max_p_value = self.dBm_to_mW(max_power)
-            self.setPowerLimit("min_power", min_p_value)
-            self.setPowerLimit("max_power", max_p_value)
+            self.setPowerLimit("min_power", min_power)
+            self.setPowerLimit("max_power", max_power)
             
             self.SPB_power.setValue(p_value)
             self.SPB_power.setStyleSheet(self._default_stylesheet)
@@ -511,7 +510,8 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         if not flag: # The power should be minimized before the output is turned off.
             self.controller.setPower(self.device_name, self.device_channel, self.device.settings[self.device_channel]["min_power"])
         self.controller.setOutput(self.device_name, self.device_channel, flag)
-        
+
+            
     def setSliderBarPowerLimits(self):
         ch = self.device_channel
         min_power_dbm = self.device.settings[ch]["min_power"]
@@ -538,7 +538,9 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         frequency = self.SPB_ref.value()*multiplier
         self.controller.setLock(self.device_name, flag, frequency)
         
-
+    def enableInteractionObjects(self, flag):
+        for obj in self._interaction_objects:
+            obj.setEnabled(flag)
 
 
 if __name__ == "__main__":

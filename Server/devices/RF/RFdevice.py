@@ -691,7 +691,6 @@ class Dummy_RF(SocketRFSource):
         self.__power_dict = {0: False, 1: False}
         self.__freq_dict = {0: False, 1: False}
         self.__phase_dict = {0: False, 1: False}
-        self.__locked = False
         self.__connected = False
         super().__init__(min_power, max_power, min_freq,
                          max_freq, tcp_ip=tcp_ip, tcp_port=tcp_port)
@@ -705,6 +704,8 @@ class Dummy_RF(SocketRFSource):
         if target_class:
             for param in parameter_list:
                 setattr(self, param, getattr(target_class, param))
+                
+        self._lock_flag = False
         
     @property
     def min_power(self):
@@ -763,7 +764,7 @@ class Dummy_RF(SocketRFSource):
         """Connects to the device."""
         import random
         success = random.random()
-        if success > 0.5:
+        if success > 0.01: # It fails to connect once out of 100.
             self.__connected = True
             return 0
         else:
@@ -814,11 +815,11 @@ class Dummy_RF(SocketRFSource):
 
     def lockFrequency(self, external_flag=0, ext_ref_freq=10e6):
         if ext_ref_freq == 10e6:
-            self.__locked = True
+            self._lock_flag = True
 
     def is_locked(self, output_type=0) -> bool:
         """Returns whether the current output is locked."""
-        return self.__locked
+        return self._lock_flag
     
     def _get_comport(self, serial_number):
         import random

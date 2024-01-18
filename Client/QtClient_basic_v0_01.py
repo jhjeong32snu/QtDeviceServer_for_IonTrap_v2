@@ -44,7 +44,6 @@ class ClientSocket(QTcpSocket):
             self.sendMessage(message)
             self.disconnectFromHost()
             print("Disconnected from the server.")
-        print(self.state())
         self._break_con_signal.emit(self.state())  # This will reset the status of the devices.
         self.isConnected = False    
         
