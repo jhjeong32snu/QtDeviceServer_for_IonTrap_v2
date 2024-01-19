@@ -139,8 +139,8 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
             self.BTN_connect_sequencer.setChecked(True)
             
             
-    def toStatusBar(self, msg):
-        self.statusbar.showMessage(msg)
+    def toStatusBar(self, msg, up_time=5000):
+        self.statusbar.showMessage(msg, up_time)
         
     def _setInterlock(self, occupation_flag):
         if occupation_flag:
