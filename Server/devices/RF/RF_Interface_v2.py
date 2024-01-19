@@ -14,6 +14,7 @@ from RF_Controller_v2 import RF_Controller
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
+import time
 debug = True
 
 class RFInterface(QThread):
@@ -177,6 +178,9 @@ class RFInterface(QThread):
                                 sub_dev.setToMinPower(channel)
                                 power = sub_dev.readSettings("power", channel)
                                 return_power_data += [channel, power]
+                            else:
+                                while sub_dev.isUpdating:
+                                    time.sleep(0.2)
                             sub_dev.setOutput(channel, flag)
                         msg = ["D", "RF", rf_device, ["SETO"] + sub_oper]
                         self.AnnounceToClients(msg, self._client_list)

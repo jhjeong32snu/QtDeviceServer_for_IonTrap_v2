@@ -26,6 +26,7 @@ sys.path.append(widget_dir)
 from QSliderSlow_v1 import QSliderSlow
 
 import numpy as np
+from RF_client_theme import RF_client_theme_base
 
 main_ui, _ = uic.loadUiType(main_ui_file)
 ref_ui,  _ = uic.loadUiType(ref_ui_file)
@@ -40,7 +41,7 @@ def Vpp_to_dBm(vpp):
 
 
 
-class RF_ControllerGUI(QtWidgets.QMainWindow, main_ui):
+class RF_ControllerGUI(QtWidgets.QMainWindow, RF_client_theme_base, main_ui):
     
         
     def __init__(self, parent=None, device_dict={}):
@@ -67,7 +68,7 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, main_ui):
                 layout.addWidget(curr_dev)
                 
                 self.tabWidget.addTab(layout_widget, device_name.upper())
-                di = DeviceIndicator(self, device_name, device_dict[device_name])
+                di = DeviceIndicator(self, device_name, device_dict[device_name], self._theme)
                 di.createLabel(self.IndicatorLayout)
 
                 curr_dev.sigOutputChanged.connect(di.checkDeviceOutput)
@@ -85,6 +86,7 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, main_ui):
         
             
     def updateGUI(self, device:str, cmd:str, data:list):
+        print("update gui", device, cmd, data)
         if device == "RF": # Upper level
             if cmd == "CON":
                 self._initUi(self.controller.RF_dict)

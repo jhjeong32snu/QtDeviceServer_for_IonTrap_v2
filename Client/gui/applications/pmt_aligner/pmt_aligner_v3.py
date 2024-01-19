@@ -30,13 +30,12 @@ uifile = dirname + '/pmt_aligner_v3.ui'
 widgetdir = dirname + '/widgets/'
 
 Ui_Form, QtBaseClass = uic.loadUiType(uifile)
-version = "3.0"
+version = "3.1"
 
 from pmt_aligner_theme import pmt_aligner_theme_base
         
 class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
     
-    _motor_to_be_opened = []
     _gui_initialized = False
     
     def __init__(self, device_dict=None, parent=None, theme="black", app_name=""):
@@ -56,6 +55,7 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
         self.sequencer = self.device_dict["sequencer"]
         
         self.cp = self.parent.cp
+        self.operation_mode = "local"
 
         self.motor_opener = MotorOpener(self, self._theme)
 
@@ -81,7 +81,10 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
     def _initParameters(self):
         motor_str = self.cp.get(self.app_name, "motors")
         motor_list = map(str.strip, motor_str.split(',')) # This is the fastest one to split by comma and remove white spaces
-        
+            
+        if "remote" in self.cp.options(self.app_name):
+            self.operation_mode = "remote"
+            
         for motor_idx, motor_nick in enumerate(motor_list):
             nick_label = getattr(self, "NON_%s_pos" % chr(88 + motor_idx))
             value_label = getattr(self, "LBL_%s_pos" % chr(88 + motor_idx))
@@ -91,10 +94,12 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
                                                           nick_label,
                                                           value_label,
                                                           motor_nick,
-                                                          self.motor_controller)
+                                                          self.motor_controller,
+                                                          True if self.operation_mode=="local" else False)
             self.motor_opener.addMotor(motor_handle)
             
         self.motor_opener.startLoadingMotors()
+        
             
     def pressedConnectSequencer(self, flag):
         if flag:
@@ -166,13 +171,14 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
         
 class MotorController(QObject):
     
-    def __init__(self, parent, nick_label, value_label, nickname, motor_controller):
+    def __init__(self, parent, nick_label, value_label, nickname, motor_controller, local=True):
         super().__init__()
         self.parent = parent
         self.nick_label = nick_label
         self.value_label = value_label
         self.setNickname(nickname)
         self.motor_controller = motor_controller
+        self.local = local
         self.setMotor(self.motor_controller._motors[self.nickname])
         
     def __call__(self):
@@ -226,16 +232,15 @@ from progress_bar import ProgressBar
 
 class MotorOpener(QtWidgets.QWidget):
     
-    _first_shown = True
     _finished_initialization = pyqtSignal()
     
-    _motor_list = []
     
     def __init__(self, controller=None, theme="black"):
         QtWidgets.QWidget.__init__(self)
         self.controller = controller
         self._theme = theme
         self.initUi()
+        self._motor_list = []
         self.num_motors = 0
         
     def addMotor(self, motor):

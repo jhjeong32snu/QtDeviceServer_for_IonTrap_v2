@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Oct 28 11:04:18 2021
+Created on Thu Nov 25 10:14:23 2021
 
 @author: QCP32
 """
 
-class client_gui_theme_base():
+class RF_client_theme_base():
     
     _themes = ["black", "white"]
     _theme = "white"
@@ -22,9 +22,9 @@ class client_gui_theme_base():
     
     _tabbar_stylesheet = {"white": "",
                           "black": """ 
-                                    QTabBar {border-radius:5px;}
+                                    background-color:rgb(80,80,80); color:rgb(180,180,180);
+                                    QTabBar {border-radus:5px;}
                                     QTabBar::tab:selected {background:rgb(40, 40, 40); color:rgb(180, 180, 180);}
-                                    QTabBar::tab:hover {background:rgb(180, 90, 8); color:rgb(180, 180, 180);}
                                     QTabBar::tab{background:rgb(70, 70, 70); color:rgb(180, 180, 180);}
                                     QTabWidget::pane { border: 0; }
                                     QTabWidget>QWidget>QWidget{background:rgb(80, 80, 80);}
@@ -122,17 +122,18 @@ class client_gui_theme_base():
                          QListWidget::item{background-color:rgb(80,80,80);}
                          QListWidget::item::selection{background-color:rgb(210,120,20);color:rgb(255,255,255);}
                          QTableCornerButton::section{background-color:rgb(80,80,80);}
+                         QTableView::item{align:center;}
                          QLineEdit{background-color:rgb(0,0,0);color:rgb(180,180,180);border:none;}
-                         QTabBar {border-radus:5px;}
-                         QTabBar::tab:selected {background:rgb(40, 40, 40); color:rgb(180, 180, 180);}
-                         QTabBar::tab{background:rgb(70, 70, 70); color:rgb(180, 180, 180);}
-                         QTabWidget::pane { border: 0; }
-                         QTabWidget>QWidget>QWidget{background:rgb(40, 40, 40);}
              			 QSlider::handle:horizontal {
                                                      background:rgb(200, 95, 10);
                                                      width: 12px;
                                                      height: 6px;
                                                      border-radius: 2px;}
+                         QTabBar {border-radus:5px;}
+                         QTabBar::tab:selected {background:rgb(40, 40, 40); color:rgb(180, 180, 180);}
+                         QTabBar::tab{background:rgb(70, 70, 70); color:rgb(180, 180, 180);}
+                         QTabWidget::pane { border: 0; }
+                         QTabWidget>QWidget>QWidget{background:rgb(40, 40, 40);}
              			 QComboBox{
                                  color: rgb(180, 180, 180);
                                  background-color: rgb(80, 80, 80);
@@ -168,3 +169,10 @@ class client_gui_theme_base():
                          QRadioButton::indicator::checked:hover{ border: 1px solid dark-gray; background-color:orange; border-radius: 5px;}
                          """
                          }
+    
+    def changeTheme(self, theme):
+        self._theme = theme
+        self.tabWidget.setStyleSheet(self._theme_base[self._theme])
+        self.tabWidget_2.setStyleSheet(self._theme_base[self._theme])
+        self.setStyleSheet(self._mainwindow_stylesheet[self._theme])
+        self.statusbar.setStyleSheet(self._statusbar_stylesheet[self._theme])

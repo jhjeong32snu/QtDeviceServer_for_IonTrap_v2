@@ -28,11 +28,12 @@ class DeviceIndicator(QObject):
                             font: 87 9pt "Arial Black";
                             """}
     
-    def __init__(self, parent=None, device_name="", device_setting=None):
+    def __init__(self, parent=None, device_name="", device_setting=None, theme="black"):
         super().__init__()
         self.parent = parent
         self.device_name = device_name
         self.device = device_setting
+        self._theme = theme
 
         
     def createLabel(self, container=None):
@@ -49,6 +50,8 @@ class DeviceIndicator(QObject):
             stylesheet = self.__stylesheet[0]
             self.label.setStyleSheet(stylesheet)
             
+            if self._theme == "black":
+                self.label.setStyleSheet("background-color:rgb(40,40,40)")
             
     def checkDeviceOutput(self):
         flag = 0
