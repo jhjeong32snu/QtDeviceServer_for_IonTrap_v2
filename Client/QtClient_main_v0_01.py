@@ -99,10 +99,6 @@ class ClientMain(QObject):
             if not self.gui == None:
                 self._gui_signal.emit(msg_list)
                 
-    
-               
-                
-    
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     if app is None:

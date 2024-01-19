@@ -1,9 +1,0 @@
-DEVICE_NAME = ['SG384', 'APSYN420']
-PORT_NUM = ['5025', '18']
-ENABLE_OUTPUT_Q = [['ENBR', ':OUTPut'], ['ENBL', '']]
-POWER_DBM_Q = [['AMPR', ':POWer'], ['AMPL', '']] # [0]: Type-N, [1]: BNC
-FREQUENCY_Q = ['FREQ', ':FREQuency']
-PHASE_Q = ['PHAS', ':PHASe']
-EXT_FREQ_Q = ['', ':ROSCillator:EXTernal:FREQuency']
-LOCK_Q = ['', ':ROSCillator:LOCKed']
-REF_SOURCE_Q = ['', ':ROSCillator:SOURce']

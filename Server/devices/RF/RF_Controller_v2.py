@@ -77,7 +77,7 @@ class RF_Controller(QObject):
         
         self._status = "off"
         self._generateDevice()
-        self.readHardSettings()
+
         self._readRFconfig()
         
         self.voltage_step = 0.01 # vpp
@@ -92,7 +92,7 @@ class RF_Controller(QObject):
         self.isUpdating = False
         
         self.openDevice()
-                
+        self.readHardSettings()
         
     @property
     def status(self):
@@ -191,6 +191,7 @@ class RF_Controller(QObject):
             if self.settings[ch]["out"]:
                 self.setPowerGradually(self.rf.min_power)
                 self.setOutput(ch, False)
+        self.rf.disconnect()
         self.isConnected = False
     
     

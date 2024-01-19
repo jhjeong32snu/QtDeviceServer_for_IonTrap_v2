@@ -45,8 +45,8 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         self.sequencer.sig_seq_complete.connect(self._completedProgress)
 
         self.cp = self.parent.cp
-        self._initUi()
         self._initParameters()
+        self._initUi()
         
                 
     def _initUi(self):
@@ -98,19 +98,11 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
             
             self.toStatusBar("Stopped PMT exposures.")
             
-    def updatePlot(self):
-        self.data_idx += 1
-                
+    def updatePlot(self):                
         self.plot.setData(self.PMT_number_list, self.PMT_counts_list)
         
         if self.radio_manual.isChecked():
-            try:
-                y_max = int(float(self.TXT_y_max.text()))
-                y_min = int(float(self.TXT_y_min.text()))
-                
-                self.ax.setYRange(y_min, y_max)
-            except:
-                self.toStatusBar("y_max and y_min should be integer numbers.")
+            self.ax.setYRange(self.PMT_vmin, self.PMT_vmax)
             
         elif self.radio_auto.isChecked():
             y_max = np.ceil(np.max(self.PMT_counts_list))
@@ -148,18 +140,18 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
     def _setSequencerFile(self):
         # CHECK FOR SYNTAX
         self.sequencer.loadSequencerFile(seq_file= dirname + "/simple_exposure.py",
-                                         replace_dict={13:{"param": "EXPOSURE_TIME_IN_100US", "value": int(self.exposure_time*10)},
-                                                       14:{"param": "NUM_REPEAT", "value": self.avg_num}})
+                                         replace_dict={13:{"param": "EXPOSURE_TIME_IN_MS", "value": int(self.exposure_time*10)},
+                                                       14:{"param": "NUM_AVERAGE", "value": self.avg_num}})
         
     def setPMTMin(self):
         try:
-            self.PMT_vmin = float(self.TXT_y_min.text())
+            self.PMT_vmin = np.floor(self.TXT_y_min.text())
         except Exception as e:
             self.toStatusBar("The min PMT count should be a float. (%s)" % e)
         
     def setPMTMax(self):
         try:
-            self.PMT_vmax = float(self.TXT_y_max.text())
+            self.PMT_vmax = np.ceil(self.TXT_y_max.text())
         except Exception as e:
             self.toStatusBar("The max PMT count should be a float. (%s)" % e)
     
@@ -171,8 +163,8 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
     
     def _create_canvas(self, frame):
         if self._theme == "black":
-            pg.setConfigOption('background', QColor(60, 60, 60))
-            styles = {"color": "w", "font-size": "15px", "font-family": "Arial"}
+            pg.setConfigOption('background', QColor(40, 40, 40))
+            styles = {"color": "#969696","font-size": "15px", "font-family": "Arial"}
             self.line_color = QColor(4, 216, 178)
             
         else:
@@ -196,7 +188,7 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         
         frame.setLayout(layout)
         
-        plot = ax.plot(self.x_data, self.y_data, pen=pg.mkPen(self.line_color, width=self.line_width))
+        plot = ax.plot(self.PMT_number_list, self.PMT_counts_list, pen=pg.mkPen(self.line_color, width=self.line_width))
         
         ax.setLabel("bottom", "Exposure indices", **styles)
         ax.setLabel("left", "PMT counts", **styles)

@@ -208,6 +208,7 @@ class MessageHandler(QObject):
     def dealMessageList(self):
         while self.msg_queue.qsize():
             msg = self.msg_queue.get()
+            print(msg)
             self.sendMessage(msg)
         self.status = "standby"
      

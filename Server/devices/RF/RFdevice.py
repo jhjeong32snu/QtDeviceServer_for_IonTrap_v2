@@ -59,22 +59,6 @@ class WindfreakTech(SerialPortRFSource):
     def find_nearest_idx(self, array, value):
         return (np.abs(array - value)).argmin()
      
-    def send_command(self, cmd: str) -> bool:
-        """Sends command in the device protocol, such as terminators, etc.
-        This private method simply appends a space and a terminator.
-        The device does not take the command if there is no space in front
-        of the terminator.
-        """
-        return self._send_command(cmd + "\n", encoding='ascii')
-
-    def query_command(self, cmd: str, size=1, trim=True):
-        """Sends command and receives the response, through the device
-        protocol.
-        This private method simply appends a space and a terminator at the
-        end of the command, just like self.__send_command does.
-        """
-        return self._query_command(cmd + "\n", encoding='ascii',
-                                   terminator='\n', size=size, trim=trim)
     
 class SynthNV(WindfreakTech):
     """
@@ -112,14 +96,14 @@ class SynthNV(WindfreakTech):
         Raises:
             AssertError - power must be set before enabling the output.
         """
-        self.send_command('o1')
+        self.__send_command('o1')
         
         
     @requires_connection
     def disableOutput(self, output_type:int=0):
         """Simply applies the power to be zero.
         """
-        self.send_command('o0')
+        self.__send_command('o0')
         
         
     @property
@@ -138,7 +122,7 @@ class SynthNV(WindfreakTech):
         power = round(power, 2)
         self.__power_idx = self.find_nearest_idx(self.__power_dbm_list, power)
         self.__power = self.__power_dbm_list[self.__power_idx]
-        self.send_command('a{}'.format(self.__power_idx))
+        self.__send_command('a{}'.format(self.__power_idx))
         
     @requires_connection
     def setFrequency(self, freq: float, output_type:int=0):
@@ -148,7 +132,7 @@ class SynthNV(WindfreakTech):
         """
         freq = round(freq, 1)
         check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
-        self.send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
+        self.__send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
         
         
     @requires_connection
@@ -172,7 +156,7 @@ class SynthNV(WindfreakTech):
         
     @requires_connection
     def getFrequency(self, output_type:int=0) -> float:
-        freq = self.query_command('f?') # Return MHz scale
+        freq = self.__query_command('f?') # Return MHz scale
         return int(float(freq) * 1e6) # Turn to Hz
     
     @requires_connection
@@ -181,21 +165,38 @@ class SynthNV(WindfreakTech):
 
     @requires_connection
     def is_output_enabled(self, output_type:int=0) -> bool:
-        return '1' == self.query_command('o?')
+        return '1' == self.__query_command('o?')
     
     @requires_connection
     def lockFrequency(self, external_flag=0, ext_ref_freq=10e6):
         """
         External source: 0, internal source: 1
         """
-        self.send_command("x%d" % (not external_flag))
+        self.__send_command("x%d" % (not external_flag))
 
     @requires_connection
     def is_locked(self) -> bool:
         """
         External source: 0, internal source: 1
         """
-        return "0" == self.query_command("x?")
+        return "0" == self.__query_command("x?")
+    
+    def __send_command(self, cmd: str) -> bool:
+        """Sends command in the device protocol, such as terminators, etc.
+        This private method simply appends a space and a terminator.
+        The device does not take the command if there is no space in front
+        of the terminator.
+        """
+        return self._send_command(cmd + "\n", encoding='ascii')
+
+    def __query_command(self, cmd: str, size=1, trim=True):
+        """Sends command and receives the response, through the device
+        protocol.
+        This private method simply appends a space and a terminator at the
+        end of the command, just like self.__send_command does.
+        """
+        return self._query_command(cmd + "\n", encoding='ascii',
+                                   terminator='\n', size=size, trim=trim)
         
         
 class SynthHD(WindfreakTech):
@@ -235,7 +236,7 @@ class SynthHD(WindfreakTech):
             AssertError - power must be set before enabling the output.
         """
         self.setChannel(output_type)
-        self.send_command('E1r1')
+        self.__send_command('E1r1')
         
         
     @requires_connection
@@ -243,7 +244,7 @@ class SynthHD(WindfreakTech):
         """Simply applies the power to be zero.
         """
         self.setChannel(output_type)
-        self.send_command('E0r0')
+        self.__send_command('E0r0')
         
     @property
     def power_dbm_list(self):
@@ -259,7 +260,7 @@ class SynthHD(WindfreakTech):
         self.setChannel(output_type)
         power = round(power, 2)
         self.__power = power
-        self.send_command('W{:.2f}'.format(power))
+        self.__send_command('W{:.2f}'.format(power))
         
     @requires_connection
     def setFrequency(self, freq: float, output_type:int=0):
@@ -270,14 +271,14 @@ class SynthHD(WindfreakTech):
         self.setChannel(output_type)
         freq = round(freq, 1)
         check_range(freq, self.min_frequency, self.max_frequency, 'frequency')
-        self.send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
+        self.__send_command('f{:.2f}'.format(freq/1e6)) # Synth take freq in MHz
         
     @requires_connection
     def setPhase(self, phase: float, output_type:int=0):
         self.setChannel(output_type)
         net_phase = float(phase % 360)
         self.__phase[output_type] = net_phase
-        self.send_command('~{:.2f}'.format(net_phase))
+        self.__send_command('~{:.2f}'.format(net_phase))
         
         
     @requires_connection
@@ -299,16 +300,16 @@ class SynthHD(WindfreakTech):
     @requires_connection
     def setChannel(self, chan):
         if chan == 'A' or chan == 'a' or chan == 0:
-            self.send_command('C0')
+            self.__send_command('C0')
         elif chan == 'B' or chan == 'b' or chan == 1:
-            self.send_command('C1')
+            self.__send_command('C1')
         else:
             raise ValueError ('Wrong Channel Index')
             
     @requires_connection
     def getChannel(self) -> int:
         if self.device_name == 'HD':
-            chan = self.query_command('C?') # 0(A) or 1(B)
+            chan = self.__query_command('C?') # 0(A) or 1(B)
             return chan
         else:
             raise Warning ("This device does not support multiple channels (%s)." % self.device_name)
@@ -321,7 +322,7 @@ class SynthHD(WindfreakTech):
     @requires_connection
     def is_output_enabled(self, output_type:int=0) -> bool:
         self.setChannel(output_type)
-        return '1' == self.query_command('r?')
+        return '1' == self.__query_command('r?')
     
     
     @requires_connection
@@ -340,14 +341,31 @@ class SynthHD(WindfreakTech):
             
         if external_flag:
             external_flag = 0
-        self.send_command("x%d" % (external_flag))
+        self.__send_command("x%d" % (external_flag))
 
     @requires_connection
     def is_locked(self) -> bool:
         """
         External source: 0, internal source: 1
         """
-        return "0" == self.query_command("x?")
+        return "0" == self.__query_command("x?")
+    
+    def __send_command(self, cmd: str) -> bool:
+        """Sends command in the device protocol, such as terminators, etc.
+        This private method simply appends a space and a terminator.
+        The device does not take the command if there is no space in front
+        of the terminator.
+        """
+        return self._send_command(cmd + "\n", encoding='ascii')
+
+    def __query_command(self, cmd: str, size=1, trim=True):
+        """Sends command and receives the response, through the device
+        protocol.
+        This private method simply appends a space and a terminator at the
+        end of the command, just like self.__send_command does.
+        """
+        return self._query_command(cmd + "\n", encoding='ascii',
+                                   terminator='\n', size=size, trim=trim)
     
 
 
@@ -446,11 +464,20 @@ class APSYNxxx(SocketRFSource):
             ValueError - ext_ref_freq is out of range.
         """
         check_range(ext_ref_freq, 1e6, 250e6, "external reference frequency")
-        self.__send_command(f":ROSCillator:EXTernal:FREQuency {ext_ref_freq:.0f}")
+        if external_flag:
+            self.__send_command("ROSC:SOUR EXT")
+            self.__send_command(f":ROSCillator:EXTernal:FREQuency {ext_ref_freq:.0f}")
+        else:
+            self.__send_command("ROSC:SOUR INT")
+        if self.is_locked():
+            print("it is locked")
+            self.__send_command("ROSC:OUTP %s" % "ON" if external_flag else "OFF")
+            self.__send_command("ROSC:OUTP:FREQ %.0f" % ext_ref_freq)
+
 
     @requires_connection
     def is_locked(self) -> bool:
-        return "1" == self.__query_command(":ROSCillator:LOCKed?")
+        return "EXT" == self.__query_command("ROSC:SOUR?")
 
     """
     Following two private methods are wrappers for the protected methods
@@ -617,6 +644,20 @@ class SG38x(SocketRFSource):
         Phase unit: degree
         """
         return float(self.__query_command("PHAS ?"))
+    
+    @requires_connection
+    def lockFrequency(self, external_flag=0, ext_ref_freq=10e6):
+        """
+        It only support 10MHz lock.
+        """
+        if external_flag:
+            self.__send_command("LOCK")
+        else:
+            self.__send_command("UNLK")
+
+    @requires_connection
+    def is_locked(self) -> bool:
+        return "1" == self.__query_command("LOCK ?")
 
     def __send_command(self, cmd: str) -> bool:
         """
