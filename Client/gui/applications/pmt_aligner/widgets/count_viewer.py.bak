@@ -6,22 +6,21 @@ Created on Sun Nov 28 22:37:43 2021
 """
 import os
 from PyQt5 import uic
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QVBoxLayout
-from PyQt5.QtGui     import QColor
-from PyQt5.QtCore    import pyqtSignal
+from PyQt5.QtCore    import pyqtSignal, QMutex, QWaitCondition, QThread
 
 import numpy as np
-import pyqtgraph as pg
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 uifile = dirname + '/count_viewer.ui'
 Ui_Form, QtBaseClass = uic.loadUiType(uifile)
-version = "2.1"
-
-pg.setConfigOptions(antialias=True)
+version = "2.0"
 
 #%% Temporary
 class CountViewer(QtWidgets.QWidget, Ui_Form):
@@ -48,6 +47,10 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         self._initUi()
         self._initParameters()
         
+        # plotter settings
+        self.plot_handler = PlotHandler(self)
+        self.plot_handler._sig_plot_process_done.connect(self.updatePlot)
+        self.plot_handler.start()
                 
     def _initUi(self):
         self.disable_list = [self.BTN_set_PMT_aveage,
@@ -56,7 +59,7 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
                              self.BTN_stop]
     
         
-        self.canvas, self.ax, self.plot = self._create_canvas(self.GBOX_plot)
+        self.toolbar, self.ax, self.canvas = self._create_canvas(self.GBOX_plot)
         
         
     def _initParameters(self):
@@ -99,26 +102,8 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
             self.toStatusBar("Stopped PMT exposures.")
             
     def updatePlot(self):
-        self.data_idx += 1
-                
-        self.plot.setData(self.PMT_number_list, self.PMT_counts_list)
-        
-        if self.radio_manual.isChecked():
-            try:
-                y_max = int(float(self.TXT_y_max.text()))
-                y_min = int(float(self.TXT_y_min.text()))
-                
-                self.ax.setYRange(y_min, y_max)
-            except:
-                self.toStatusBar("y_max and y_min should be integer numbers.")
-            
-        elif self.radio_auto.isChecked():
-            y_max = np.ceil(np.max(self.PMT_counts_list))
-            y_min = np.floor(np.min(self.PMT_counts_list))
-            
-            self.ax.setYRange(y_min, y_max)
-
-        
+        # Note that the thread does all the work, the main thread updates the plot only.
+        self.canvas.draw_idle()
         if self.counting_flag and self.user_run_flag:
             self.runPMT_Exposure()
         
@@ -170,38 +155,52 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
             obj.setEnabled(flag)
     
     def _create_canvas(self, frame):
-        if self._theme == "black":
-            pg.setConfigOption('background', QColor(60, 60, 60))
-            styles = {"color": "w", "font-size": "15px", "font-family": "Arial"}
-            self.line_color = QColor(4, 216, 178)
-            
-        else:
-            pg.setConfigOption('background', 'w')
-            pg.setConfigOption('foreground', 'k')
-            styles = {"color": "k", "font-size": "15px", "font-family": "Arial"}
-
-            self.line_color = QColor(31, 119, 180)
-        self.line_width = 3
+        fig = plt.Figure(tight_layout=True)
+        canvas = FigureCanvas(fig)
+        toolbar = NavigationToolbar(canvas, self)
         
-        canvas = pg.GraphicsLayoutWidget()
-        ax = canvas.addPlot()
-        ax.setDefaultPadding(0)
-
         layout = QVBoxLayout()
-        layout.layoutLeftMargin = 0
-        layout.layoutRightMargin = 0
-        layout.layoutTopMargin = 0
-        layout.layoutBottomMargin = 0
+        layout.addWidget(toolbar)
         layout.addWidget(canvas)
-        
         frame.setLayout(layout)
         
-        plot = ax.plot(self.x_data, self.y_data, pen=pg.mkPen(self.line_color, width=self.line_width))
+        ax = fig.add_subplot(1,1,1)
         
-        ax.setLabel("bottom", "Exposure indices", **styles)
-        ax.setLabel("left", "PMT counts", **styles)
+        spine_list = ['bottom', 'top', 'right', 'left']
         
-        return canvas, ax, plot
+        if self._theme == "black":
+            plt.style.use('dark_background')
+            plt.rcParams.update({"savefig.facecolor": [0.157, 0.157, 0.157],
+                                "savefig.edgecolor": [0.157, 0.157, 0.157]})
+            
+            fig.set_facecolor([0.157, 0.157, 0.157])
+            ax.set_facecolor([0.157, 0.157, 0.157])
+            ax.tick_params(axis='x', colors=[0.7, 0.7, 0.7], length=0)
+            ax.tick_params(axis='y', colors=[0.7, 0.7, 0.7], length=0)
+            
+            for spine in spine_list:
+                ax.spines[spine].set_color([0.7, 0.7, 0.7])
+
+            for action in toolbar.actions():
+                action_text = action.text()
+                action.setIcon(QtGui.QIcon(os.path.dirname(dirname) + '/icons/%s.png' % action_text))
+            
+            
+        elif self._theme == "white":
+            plt.style.use('default')
+            plt.rcParams.update({"savefig.facecolor": [1, 1, 1],
+                                "savefig.edgecolor": [1, 1, 1]})
+            fig.set_facecolor([1, 1, 1])
+            ax.set_facecolor([1, 1, 1])
+            ax.tick_params(axis='x', colors='k', length=0)
+            ax.tick_params(axis='y', colors='k', length=0)
+            
+            for spine in spine_list:
+                ax.spines[spine].set_color('k')
+            toolbar.setStyleSheet("background-color:rgb(255, 255, 255);")
+            
+        return toolbar, ax, canvas
+                
         
     ## Sequencer signals
     ####################
@@ -227,16 +226,61 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
                     pmt_count = raw_pmt_count[0][2]
                     
                 self.PMT_num += 1
-                while len(self.PMT_counts_list) > 50:
-                    self.PMT_counts_list.pop(0)
-                    self.PMT_number_list.pop(0)
-                    
                 self.PMT_counts_list.append(pmt_count)
                 self.PMT_number_list.append(self.PMT_num)
                 
                 self.TXT_pmt_result.setText("%.3f" % pmt_count)
-                self.updatePlot()
+                self.sig_update_plot.emit()
+
+    
+class PlotHandler(QThread):
+    
+    _sig_plot_process_done = pyqtSignal()    
+    
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+        self.parent.sig_update_plot.connect(self.wakeupThread)
+        self.PMT_counts_list = self.parent.PMT_counts_list
+        self.PMT_number_list = self.parent.PMT_number_list
+        
+        # figures
+        self.ax = self.parent.ax
+        
+        # running
+        self.cond = QWaitCondition()
+        self.mutex = QMutex()        
+        self.status = "standby"
+        
+    def PlotPMTResult(self):
+        self.ax.clear()
+        
+        if len(self.PMT_counts_list) > 50:
+            self.PMT_counts_list.pop(0)
+            self.PMT_number_list.pop(0)
+
+        self.ax.plot(self.PMT_number_list, self.PMT_counts_list, color='teal')
+        if self.parent.radio_auto.isChecked():
+            self.ax.set_ylim(min(self.PMT_counts_list), max(self.PMT_counts_list))
+        else:
+            self.ax.set_ylim(self.parent.PMT_vmin, self.parent.PMT_vmax)
+        
+        self._sig_plot_process_done.emit()
+        
+    def wakeupThread(self):
+        self.cond.wakeAll()
+        
+    def run(self):
+        while True:
+            self.mutex.lock()
+            self.status = "plotting"
+            
+            self.PlotPMTResult()
+            
+            self.status = "standby"
+            self.cond.wait(self.mutex)
+            self.mutex.unlock()
 
 if __name__ == "__main__":
-    pa = CountViewer()
+    pa = PMTAligner()
     pa.show()
