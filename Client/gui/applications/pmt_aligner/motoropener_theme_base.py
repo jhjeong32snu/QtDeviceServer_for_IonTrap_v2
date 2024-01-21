@@ -28,7 +28,7 @@ class MotorOpener_Theme_Base():
                                                              border-radius: 5px;
                                                              text-align: center;
                                                              background-color:rgb(40,40,40);
-                                                             color:rgb(255,255,255);
+                                                             color:rgb(180,180,180);
                                                              }
                                                 QProgressBar::chunk{background-color: orange;
                                                                     width: 10px;
@@ -50,7 +50,7 @@ class MotorOpener_Theme_Base():
                                                                border-radius: 5px;
                                                                text-align: center;
                                                                background-color:rgb(40,40,40);
-                                                               color:rgb(255,255,255);
+                                                               color:rgb(180,180,180);
                                                                }
                                                   QProgressBar::chunk{background-color: green;
                                                                       width: 10px;
@@ -73,7 +73,7 @@ class MotorOpener_Theme_Base():
                                                                border-radius: 5px;
                                                                text-align: center;
                                                                background-color:rgb(40,40,40);
-                                                               color:rgb(255,255,255);
+                                                               color:rgb(180,180,180);
                                                                }
                                                   QProgressBar::chunk{background-color: rgb(190,15,20);
                                                                       width: 10px;

@@ -1,7 +1,9 @@
 """
 Created on Nov 21, 2021
-@author: Junho Jeong
+@author: Jaeun Kim
 
+This script repeats PMT measurements. Each measurement writes a data entry to FIFO.
+The exposure time of each measurement is in the unit of 1us.
 """
 from SequencerProgram_v1_07 import SequencerProgram, reg
 import SequencerUtility_v1_01 as su

@@ -11,7 +11,7 @@ dirname = os.path.dirname(filename)
 
 sequencer_program_list = [os.path.basename(x) for x in glob.glob(dirname + "/SequencerProgram_*.py")]
 sequencer_program_list.sort()
-print("Found the sequencer program file:", sequencer_program_list[-1])
+print("Found a sequencer program file:", sequencer_program_list[-1])
 
 if sequencer_program_list[-1][-5:-3] == "08":
     from SequencerProgram_v1_08 import SequencerProgram, reg
@@ -104,13 +104,13 @@ class SequencerRunner(QObject):
         except Exception as e:
              self.toStatusBar("Failed to open the hardware definition (%s)." % e)
              
-    def loadSequencerFile(self, seq_file="", replace_dict={}):
+    def loadSequencerFile(self, seq_file="", replace_dict={}, replace_registers={}):
         """
-        Args: seq_file (str), replace_dict (dict)
+        Args: seq_file (str), replace_line_dict (dict), replace_register_dict (dict)
             - seq_file: It accepts the full path of the sequencer script.
                         It automatically finds where the hardware definition is defined and replaces it to its own hardware definition.
                         the "__main__" function in the seq_file will be ignored.
-            - replace_dict: The replace_dict replaces the given parameters in the seq_file.
+            - replace_dict: This replaces the given parameters in the seq_file.
                             To find parameters, please use getParameters function below.
                             replace dict = {
                                             n-th_line_where_the_parameter1_defined: {"parameter_name1"}: parameter_value,
@@ -118,12 +118,18 @@ class SequencerRunner(QObject):
                                             }
                             n-th_line_where_the_parameter1_defined: int
                             "parameter_name1": str
-                            parameter_value: int
+                             parameter_value: int
+            - replace_registers: This replaces the given register to the new register. for example, from "PMT1" to "PMT2".
+                                 The keys of the dict are old register strings, the values of the dict are new register strings.
                         
         """
         if self.is_opened:
             script_filename = os.path.basename(seq_file)
             file_string = self.replaceParameters(seq_file, replace_dict)
+            if len(replace_registers):
+                for old_str, new_str in replace_registers.items():
+                    file_string.replace(old_str, new_str)
+            
             self._executeFileString(file_string)
             self.seq_file = script_filename
             # self.toStatusBar("Loaded file (%s)." % script_filename)
