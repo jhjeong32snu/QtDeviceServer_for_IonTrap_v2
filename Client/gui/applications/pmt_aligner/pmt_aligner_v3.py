@@ -61,7 +61,7 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
 
         self._initParameters()
         self._initUi()
-        self.setWindowTitle("PMT Aligner v%s" % version)
+        self.setWindowTitle("%s v%s" % (self.app_name, version))
         self._gui_initialized = True
         
     def showEvent(self, event):
@@ -97,6 +97,9 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
                                                           self.motor_controller,
                                                           True if self.operation_mode=="local" else False)
             self.motor_opener.addMotor(motor_handle)
+            
+        if "detector" in self.cp.options(self.app_name):
+            self.detector = self.cp.get(self.app_name, "detector")
             
         self.motor_opener.startLoadingMotors()
         
@@ -229,8 +232,9 @@ class MotorController(QObject):
         
 
 from progress_bar import ProgressBar
+from motoropener_theme_base import MotorOpener_Theme_Base
 
-class MotorOpener(QtWidgets.QWidget):
+class MotorOpener(QtWidgets.QWidget, MotorOpener_Theme_Base):
     
     _finished_initialization = pyqtSignal()
     
@@ -249,12 +253,12 @@ class MotorOpener(QtWidgets.QWidget):
             motor._sig_motor_initialized.connect(self.changeProgressBar)
             self.num_motors += 1
         
-    def changeTheme(self, theme):
-        self._theme = theme
-        styleSheet = {"white": "background-color:rgb(255, 255, 255)",
-                      "black": "background-color:rgb(40, 40, 40); color:rgb(180, 180, 180)"}
+    # def changeTheme(self, theme):
+    #     self._theme = theme
+    #     styleSheet = {"white": "background-color:rgb(255, 255, 255)",
+    #                   "black": "background-color:rgb(40, 40, 40); color:rgb(180, 180, 180)"}
         
-        self.setStyleSheet(styleSheet[self._theme])
+    #     self.setStyleSheet(self._mainwindow_stylesheet[self._theme])
 
         
     def initUi(self):
@@ -263,7 +267,7 @@ class MotorOpener(QtWidgets.QWidget):
         frame.addWidget(self.progress_bar)
         frame.setContentsMargins(0, 0, 0, 0)
         self.setLayout(frame)
-        self.progress_bar.changeTheme(self._theme)
+        self.changeTheme(self._theme)
         
         self.resize(500, 60)
         self.setWindowTitle("KDC101 Loader")

@@ -20,7 +20,9 @@ filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 uifile = dirname + '/scanner.ui'
 Ui_Form, QtBaseClass = uic.loadUiType(uifile)
-version = "2.0"
+version = "3.1"
+
+seq_dirname = dirname + "/../../../libraries/sequencer_files/"
 
 #%% Temporary
 class ScannerGUI(QtWidgets.QWidget, Ui_Form):
@@ -29,6 +31,8 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
         self.parent = parent
+        self.detector = self.parent.detector
+
         self.motors = {nick: motor_controller._motors[nick] for nick in motor_nicks if ("x" in nick or "y" in nick)}
         self.sequencer = sequencer
         
@@ -48,6 +52,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
                               self.BTN_start_scanning,
                               self.BTN_go_to_max]
         self._initUi()
+
 
         
     def _initUi(self):
@@ -174,7 +179,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             if stop <= start:
                 self.toStatusBar("The stop value should be larger than the start value.")
                 return
-        self.scanner.startScanning()
+        self.scanner.startScanning(False)
     
     def pressedChangeSaveDir(self):
         save_dir = QFileDialog.getExistingDirectory(parent=self, directory=dirname + '/../save_data')
@@ -186,7 +191,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             self.toStatusBar("Changed the saving directory.")
     
     def pressedScanVicinityButton(self):
-        pass
+        self.scanner.startScanning(True)    
     
     def pressedPauseScanning(self):
         if "Pause" in self.BTN_pause_or_resume_scanning.text():
@@ -200,7 +205,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         pass
     
     def pressedGoToMax(self):
-        pass
+        self.scanner.goToMaxPosition()
     
     def pressedApplyButton(self):
         self.updatePlot()
@@ -236,6 +241,7 @@ class PMTScanner(QObject):
         self.sequencer = sequencer
         self.motors = motors
         self.pmt_aligner = pmt_aligner
+        self.detector = self.gui.detector
         
         self.x_scan_range = np.arange(0, 0.6, 0.1)
         self.y_scan_range = np.arange(0, 0.6, 0.1)
@@ -250,7 +256,10 @@ class PMTScanner(QObject):
         self._connect_signals()
         
     def getScanRange(self, start, end, step):
-        return np.arange(start, end+step, step)
+        scan_list = np.arange(start, end, step).tolist()
+        if not end in scan_list:
+            scan_list.append(end)
+        return np.asarray(scan_list)
     
     def getScanCoordinates(self, x_range, y_range):
         x_scan_coord, y_scan_coord = np.meshgrid(x_range, y_range)
@@ -299,12 +308,25 @@ class PMTScanner(QObject):
         position_dict = {}
         for motor_key in self.motors.keys():
             position_dict[motor_key] = getattr(self, "%s_max_pos" % ("x" if "x" in motor_key else "y"))
+        self.gui.toStatusBar("Found the max position: x:%.3f, y:%.3f" % (self.x_max_pos, self.y_max_pos))
         self.pmt_aligner.MoveToPosition(position_dict)
         
         
-    def resetScanning(self):
-        self.x_scan_range = self.getScanRange(*[getattr(self.gui, "GUI_x_%s" % x).value() for x in ["start", "stop", "step"]])
-        self.y_scan_range = self.getScanRange(*[getattr(self.gui, "GUI_y_%s" % x).value() for x in ["start", "stop", "step"]])
+    def resetScanning(self, vicinity=False):
+        if vicinity:
+            x_step   = self.gui.GUI_x_step.value()
+            x_center = float(self.gui.parent.LBL_X_pos.text())
+            print(x_center - x_step, x_center + x_step, x_step)
+            self.x_scan_range = self.getScanRange(x_center - x_step, x_center + x_step, x_step)
+            
+            y_step   = self.gui.GUI_y_step.value()
+            y_center = float(self.gui.parent.LBL_Y_pos.text())
+            self.y_scan_range = self.getScanRange(y_center - y_step, y_center + y_step, y_step)
+            
+        else:
+            self.x_scan_range = self.getScanRange(*[getattr(self.gui, "GUI_x_%s" % x).value() for x in ["start", "stop", "step"]])
+            self.y_scan_range = self.getScanRange(*[getattr(self.gui, "GUI_y_%s" % x).value() for x in ["start", "stop", "step"]])
+        
 
         self.x_scan_coord, self.y_scan_coord = self.getScanCoordinates(self.x_scan_range, self.y_scan_range)
         self.scan_image = np.zeros((self.y_scan_range.shape[0], self.x_scan_range.shape[0]))
@@ -314,8 +336,8 @@ class PMTScanner(QObject):
         self._list_motors_moving = []
         self._sig_scanner.emit("R")
         
-    def startScanning(self):
-        self.resetScanning()
+    def startScanning(self, vicinity=False):
+        self.resetScanning(vicinity)
         if self.sequencer.is_opened:
             self.setOccupant(True)
             self._status = "scanning"
@@ -372,9 +394,11 @@ class PMTScanner(QObject):
         self.sequencer.runSequencerFile()
         
     def setExposureTime(self, exposure_time, num_average=50):
-        self.sequencer.loadSequencerFile(seq_file= dirname + "/simple_exposure.py",
+        self.sequencer.loadSequencerFile(seq_file= seq_dirname + "/simple_exposure.py",
                                           replace_dict={13:{"param": "EXPOSURE_TIME_IN_MS", "value": exposure_time},
-                                                        14:{"param": "NUM_AVERAGE", "value": num_average}})
+                                                        14:{"param": "NUM_AVERAGE", "value": num_average}},
+                                          replace_registers={"PMT": self.detector})
+
     def _connect_signals(self):
         for motor in self.motors.values():
             motor._sig_motor_move_done.connect(self._motorMoved)

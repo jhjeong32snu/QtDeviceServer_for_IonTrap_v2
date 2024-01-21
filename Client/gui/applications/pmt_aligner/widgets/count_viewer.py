@@ -19,7 +19,9 @@ filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 uifile = dirname + '/count_viewer.ui'
 Ui_Form, QtBaseClass = uic.loadUiType(uifile)
-version = "2.1"
+version = "3.1"
+
+seq_dirname = dirname + "/../../../libraries/sequencer_files/"
 
 pg.setConfigOptions(antialias=True)
 
@@ -37,6 +39,8 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         
         self.device_dict = device_dict
         self.parent = parent
+        self.detector = self.parent.detector
+
         self._theme = theme
                 
         # sequencer settings
@@ -45,6 +49,7 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         self.sequencer.sig_seq_complete.connect(self._completedProgress)
 
         self.cp = self.parent.cp
+        self.detector = "PMT"
         self._initParameters()
         self._initUi()
         
@@ -69,6 +74,12 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
                 
         self.PMT_vmin = 0
         self.PMT_vmax = 100
+        
+    def setDetector(self, detector=""):
+        self.detector = detector
+        
+    def showEvent(self, evt):
+        self.updatePlot()
         
     def pressedStartCounting(self):
         if not self.sequencer.is_opened:
@@ -98,19 +109,21 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
             
             self.toStatusBar("Stopped PMT exposures.")
             
-    def updatePlot(self):                
-        self.plot.setData(self.PMT_number_list, self.PMT_counts_list)
-        
-        if self.radio_manual.isChecked():
-            self.ax.setYRange(self.PMT_vmin, self.PMT_vmax)
+    def updatePlot(self):      
+        if (not self.isHidden() and not self.isMinimized()):
+            self.plot.setData(self.PMT_number_list, self.PMT_counts_list)
             
-        elif self.radio_auto.isChecked():
-            y_max = np.ceil(np.max(self.PMT_counts_list))
-            y_min = np.floor(np.min(self.PMT_counts_list))
-            
-            self.ax.setYRange(y_min, y_max)
-
-        
+            if self.radio_manual.isChecked():
+                self.ax.setYRange(self.PMT_vmin, self.PMT_vmax)
+                
+            elif self.radio_auto.isChecked():
+                y_max = np.ceil(np.max(self.PMT_counts_list))
+                y_min = np.floor(np.min(self.PMT_counts_list))
+                
+                self.ax.setYRange(y_min, y_max)
+            print("updated")
+                
+    
         if self.counting_flag and self.user_run_flag:
             self.runPMT_Exposure()
         
@@ -139,19 +152,20 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         
     def _setSequencerFile(self):
         # CHECK FOR SYNTAX
-        self.sequencer.loadSequencerFile(seq_file= dirname + "/simple_exposure.py",
+        self.sequencer.loadSequencerFile(seq_file= seq_dirname + "/simple_exposure.py",
                                          replace_dict={13:{"param": "EXPOSURE_TIME_IN_MS", "value": int(self.exposure_time*10)},
-                                                       14:{"param": "NUM_AVERAGE", "value": self.avg_num}})
+                                                       14:{"param": "NUM_AVERAGE", "value": self.avg_num}},
+                                         replace_registers={"PMT": self.detector})
         
     def setPMTMin(self):
         try:
-            self.PMT_vmin = np.floor(self.TXT_y_min.text())
+            self.PMT_vmin = np.floor(float(self.TXT_y_min.text()))
         except Exception as e:
             self.toStatusBar("The min PMT count should be a float. (%s)" % e)
         
     def setPMTMax(self):
         try:
-            self.PMT_vmax = np.ceil(self.TXT_y_max.text())
+            self.PMT_vmax = np.ceil(float(self.TXT_y_max.text()))
         except Exception as e:
             self.toStatusBar("The max PMT count should be a float. (%s)" % e)
     
@@ -165,7 +179,7 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         if self._theme == "black":
             pg.setConfigOption('background', QColor(40, 40, 40))
             styles = {"color": "#969696","font-size": "15px", "font-family": "Arial"}
-            self.line_color = QColor(4, 216, 178)
+            self.line_color = QColor(141, 211, 199)
             
         else:
             pg.setConfigOption('background', 'w')
