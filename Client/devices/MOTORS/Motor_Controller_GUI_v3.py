@@ -77,7 +77,6 @@ class MotorController_GUI(QtWidgets.QWidget, Ui_Form):
             if motor_handle.Qposition == self.sender():
                 try:
                     data_dict = {motor_nick: float(motor_handle.Qposition.text())}
-                    print(data_dict)
                     self.parent.moveToPosition(data_dict)
                     return
                 except:

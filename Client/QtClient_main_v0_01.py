@@ -6,16 +6,14 @@ Created on Mon Sep 27 17:01:22 2021
 E-mail: jhjeong32@snu.ac.kr
 Tel. 010-9600-3392
 """
-# from QtClient_Handler_v0_01 import SocketHandler
 from QtClient_basic_v0_01 import ClientSocket
-
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject
 from configparser import ConfigParser
-from queue import Queue
 
 import os, sys
+from queue import Queue
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
@@ -24,7 +22,7 @@ class ClientMain(QObject):
     
     cp = None
     user_name = "unanimous"
-    IP = "127.0.0.1"	
+    IP = "127.0.0.1"
     device_dict = {}
     
     status = "standby"
@@ -32,17 +30,16 @@ class ClientMain(QObject):
     _gui_signal = pyqtSignal(list)
     gui = None
     
+    
     ccd_cnt = 0
 
     def __init__(self, gui=True):
         super().__init__()
         self._readConfig()
-        self.socket = None
-        # self.socketHandler = SocketHandler(self, self.cp)
         self.socket = ClientSocket(self, self.user_name)
         self.socket._message_signal.connect(self.receivedMessage)
-        
-        self.msg_queue = Queue()
+        self._msg_queue = Queue()
+
 
         self._setupDevices()
         if gui:
@@ -59,12 +56,15 @@ class ClientMain(QObject):
         if not os.path.isfile(config_file):
             from shutil import copyfile
             copyfile(dirname + "/config/default.ini", config_file)
-            print ("No such file has been found: %s. Copied the default ini file." % config_file)
+            
         
         self.cp = ConfigParser()
         self.cp.read(config_file)
-        self.cp.set("client", "conf_file", config_file)
+        
+        self.IP = self.cp.get("win_server", "ip")
+        self.PORT = int(self.cp.get("win_server", "port"))
         self.user_name = self.cp.get("client", "nickname")
+        self.cp.set("client", "conf_file", config_file)
 
     def _setupDevices(self):
         sys.path.append(dirname + "/devices")
@@ -78,14 +78,14 @@ class ClientMain(QObject):
             exec( "self.device_dict['%s'] = %s(socket=self)" % (device, self.cp.get(device, 'class')))
 
     def toMessageList(self, msg):
-        self.msg_queue.put(msg)
+        self._msg_queue.put(msg)
         if self.status == "standby":
             self._fire_signal.emit()
         
     def dealMessageList(self):
         self.status = "sending"
-        while self.msg_queue.qsize():
-            msg = self.msg_queue.get()
+        while self._msg_queue.qsize():
+            msg = self._msg_queue.get()
             self.socket.sendMessage(msg)
         self.status = "standby"
         
@@ -94,15 +94,16 @@ class ClientMain(QObject):
         if not device == "SRV":
             if device.lower() in self.device_dict.keys():
                 self.device_dict[device.lower()].toWorkList(msg_list)
+            else:
+                print("No such device is in o8ur device dict! (%s)." % device)
         
         else:
             if not self.gui == None:
                 self._gui_signal.emit(msg_list)
-                
+
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    if app is None:
-        app = QtWidgets.QApplication([])
     client = ClientMain()
     if not client.gui == None:
         client.gui.show()
@@ -111,3 +112,4 @@ if __name__ == "__main__":
     # print(client.socket.makeConnection(client.IP, client.PORT))
 # client.socket.sendMessage(["C", "DAC", "ON", []])
 # client.socket.sendMessage(["C", "DAC", "SETV", [0, 0.3, 1, -4, 2, -0.7, 12, 8]])
+# client.socket.sendMessage(["C", "EA_SG38X", "CON", []])

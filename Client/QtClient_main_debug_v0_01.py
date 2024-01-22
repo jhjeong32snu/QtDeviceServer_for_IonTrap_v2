@@ -61,8 +61,8 @@ class ClientMain(QObject):
         self.cp = ConfigParser()
         self.cp.read(config_file)
         
-        self.IP = self.cp.get("win_dds", "ip")
-        self.PORT = int(self.cp.get("win_dds", "port"))
+        self.IP = self.cp.get("win_server", "ip")
+        self.PORT = int(self.cp.get("win_server", "port"))
         self.user_name = self.cp.get("client", "nickname")
         self.cp.set("client", "conf_file", config_file)
 
