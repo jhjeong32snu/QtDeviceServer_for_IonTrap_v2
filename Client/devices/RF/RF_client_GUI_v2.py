@@ -40,7 +40,6 @@ def Vpp_to_dBm(vpp):
     return dBm
 
 
-
 class RF_ControllerGUI(QtWidgets.QMainWindow, RF_client_theme_base, main_ui):
     
         
@@ -86,7 +85,6 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, RF_client_theme_base, main_ui):
         
             
     def updateGUI(self, device:str, cmd:str, data:list):
-        print("update gui", device, cmd, data)
         if device == "RF": # Upper level
             if cmd == "CON":
                 self._initUi(self.controller.RF_dict)
@@ -204,7 +202,6 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
                      
                 if "power_unit" in self.config.options(self.device_name):
                     power_unit = self.config.get(self.device_name, "power_unit")
-                    print(power_unit)
                     if power_unit in ["vpp", "Vpp"]:
                         self.CBOX_power.setCurrentIndex(0)
                     elif power_unit in ["dbm", "dBm"]:
@@ -238,7 +235,6 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
             self.updateParametersByKey(key)
             
         self.setSliderBarPowerLimits()
-        print("Updated all parameters of %s" % self.device_name)
                 
     def updateParametersByKey(self, key):
         if key in self.key_dict.keys():
@@ -314,7 +310,6 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         elif cmd == "g":
             flag = data[0]
             self.disableWhileUpdating(flag)
-            print("gradual", flag)
         elif cmd == "e":
             if data[0] == "con":
                 self.toStatusBar("Could not connect to the device! (%s)" % self.device_name)

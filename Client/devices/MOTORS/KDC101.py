@@ -30,7 +30,10 @@ def load_dll(dll_path='C:/Program Files/Thorlabs/Kinesis'):
 
         # change the working directory to 'here' and load the DLL
         chdir(dll_path)
-        lib = cdll.LoadLibrary("Thorlabs.MotionControl.KCube.DCServo.dll")
+        try:
+            lib = cdll.LoadLibrary("Thorlabs.MotionControl.KCube.DCServo.dll")
+        except:
+            lib = cdll.LoadLibrary(dll_path + "/Thorlabs.MotionControl.KCube.DCServo.dll")
 
         # restore the original working directory
         chdir(cwd)

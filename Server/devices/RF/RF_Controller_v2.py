@@ -70,7 +70,8 @@ class RF_Controller(QObject):
         self.device_type = device_type
         self.isConnected = False
         self.isLocked = False
-        
+        self.voltage_step = 0.01 # vpp
+
         self.con = None
         self.rf = None
         self.queue = Queue()
@@ -80,7 +81,6 @@ class RF_Controller(QObject):
 
         self._readRFconfig()
         
-        self.voltage_step = 0.01 # vpp
         self.init_power = -50
         self.final_power = -50
         self.power_list_dict = {}
@@ -254,10 +254,7 @@ class RF_Controller(QObject):
         final_vpp = self.dBm_to_vpp(self.final_power)
         
         power_list = np.arange(init_vpp, final_vpp, (-1)**(init_vpp > final_vpp)*self.voltage_step).tolist()
-        # if not len(power_list):
-        #     power_list.append(init_vpp) # prevent malfunctioning due to the 'empty' list. This can be redundant if someone can find a better logic.
         power_list.append(final_vpp)
-        # print(power_list)
         
         self.power_list_dict[ch_idx] = self.vpp_to_dBm(power_list).tolist()
 

@@ -14,14 +14,6 @@ class MotorController(QObject):
     
     The logger decorate automatically record the exceptions when a bug happens.
     """
-    _client_list = []
-    _status = "standby"
-    _motors = {}
-    _is_opened = False
-    _gui_opened = False
-    _motors_under_request = []
-    _motors_under_homing  = []
-    _motors_under_loading = []
     
     _sig_motors_initialized = pyqtSignal(int, str)
     _sig_motors_positions = pyqtSignal(dict)
@@ -31,6 +23,15 @@ class MotorController(QObject):
         self.parent = socket
         self.cp = self.parent.cp
         self.gui = gui
+        
+        self._client_list = []
+        self._status = "standby"
+        self._motors = {}
+        self._is_opened = False
+        self._gui_opened = False
+        self._motors_under_request = []
+        self._motors_under_homing  = []
+        self._motors_under_loading = []
         # Setting motor initiator
         self.device = self.cp.get("device", "motors")
         self._motors = self._getMotorDictToLoad()

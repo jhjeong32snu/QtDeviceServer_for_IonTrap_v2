@@ -23,7 +23,7 @@ class pmt_aligner_theme_base():
     _tabbar_stylesheet = {"white": "",
                           "black": """ 
                                     background-color:rgb(80,80,80); color:rgb(180,180,180);
-                                    QTabBar {border-radus:5px;}
+                                    QTabBar {border-radius:5px;}
                                     QTabBar::tab:selected {background:rgb(40, 40, 40); color:rgb(180, 180, 180);}
                                     QTabBar::tab{background:rgb(70, 70, 70); color:rgb(180, 180, 180);}
                                     QTabWidget::pane { border: 0; }
@@ -129,7 +129,7 @@ class pmt_aligner_theme_base():
                                                      width: 12px;
                                                      height: 6px;
                                                      border-radius: 2px;}
-                         QTabBar {border-radus:5px;}
+                         QTabBar {border-radius:5px;}
                          QTabBar::tab:selected {background:rgb(40, 40, 40); color:rgb(180, 180, 180);}
                          QTabBar::tab{background:rgb(70, 70, 70); color:rgb(180, 180, 180);}
                          QTabWidget::pane { border: 0; }

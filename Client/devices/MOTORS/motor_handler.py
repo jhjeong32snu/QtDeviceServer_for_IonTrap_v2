@@ -15,13 +15,6 @@ class MotorHandler(QThread):
     This class is an API-like class that can easily handle the motor with Qt classes.    
     This handler class handles the motor with a thread and the controller controls all the motors but in signal based operations.
     """
-    _motor = None
-    _position = 0
-    _status = "closed"
-    _nickname = "motor"
-    _serial = None
-    _is_opened = False
-    
     _sig_motor_initialized = pyqtSignal(str)
     _sig_motor_error = pyqtSignal(str)
     _sig_motor_move_done = pyqtSignal(str, float)
@@ -31,6 +24,13 @@ class MotorHandler(QThread):
     
     def __init__(self, controller=None, ser=None, dev_type="Dummy", nick="motor"):  # cp is ConfigParser class
         super().__init__()
+        self._motor = None
+        self._position = 0
+        self._status = "closed"
+        self._nickname = "motor"
+        self._serial = None
+        self._is_opened = False
+        
         self.parent = controller
         self.dev_type = dev_type
         
@@ -105,11 +105,12 @@ class MotorHandler(QThread):
         try:
             self._motor = KDC101(self.serial)
             self.status = "initiating"
-            self._motor.open()
+            self._motor.open_and_start_polling()
             self._is_opened = True
             self._sig_motor_initialized.emit(self.nickname)
             self.status = "standby"
             self.position = self.getPosition()
+            self._sig_motor_move_done.emit(self.nickname, self.position)
             
         except Exception as e:
             self._sig_motor_error.emit("An error while loading a motor %s.(%s)" % (self.nickname, e))
