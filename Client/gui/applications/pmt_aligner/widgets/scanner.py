@@ -212,7 +212,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         
     def setInterlock(self, occupied_flag):
         if occupied_flag:
-            if self.sequencer.occupant == "scanner":
+            if self.sequencer.occupant == self:
                 self.BTN_scan_vicinity.setEnabled(False)
                 self.BTN_go_to_max.setEnabled(False)
             else:
@@ -254,6 +254,9 @@ class PMTScanner(QObject):
         
         self._list_motors_moving = []
         self._connect_signals()
+        
+    def __call__(self):
+        return "scanner"
         
     def getScanRange(self, start, end, step):
         scan_list = np.arange(start, end, step).tolist()
@@ -375,7 +378,7 @@ class PMTScanner(QObject):
         
     def setOccupant(self, flag):
         if flag:
-            self.sequencer.occupant = "scanner"
+            self.sequencer.occupant = self
         else:
             self.sequencer.occupant = ""
         self.sequencer.sig_occupied.emit(flag)
@@ -414,7 +417,7 @@ class PMTScanner(QObject):
                 self.runPMT_Exposure()
         
     def _donePMTExposure(self):
-        if self.sequencer.occupant == "scanner":
+        if self.sequencer.occupant == self:
             raw_pmt_count = np.asarray(self.sequencer.data[0]) # kind of deep copying...
             if len(raw_pmt_count) > 1:
                 pmt_count = np.mean(raw_pmt_count[:, 2])
