@@ -12,7 +12,6 @@ dirname = os.path.dirname(filename)
 
 # PyQt libraries
 from PyQt5 import uic, QtWidgets
-from PyQt5.QtCore import QThread
 from progress_bar_theme import progress_bar_theme_base
 main_ui_file = dirname + "/progressbar.ui"
 main_ui, _ = uic.loadUiType(main_ui_file)

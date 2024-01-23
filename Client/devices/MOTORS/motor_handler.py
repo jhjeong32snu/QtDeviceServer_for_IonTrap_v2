@@ -117,6 +117,10 @@ class MotorHandler(QThread):
 
     def moveToPosition(self, target_position):
         self.status = "moving"
+        if target_position > 13:
+            target_position = 13
+        if target_position < 0:
+            target_position = 0
         self._motor.move_to_position(target_position)
         self.position = self.getPosition()
         self._sig_motor_move_done.emit(self.nickname, self.position)

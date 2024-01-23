@@ -13,7 +13,9 @@ HW_VERSION = ""
 
 # Input port pin mapping
 # For input pin, there will be only one driver
-input_mapping = {'jb_2': 'PMT', 'jb_4': 'PMT2',  'ja_2': 'PMT3'}
+input_mapping = {'jb_2': 'PMT',
+                 'jb_4': 'PMT2', 
+                 'ja_2': 'PMT3'}
 
 # Output port pin mapping
 # For output pin, there might be more than one device controlled by the output pin
