@@ -855,8 +855,7 @@ class Dummy_RF(SocketRFSource):
         return self.__phase_dict[output_type]
 
     def lockFrequency(self, external_flag=0, ext_ref_freq=10e6):
-        if ext_ref_freq == 10e6:
-            self._lock_flag = True
+        self._lock_flag = external_flag
 
     def is_locked(self, output_type=0) -> bool:
         """Returns whether the current output is locked."""

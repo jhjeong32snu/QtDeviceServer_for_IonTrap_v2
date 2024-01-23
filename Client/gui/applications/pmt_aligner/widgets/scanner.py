@@ -48,7 +48,6 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         self.sequencer.sig_occupied.connect(self.setInterlock)
         
         self._disable_list = [self.BTN_scan_vicinity,
-                              self.BTN_pause_or_resume_scanning,
                               self.BTN_start_scanning,
                               self.BTN_go_to_max]
         self._initUi()
@@ -217,8 +216,10 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
                 self.BTN_go_to_max.setEnabled(False)
             else:
                 self._setEnableObjects(False)
+                self.BTN_pause_or_resume_scanning.setEnabled(False)
         else:
             self._setEnableObjects(True)
+            self.BTN_pause_or_resume_scanning.setEnabled(True)
             
         
     def _setEnableObjects(self, flag):

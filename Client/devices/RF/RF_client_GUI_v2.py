@@ -2,7 +2,7 @@
 """
 Created on Thu Sep 28 22:51:42 2023
 
-@author: QCP75
+@author: Junho Jeong
 """
 
 import os, sys
@@ -32,7 +32,7 @@ main_ui, _ = uic.loadUiType(main_ui_file)
 ref_ui,  _ = uic.loadUiType(ref_ui_file)
 channel_ui,  _ = uic.loadUiType(channel_ui_file)
 
-version = "v2"
+version = "v2.2"
 
 
 def Vpp_to_dBm(vpp):
@@ -50,7 +50,6 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, RF_client_theme_base, main_ui):
         self.panel_dict = {}
         self._di_dict = {}
         
-        # self._initUi(device_dict)
         self.setWindowTitle("RF_Interface_%s" % version)
         self._readConfig()
 
@@ -74,14 +73,17 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, RF_client_theme_base, main_ui):
                 self.panel_dict[device_name] = curr_dev
                 self._di_dict[device_name] = di
                 
-    def _readConfig(self, config_file_name="RF_settings.conf"):
-        config_file = dirname + "/" + config_file_name
+    def _readConfig(self, config_file=""):
+        if config_file == "":
+            config_file = dirname + "/RF_settings.conf"
+            
         if os.path.isfile(config_file):
-            self.LE_config.setText(os.path.abspath(dirname + "/" + config_file_name))
+            self.LE_config.setText(os.path.abspath(config_file))
             self.rf_config = ConfigParser()
             self.rf_config.read(config_file)
         else:
             self.rf_config = None
+            self.toStatusBar("No config file has been found.")
         
             
     def updateGUI(self, device:str, cmd:str, data:list):
@@ -105,9 +107,19 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, RF_client_theme_base, main_ui):
             self.controller.disconnectRF()
 
     def pressedUpdateButton(self):
-        self.controller.getDeviceStatus("ALL")
+        try:
+            config_file = self.LE_config.text()
+            self._readConfig(config_file)
+        except Exception as ee:
+            self.toStatusBar("An exception while loading the config file. (%s)" % ee)
+            print(ee)
         
-    def toStatusBar(self, msg, time_to_show=3000):
+    def pressedOpenButton(self):
+        conf_file = self.LE_config.text()
+        txt_program = "notepad.exe"
+        os.system(txt_program + " " + conf_file)
+        
+    def toStatusBar(self, msg, time_to_show=5000):
         self.statusbar.showMessage(msg, time_to_show)
         
         
@@ -151,16 +163,16 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         self.device = device_settings
         self.config = config
         self.controller = self.main_gui.controller
+        
         self.isUiInitiated = False
+        self.device_channel = 0
+
 
         self.setupUi(self)
         self.BTN_oscillo.setVisible(False)
         self._initUi()
         
-        self.device_channel = 0
         self.isUiInitiated = True
-        
-        self._power = 0
         
         self.SLB_p  = QSliderSlow(qslider=self.SLB_power, pressed=self.pressedPowerSliderBar, released=self.editedPower)
         self.SLB_f  = QSliderSlow(self.SLB_freq, self.pressedFreqSliderBar)
@@ -184,34 +196,61 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         print(value_delta)
         
 
-    def _initUi(self):
-        if self.config:
+    def readConfig(self):
+        if self.device_name in self.config.sections():
+            
+            config_options = self.config.options(self.device_name)
+        
             for ch in range(len(self.device.settings)):
-                channel_name = "CH%d" % (ch+1)
-                if self.device_name in self.config.sections():
-                    if "ch%d" % (ch+1) in self.config.options(self.device_name):
-                        channel_name = self.config.get(self.device_name, "ch%d" % (ch+1))
-
-
-                   
-                self.CBOX_channel.addItem(channel_name)
+                if "ch%d" % (ch+1) in config_options:
+                    channel_name = self.config.get(self.device_name, "ch%d" % (ch+1))
+                    item_idx = self.CBOX_channel.findText(("ch%d" % (ch+1)).upper())
+                    if not item_idx == -1: # found the item
+                        self.CBOX_channel.setItemText(item_idx, channel_name)
+                    
+            if "oscillo" in config_options:
+                 self.BTN_oscillo.setVisible(True)
+                 
+            if "power_unit" in config_options:
+                power_unit = self.config.get(self.device_name, "power_unit")
+                if power_unit in ["vpp", "Vpp"]:
+                    self.CBOX_power.setCurrentIndex(0)
+                elif power_unit in ["dbm", "dBm"]:
+                    self.CBOX_power.setCurrentIndex(1)
+                else:
+                    self.CBOX_power.setCurrentIndex(2)
+                    
+            if ("frequency_unit" in config_options) or ("freq_unit" in config_options): 
+                frequency_unit = self.config.get(self.device_name, "frequency_unit")
+                if frequency_unit == "kHz":
+                    self.CBOX_freq.setCurrentIndex(0)
+                elif frequency_unit == "MHz":
+                    self.CBOX_freq.setCurrentIndex(1)
+                elif frequency_unit == "GHz":
+                    self.CBOX_freq.setCurrentIndex(2)
+                else:
+                    self.toStatusBar("An unknown frequency unit is found. (%s)" % frequency_unit)
+                    self.CBOX_freq.setCurrentIndex(1)
+                    
+            if "curr_channel" in config_options:
+                curr_channel = self.config.get(self.device_name, "curr_channel")
+                item_idx = self.CBOX_channel.findText(curr_channel)
+                if not item_idx == -1: # found the item
+                    self.CBOX_channel.setCurrentIndex(item_idx)
+                    self.device_channel = item_idx
                 
-            if self.device_name in self.config.sections():
-                if "oscillo" in self.config.options(self.device_name):
-                     self.BTN_oscillo.setVisible(True)
-                     
-                if "power_unit" in self.config.options(self.device_name):
-                    power_unit = self.config.get(self.device_name, "power_unit")
-                    if power_unit in ["vpp", "Vpp"]:
-                        self.CBOX_power.setCurrentIndex(0)
-                    elif power_unit in ["dbm", "dBm"]:
-                        self.CBOX_power.setCurrentIndex(1)
-                    else:
-                        self.CBOX_power.setCurrentIndex(2)
+
+    def _initUi(self):
+        for ch in range(len(self.device.settings)):
+            channel_name = "CH%d" % (ch+1)
+            self.CBOX_channel.addItem(channel_name)
+        
+        if self.config:
+            self.readConfig()
                      
             
         self.CBOX_channel.currentIndexChanged.connect(self.changedChannel)
-        self.CBOX_channel.setVisible(len(self.device.settings) > 1)
+        self.CBOX_channel.setVisible(len(self.device.settings) > 1) # if the device has a single channel, it hides the combobox.
         
         self.CBOX_power.currentTextChanged.connect(self.changedPowerUnit)
         self.CBOX_freq.currentTextChanged.connect(self.changedFreqUnit)
@@ -280,6 +319,8 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
                 self.SPB_power.setMinimum(p_value)
             else:
                 self.SPB_power.setMaximum(p_value)
+                
+            self.setSliderBarPowerLimits()
             
     def setFreqLimit(self, key, value):
         if not value == None:
@@ -325,7 +366,7 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         
     def changedChannel(self, channel:int):
         self.device_channel = channel
-        self.SLB_freq.setValue(49)
+        self.SLB_freq.setValue(10)
         self.updateAllParameters()
         
     def disableWhileUpdating(self, flag):
@@ -373,9 +414,6 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
     def saveSpinBoxStyleSheet(self, stylesheet):
         self._stylesheet = stylesheet
     
-    # def changedPower(self, value):
-    #     self._power = value
-            
     def editedPower(self):
         p_value = self.SPB_power.value()
         if self.CBOX_power.currentText() == "Vpp":
@@ -533,6 +571,8 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         elif unit == "GHz":
             multiplier = 1e9
         frequency = self.SPB_ref.value()*multiplier
+        if self.RDO_Internal.isChecked():
+            flag = not flag
         self.controller.setLock(self.device_name, flag, frequency)
         
     def enableInteractionObjects(self, flag):

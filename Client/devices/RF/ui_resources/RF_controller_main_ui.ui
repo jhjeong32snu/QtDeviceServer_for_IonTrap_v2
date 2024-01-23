@@ -58,7 +58,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="BTN_load">
+               <widget class="QPushButton" name="BTN_open">
                 <property name="minimumSize">
                  <size>
                   <width>75</width>
@@ -74,7 +74,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Load</string>
+                 <string>Open</string>
                 </property>
                </widget>
               </item>
@@ -95,7 +95,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Save</string>
+                 <string>Update</string>
                 </property>
                </widget>
               </item>
@@ -131,30 +131,6 @@
             </property>
             <property name="checkable">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="BTN_update">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <family>Arial Black</family>
-              <pointsize>11</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Update</string>
-            </property>
-            <property name="checkable">
-             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -270,8 +246,8 @@
    <slot>pressedConButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>637</x>
-     <y>66</y>
+     <x>768</x>
+     <y>96</y>
     </hint>
     <hint type="destinationlabel">
      <x>1157</x>
@@ -280,18 +256,34 @@
    </hints>
   </connection>
   <connection>
-   <sender>BTN_update</sender>
-   <signal>clicked(bool)</signal>
+   <sender>BTN_save</sender>
+   <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>pressedUpdateButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>725</x>
-     <y>57</y>
+     <x>600</x>
+     <y>74</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1302</x>
-     <y>-29</y>
+     <x>1113</x>
+     <y>38</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BTN_open</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pressedOpenButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>473</x>
+     <y>78</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1046</x>
+     <y>21</y>
     </hint>
    </hints>
   </connection>
@@ -299,5 +291,6 @@
  <slots>
   <slot>pressedUpdateButton()</slot>
   <slot>pressedConButton()</slot>
+  <slot>pressedOpenButton()</slot>
  </slots>
 </ui>

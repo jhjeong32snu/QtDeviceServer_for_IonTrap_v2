@@ -138,10 +138,10 @@
                  <number>3</number>
                 </property>
                 <property name="minimum">
-                 <double>-100.000000000000000</double>
+                 <double>0.000000000000000</double>
                 </property>
                 <property name="maximum">
-                 <double>100.000000000000000</double>
+                 <double>999.000000000000000</double>
                 </property>
                 <property name="singleStep">
                  <double>0.010000000000000</double>
@@ -276,10 +276,10 @@
                  <number>3</number>
                 </property>
                 <property name="minimum">
-                 <double>-100.000000000000000</double>
+                 <double>0.000000000000000</double>
                 </property>
                 <property name="maximum">
-                 <double>100.000000000000000</double>
+                 <double>999.000000000000000</double>
                 </property>
                 <property name="value">
                  <double>1.000000000000000</double>
@@ -294,10 +294,10 @@
                <bool>false</bool>
               </property>
               <property name="maximum">
-               <number>99</number>
+               <number>20</number>
               </property>
               <property name="value">
-               <number>49</number>
+               <number>10</number>
               </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -415,10 +415,10 @@
                  <number>3</number>
                 </property>
                 <property name="minimum">
-                 <double>-100.000000000000000</double>
+                 <double>0.000000000000000</double>
                 </property>
                 <property name="maximum">
-                 <double>100.000000000000000</double>
+                 <double>999.000000000000000</double>
                 </property>
                 <property name="value">
                  <double>1.000000000000000</double>

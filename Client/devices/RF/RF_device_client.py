@@ -8,14 +8,14 @@ from PyQt5.QtCore import QObject
 
 class RF_Device_Client(QObject):
     
-    _device_parameters = ["out",
-                          "power",
-                          "freq",
-                          "phase",
-                          "min_power",
+    _device_parameters = ["min_power",
                           "max_power",
                           "min_freq",
-                          "max_freq"]
+                          "max_freq",
+                          "out",
+                          "power",
+                          "freq",
+                          "phase"]
     
     def __init__(self, parent, device_nick, device_type):
         super().__init__()

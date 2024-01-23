@@ -195,7 +195,6 @@ class MessageHandler(QObject):
                 self._sig_kill_me.emit(self.user_name)
         else:
             self._numFailure = 0
-        # print("To the client(%s, %d):" % (self.socket.peerAddress().toString(), self.socket.peerPort()), msg)
         
     @logger_decorator
     def toMessageList(self, msg):
@@ -208,7 +207,6 @@ class MessageHandler(QObject):
     def dealMessageList(self):
         while self.msg_queue.qsize():
             msg = self.msg_queue.get()
-            print(msg)
             self.sendMessage(msg)
         self.status = "standby"
      
