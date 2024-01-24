@@ -1083,22 +1083,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>BTN_auto</sender>
-   <signal>clicked()</signal>
-   <receiver>Form</receiver>
-   <slot>preseedAutoSet()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>764</x>
-     <y>472</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>799</x>
-     <y>507</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>BTN_DB</sender>
    <signal>clicked()</signal>
    <receiver>Form</receiver>
@@ -1226,12 +1210,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>BTN_auto</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>pressedAutoSet()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>782</x>
+     <y>489</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1183</x>
+     <y>429</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
-  <slot>preseedAutoSet()</slot>
   <slot>pressedSaveButton()</slot>
   <slot>changedSelectedDevice()</slot>
   <slot>changedSliderBar()</slot>
   <slot>pressedRunButton()</slot>
+  <slot>pressedAutoSet()</slot>
  </slots>
 </ui>

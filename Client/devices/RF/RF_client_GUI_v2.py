@@ -116,8 +116,8 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, RF_client_theme_base, main_ui):
         
     def pressedOpenButton(self):
         conf_file = self.LE_config.text()
-        txt_program = "notepad.exe"
-        os.system(txt_program + " " + conf_file)
+        # txt_program = "notepad.exe"
+        os.startfile(conf_file)
         
     def toStatusBar(self, msg, time_to_show=5000):
         self.statusbar.showMessage(msg, time_to_show)
@@ -238,6 +238,12 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
                 if not item_idx == -1: # found the item
                     self.CBOX_channel.setCurrentIndex(item_idx)
                     self.device_channel = item_idx
+                    
+            for ch in range(len(self.device.settings)):
+                if "max_power_ch%d" % (ch+1) in config_options:
+                    max_power = float(self.config.get(self.device_name, "max_power_ch%d" % (ch+1)))
+                    self.device.settings[ch]["max_power"] = max_power
+                    print("max power", max_power)
                 
 
     def _initUi(self):
@@ -340,6 +346,7 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
     def updateGUI(self, cmd:str, data=[]):
         if cmd == "STAT":
             self.updateAllParameters()
+            self.readConfig()
         elif cmd in ["c", "con"]:
             flag = data[0]
             self.BTN_connect.setChecked(flag)
@@ -366,7 +373,7 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         
     def changedChannel(self, channel:int):
         self.device_channel = channel
-        self.SLB_freq.setValue(10)
+        self.SLB_freq.setValue(5)
         self.updateAllParameters()
         
     def disableWhileUpdating(self, flag):
