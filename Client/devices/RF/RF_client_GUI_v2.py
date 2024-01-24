@@ -116,8 +116,8 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, RF_client_theme_base, main_ui):
         
     def pressedOpenButton(self):
         conf_file = self.LE_config.text()
-        txt_program = "notepad.exe"
-        os.system(txt_program + " " + conf_file)
+        # txt_program = "notepad.exe"
+        os.startfile(conf_file)
         
     def toStatusBar(self, msg, time_to_show=5000):
         self.statusbar.showMessage(msg, time_to_show)

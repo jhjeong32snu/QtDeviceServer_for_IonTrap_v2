@@ -2,10 +2,7 @@
 """
 Created on Sat Oct  2 11:22:41 2021
 
-@author: Junho Jeong
-@Tel: 010-9600-3392
-@email1: jhjeong32@snu.ac.kr
-@mail2: bugbear128@gmail.com
+@author: QCP32
 """
 
 class DAC_AbstractBase:

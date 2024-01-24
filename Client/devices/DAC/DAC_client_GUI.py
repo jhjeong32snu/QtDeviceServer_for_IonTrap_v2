@@ -2,23 +2,21 @@
 """
 Created on Sat Aug 21 23:22:02 2021
 
-@author: Junho Jeong
-@Tel: 010-9600-3392
-@email1: jhjeong32@snu.ac.kr
-@mail2: bugbear128@gmail.com
+@author: JHJeong
 """
 
 from __future__ import unicode_literals
-import os, datetime
+import os, sys, datetime
 import pandas as pd
+from configparser import ConfigParser
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
 
 # PyQt libraries
-from PyQt5 import uic, QtWidgets
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5 import uic, QtWidgets, QtGui, QtCore
+from PyQt5.QtCore import QRect, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox, QHBoxLayout, QLabel, QVBoxLayout, QFileDialog
 
 main_ui_file = dirname + "/DAC_16ch_v0_02.ui"
 
@@ -240,7 +238,7 @@ class MainWindow(QtWidgets.QWidget, main_ui, DAC_GuiBase):
         try:
             df = pd.read_csv(file_name, index_col = 0)
         
-            loaded_dict = {k: v.dropna().to_dict() for k,v in df.iteritems() }
+            loaded_dict = {k: v.dropna().to_dict() for k,v in df.items() }
             voltage_list = list(loaded_dict["voltage"].values())
             sft_list = list(loaded_dict["shift"].values())
             self._prev_sft_values = sft_list
@@ -252,7 +250,7 @@ class MainWindow(QtWidgets.QWidget, main_ui, DAC_GuiBase):
             for ax_idx in range(self._num_axes):
                 self.sft_textbox_list[ax_idx].setText("%.2f" % sft_list[ax_idx])
                 self.sft_offset_list[ax_idx].setText("%d" % sft_list[ax_idx])
-                self.sft_scroll_list[ax_idx].setValue(sft_list[ax_idx])
+                self.sft_scroll_list[ax_idx].setValue( int(sft_list[ax_idx]) )
                 
             self.user_update = True
             self.controller.setVoltage(list(range(self._num_ch)), voltage_list)
@@ -264,13 +262,13 @@ class MainWindow(QtWidgets.QWidget, main_ui, DAC_GuiBase):
         
     def _loadShiftSet(self, file_name):
         if not os.path.isfile(file_name):
-            self.toStatus("Couldn't find the shift config file '%s', Default values will be Used." % os.path.basename(file_name))
+            self.toStatus("Couldn't find the shift config file '%s', Using default values." % os.path.basename(file_name))
             return
         
         try:
             df = pd.read_csv(file_name, index_col = 0)
         
-            loaded_dict = {k: v.dropna().to_dict() for k,v in df.iteritems() }
+            loaded_dict = {k: v.dropna().to_dict() for k,v in df.items() }
             
             for ax_key in loaded_dict.keys():
                 self._sft_values[ax_key] = list(loaded_dict[ax_key].values())

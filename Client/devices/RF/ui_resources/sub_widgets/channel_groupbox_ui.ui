@@ -161,6 +161,12 @@
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksBothSides</enum>
+              </property>
+              <property name="tickInterval">
+               <number>5</number>
+              </property>
              </widget>
             </item>
            </layout>
@@ -302,6 +308,9 @@
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksBothSides</enum>
+              </property>
              </widget>
             </item>
            </layout>
@@ -437,6 +446,12 @@
               </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksBothSides</enum>
+              </property>
+              <property name="tickInterval">
+               <number>5</number>
               </property>
              </widget>
             </item>

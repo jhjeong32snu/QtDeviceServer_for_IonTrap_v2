@@ -4,18 +4,18 @@ Created on Sat Jul  3 23:06:53 2021
 
 @author: JHJeong32
 + JJH: EC trap SG outputs through BNC
+
+https://stackoverflow.com/questions/48590354/pyqtgraph-plotwidget-multiple-y-axis-plots-in-wrong-area
 """
 SVR_IP   = "172.22.22.92"
 SVR_PORT = 53000
 
 from PyQt5 import uic, QtWidgets, QtGui
 from PyQt5.QtWidgets import QHBoxLayout
+from PyQt5.QtGui     import QColor
 from PyQt5.QtCore    import pyqtSignal, QThread
 
 import pyqtgraph as pg
-
-#from Libs.gui_style import *
-from gui_style import *
 import configparser, socket, time, os, pickle
 import numpy as np
 
@@ -26,75 +26,95 @@ from DB_ASRI133109_v0_03 import DB_ASRI133109
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
-uifile = dirname + '/Libs/%s.ui' % os.path.basename(filename[:-3])
+uifile = dirname + '/Libs/Oscilloscope_gui_v0_04.ui'
 Ui_Form, _ = uic.loadUiType(uifile)
+
+pg.setConfigOptions(antialias=True) # This makes the plot smoother.
+
 
 class DS1052E_GUI(QtWidgets.QWidget, Ui_Form):
 
-    def closeEvent(self, e):
-        if not self.plotter.scope._closed:
-            self.plotter.scope.sendall(bytes("STOP\n", 'latin-1'))
-            while self.plotter.isRunning():
-                time.sleep(0.2)
-            self.plotter.scope.close()
-            print('Oscilloscope is closed')
+    # def closeEvent(self, e):
+    #     if not self.plotter.scope._closed:
+    #         self.plotter.scope.sendall(bytes("STOP\n", 'latin-1'))
+    #         while self.plotter.isRunning():
+    #             time.sleep(0.2)
+    #         self.plotter.scope.close()
+    #         print('Oscilloscope is closed')
         
-    def __init__(self, instance_name, parent=None):
-        QtWidgets.QWidget.__init__(self, parent)
+    def __init__(self, instance_name, parent=None, theme="black"):
+        QtWidgets.QWidget.__init__(self)
         self.setupUi(self)
         self.BTN_DB.setIcon(QtGui.QIcon(dirname + '/Libs/gui_save.ico'))
         # self.BTN_DB.clicked.connect(self.SavetoDB)
+        self.parent = parent
+        self._theme = theme
         
         self.CH_list = [True, True]
-        self.ini_flag = False
-                
-        self.Theme_clist = [self.GBOX_Chamber, self.GBOX_waveform, self.GBOX_CH1, self.GBOX_CH2,
-                            self.GBOX_Operation, self.BTN_RUN, self.BTN_UPDATE]
-        self.Theme_alist = [self.LBL_CH1_VAVG, self.LBL_CH2_VAVG, self.LBL_CH1_FREQ, self.LBL_CH2_FREQ,
-                            self.LBL_CH1_P2P, self.LBL_CH2_P2P]
+        self.x_data = {idx: [] for idx in range(len(self.CH_list))}
+        self.y_data = {idx: [] for idx in range(len(self.CH_list))}
         
-        self.makePlot(self.LBL_PLOT)
+        self.isInitialized = False
+                        
+        self.canvas, self.ax, self.plot_dict = self._createCanvas(self.LBL_PLOT)
         self.rgb_color = [0.275, 0.275, 0.275]
-        self.spine_list = ['bottom', 'top', 'right', 'left']
         
         
-        self.plotter = Fetcher(SVR_IP, SVR_PORT)
-        self.plotter.waveform_signal.connect(self.UpdatePlot)
-        self.plotter.CH_list = self.CH_list
+        # self.plotter = Fetcher(SVR_IP, SVR_PORT)
+        # self.plotter.waveform_signal.connect(self.UpdatePlot)
+        # self.plotter.CH_list = self.CH_list
         
         self.cp = configparser.ConfigParser()
         
         self.DB = DB_ASRI133109()
         
-        self.ThemeChange('dark')
-        self.chamber = 'EC'
-        
         self.Vscale    = [5, 5]
         self.Hscale    = 5
         self.Vposition = [5, 5]
         
-        self.SG = []
         
+
+    def _createCanvas(self, frame):
+        if self._theme == "black":
+            pg.setConfigOption("background", QColor(40, 40, 40))
+            pg.setConfigOption('foreground', QColor(140, 140, 140))
+            styles = {"color": "#969696","font-size": "15px", "font-family": "Arial"}
+            self.line_colors = [QColor(141, 211, 199), QColor(254, 255, 179)]
+            
+        else:
+            pg.setConfigOption('background', 'w')
+            pg.setConfigOption('foreground', 'k')
+            styles = {"color": "k", "font-size": "15px", "font-family": "Arial"}
+            self.line_colors = [QColor(31, 119, 180), QColor(255, 127, 14)]
+            
+        self.line_width = 2
         
-    def makePlot(self, frame):
-        self.fig = plt.Figure()
-        self.canvas = FigureCanvas(self.fig)
+        canvas = pg.GraphicsLayoutWidget()
+        ax = canvas.addPlot()
+        ax.setDefaultPadding(0)
         
         layout = QHBoxLayout()
-        layout.addWidget(self.canvas)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(canvas)
+
         frame.setLayout(layout)
+        plot0 = ax.plot(self.x_data[0],
+                        self.y_data[0],
+                        pen=pg.mkPen(self.line_colors[0], width=self.line_width))
         
-        self.ax1 = self.fig.add_subplot(111)
-        self.line1, = self.ax1.plot([], [], '-', color="orange", linewidth=1)
+        # ax1 = canvas.addPlot()
+        plot1 = ax.plot(self.x_data[1],
+                        self.y_data[1],
+                        pen=pg.mkPen(self.line_colors[1], width=self.line_width))
+        # ax1.setXLink(ax)
         
-        self.ax2 = self.ax1.twinx()
-        self.line2, = self.ax2.plot([], [], '-', color="teal",  linewidth=1)
+        plot_dict = {0: plot0, 1: plot1}
         
+        ax.setLabel("bottom", "Time", **styles)
+        ax.setLabel("left", "Voltage", **styles)
+        ax.showGrid(x=True, y=True)
         
-        self.lines  = [self.line1, self.line2]
-        self.axes   =  [self.ax1, self.ax2]
-        self.ax1.grid()
+        return canvas, ax, plot_dict
         
     
     def UpdatePlot(self, wave_data):
@@ -243,6 +263,21 @@ class DS1052E_GUI(QtWidgets.QWidget, Ui_Form):
         # else:                   osc_id = 0
         # self.plotter.scope.sendall(bytes("AUTO:%d\n" % osc_id, 'latin-1'))
         
+    def pressedAutoSet(self):
+        pass
+    
+    def pressedSaveButton(self):
+        pass
+    
+    def changedSelectedDevice(self, idx):
+        print(idx)
+        
+    def pressedRunButton(self, flag):
+        print(flag)
+        
+    def changedSliderBar(self):
+        print(self.sender().objectName())
+        
 class Fetcher(QThread):
     
     waveform_signal = pyqtSignal(dict)
@@ -279,7 +314,6 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication.instance()
     if app is None:
         app = QtWidgets.QApplication([])
-    app.setStyleSheet(RIGOL_CSS) 
     OSC = DS1052E_GUI(instance_name='DS1052E_v0.02')
     
     OSC.show()
