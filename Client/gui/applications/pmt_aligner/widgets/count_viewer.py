@@ -39,7 +39,6 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         
         self.device_dict = device_dict
         self.parent = parent
-        self.detector = self.parent.detector
 
         self._theme = theme
                 
@@ -49,7 +48,6 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         self.sequencer.sig_seq_complete.connect(self._completedProgress)
 
         self.cp = self.parent.cp
-        self.detector = "PMT"
         self._initParameters()
         self._initUi()
         
@@ -75,8 +73,6 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         self.PMT_vmin = 0
         self.PMT_vmax = 100
         
-    def setDetector(self, detector=""):
-        self.detector = detector
         
     def showEvent(self, evt):
         self.updatePlot()
@@ -121,7 +117,8 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
                 y_min = np.floor(np.min(self.PMT_counts_list))
                 
                 self.ax.setYRange(y_min, y_max)
-            print("updated")
+                
+            QtWidgets.QApplication.processEvents()
                 
     
         if self.counting_flag and self.user_run_flag:
@@ -155,7 +152,7 @@ class CountViewer(QtWidgets.QWidget, Ui_Form):
         self.sequencer.loadSequencerFile(seq_file= seq_dirname + "/simple_exposure.py",
                                          replace_dict={13:{"param": "EXPOSURE_TIME_IN_MS", "value": int(self.exposure_time*10)},
                                                        14:{"param": "NUM_AVERAGE", "value": self.avg_num}},
-                                         replace_registers={"PMT": self.detector})
+                                         replace_registers={"PMT": self.parent.detector})
         
     def setPMTMin(self):
         try:

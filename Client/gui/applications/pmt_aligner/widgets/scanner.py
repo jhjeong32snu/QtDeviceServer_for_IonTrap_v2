@@ -33,7 +33,6 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         self.parent = parent
         self.cp = self.parent.cp
         self.app_name = self.parent.app_name
-        self.detector = self.parent.detector
 
         self.motors = {nick: motor_controller._motors[nick] for nick in motor_nicks if ("x" in nick or "y" in nick)}
         self.sequencer = sequencer
@@ -42,17 +41,20 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         
         self.im_min = 0
         self.im_max = 100
+        self.plot_im = np.random.random((5, 5))
         self.significant_figure = 1
         
-        self.scanner = PMTScanner(self, self.sequencer, self.motors, self.parent)
-        self.scanner._sig_scanner.connect(self.recievedScannerSignal)
-        
-        self.sequencer.sig_occupied.connect(self.setInterlock)
+
         
         self._disable_list = [self.BTN_scan_vicinity,
                               self.BTN_start_scanning,
                               self.BTN_go_to_max]
         self._initUi()
+        
+        self.scanner = PMTScanner(self, self.sequencer, self.motors, self.parent)
+        self.scanner._sig_scanner.connect(self.recievedScannerSignal)
+        
+        self.sequencer.sig_occupied.connect(self.setInterlock)
 
 
     def saveData(self, save_file_name=""):
@@ -151,8 +153,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
                           yMin=0,
                           yMax=self.plot_im.shape[0])
         plot.vb.invertY(True)
-        # plot.vb.setAspectLocked()
-        # plot.showGrid(x=True, y=True)
+
         
         im = pg.ImageItem(self.plot_im, axisOrder="row-major", autoRange=False)
         im.setAutoDownsample(True)
@@ -193,12 +194,13 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             ay = self.plot.getAxis('left')  # This is the trick
             dy = [(idx+0.5, str(round(value, self.significant_figure))) for idx, value in enumerate(self.scanner.y_scan_range)]
             ay.setTicks([dy, []])
-            
-            QtWidgets.QApplication.processEvents()
-            
+                        
             self.LBL_latest_count.setText("%.2f" % self.scanner.recent_pmt_result)
             self.LBL_points_done.setText("%d" % (self.scanner.scan_idx+1))
             self.LBL_total_points.setText("%d" % self.scanner.scan_length)
+            
+            QtWidgets.QApplication.processEvents()
+
             
     def resetPlot(self):
         self.plot_im = self.scanner.scan_image
@@ -305,7 +307,6 @@ class PMTScanner(QObject):
         self.sequencer = sequencer
         self.motors = motors
         self.pmt_aligner = pmt_aligner
-        self.detector = self.gui.detector
         
         self.x_scan_range = np.arange(0, 0.6, 0.1)
         self.y_scan_range = np.arange(0, 0.6, 0.1)
@@ -468,7 +469,7 @@ class PMTScanner(QObject):
         self.sequencer.loadSequencerFile(seq_file= seq_dirname + "/simple_exposure.py",
                                           replace_dict={13:{"param": "EXPOSURE_TIME_IN_MS", "value": exposure_time},
                                                         14:{"param": "NUM_AVERAGE", "value": num_average}},
-                                          replace_registers={"PMT": self.detector})
+                                          replace_registers={"PMT": self.pmt_aligner.detector})
 
     def _connect_signals(self):
         for motor in self.motors.values():

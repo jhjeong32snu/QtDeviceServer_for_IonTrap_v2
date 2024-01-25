@@ -125,11 +125,8 @@ class SequencerRunner(QObject):
         """
         if self.is_opened:
             script_filename = os.path.basename(seq_file)
-            file_string = self.replaceParameters(seq_file, replace_dict)
-            if len(replace_registers):
-                for old_str, new_str in replace_registers.items():
-                    file_string.replace(old_str, new_str)
-            
+            file_string = self.replaceParameters(seq_file, replace_dict, replace_registers)
+
             self._executeFileString(file_string)
             self.seq_file = script_filename
             # self.toStatusBar("Loaded file (%s)." % script_filename)
@@ -162,7 +159,7 @@ class SequencerRunner(QObject):
         self.user_stop = True
         self.sequencer.stop_sequencer()
         
-    def replaceParameters(self, seq_file="", replace_dict={}):
+    def replaceParameters(self, seq_file="", replace_dict={}, replace_registers={}):
         """
         This function reads a sequencer file and retunrs a file string with gvien parameters changed.
         """
@@ -182,7 +179,16 @@ class SequencerRunner(QObject):
                     line = '%s=%.0f\n' % (replace_dict[line_idx]["param"], replace_dict[line_idx]["value"])
                 file_string += line
                 line_idx += 1
+                
+        if len(replace_registers):
+            for old_str, new_str in replace_registers.items():
+                file_string = file_string.replace(old_str, new_str)
+                print("found replacement", old_str, new_str)
+                print(file_string)
+                
         return file_string
+    
+    
         
     def getComPort(self, ser_num=""):
         from serial.tools.list_ports import comports
