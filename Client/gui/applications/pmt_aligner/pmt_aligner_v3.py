@@ -100,6 +100,11 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
             
         if "detector" in self.cp.options(self.app_name):
             self.detector = self.cp.get(self.app_name, "detector")
+            self.LBL_detector.setText(self.detector)
+            print("Detector is set to %s" % self.detector)
+        else:
+            self.detector = "PMT"
+            print("No detector has been found.")
             
         self.motor_opener.startLoadingMotors()
         
@@ -171,6 +176,9 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
         for motor_nick, motor_pos in motor_dict.items():
             if motor_nick in self.motor_dict.keys():
                 self.motor_dict[motor_nick].changePosition(motor_pos)
+                
+    def returnedDetector(self):
+        self.detector = self.LBL_detector.text()
         
 class MotorController(QObject):
     
