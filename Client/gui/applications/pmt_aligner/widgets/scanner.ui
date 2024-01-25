@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1029</width>
+    <width>922</width>
     <height>660</height>
    </rect>
   </property>
@@ -467,7 +467,7 @@
            <widget class="QPushButton" name="BTN_select_save_dir">
             <property name="minimumSize">
              <size>
-              <width>0</width>
+              <width>100</width>
               <height>25</height>
              </size>
             </property>
@@ -478,7 +478,26 @@
              </font>
             </property>
             <property name="text">
-             <string>Change Save Dir</string>
+             <string>Change Dir</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="BTN_save">
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Arial Black</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Save</string>
             </property>
            </widget>
           </item>
@@ -486,7 +505,7 @@
            <widget class="QPushButton" name="BTN_load_save_file">
             <property name="minimumSize">
              <size>
-              <width>0</width>
+              <width>100</width>
               <height>25</height>
              </size>
             </property>
@@ -497,7 +516,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Load Save File</string>
+             <string>Load</string>
             </property>
            </widget>
           </item>
@@ -695,11 +714,11 @@
    <slot>pressedScanStartButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1018</x>
+     <x>911</x>
      <y>613</y>
     </hint>
     <hint type="destinationlabel">
-     <x>935</x>
+     <x>921</x>
      <y>515</y>
     </hint>
    </hints>
@@ -711,11 +730,11 @@
    <slot>pressedChangeSaveDir()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>842</x>
+     <x>680</x>
      <y>387</y>
     </hint>
     <hint type="destinationlabel">
-     <x>934</x>
+     <x>921</x>
      <y>300</y>
     </hint>
    </hints>
@@ -727,11 +746,11 @@
    <slot>pressedPauseScanning()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1018</x>
+     <x>911</x>
      <y>577</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1018</x>
+     <x>921</x>
      <y>468</y>
     </hint>
    </hints>
@@ -743,11 +762,11 @@
    <slot>pressedScanVicinityButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1008</x>
+     <x>901</x>
      <y>206</y>
     </hint>
     <hint type="destinationlabel">
-     <x>957</x>
+     <x>921</x>
      <y>232</y>
     </hint>
    </hints>
@@ -759,7 +778,7 @@
    <slot>pressedApplyButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1008</x>
+     <x>901</x>
      <y>531</y>
     </hint>
     <hint type="destinationlabel">
@@ -775,11 +794,11 @@
    <slot>pressedGoToMax()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1018</x>
+     <x>911</x>
      <y>649</y>
     </hint>
     <hint type="destinationlabel">
-     <x>959</x>
+     <x>921</x>
      <y>528</y>
     </hint>
    </hints>
@@ -791,11 +810,11 @@
    <slot>changedStepValue()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1007</x>
+     <x>900</x>
      <y>72</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1028</x>
+     <x>921</x>
      <y>62</y>
     </hint>
    </hints>
@@ -807,11 +826,11 @@
    <slot>changedStepValue()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1007</x>
+     <x>900</x>
      <y>98</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1028</x>
+     <x>921</x>
      <y>207</y>
     </hint>
    </hints>
@@ -823,12 +842,28 @@
    <slot>pressedLoadSaveFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1007</x>
+     <x>900</x>
      <y>387</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1028</x>
+     <x>921</x>
      <y>350</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BTN_save</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>pressedSaveButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>762</x>
+     <y>369</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1549</x>
+     <y>410</y>
     </hint>
    </hints>
   </connection>
@@ -843,5 +878,6 @@
   <slot>pressedLoadSaveFile()</slot>
   <slot>pressedChangeSaveDir()</slot>
   <slot>pressedPauseScanning()</slot>
+  <slot>pressedSaveButton()</slot>
  </slots>
 </ui>
