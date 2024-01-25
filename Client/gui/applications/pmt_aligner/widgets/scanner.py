@@ -82,7 +82,6 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         except Exception as ee:
             print(ee)
         self._setDefaultFileName()
-        self.toStatusBar("Saved data.")
         
         
     def pressedSaveButton(self):
@@ -100,6 +99,14 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         self.updatePlot()
         
         self.save_file_dir = dirname + "\\data"
+        if not os.path.isdir(self.save_file_dir):
+            os.mkdir(self.save_file_dir)
+        
+        self.save_file_dir += "\\%s" % self.app_name
+        if not os.path.isdir(self.save_file_dir):
+            os.mkdir(self.save_file_dir)
+            self.toStatusBar("No save data directory for this application has been found, a new dir has been created.")
+        
         self._setDefaultFileName()
         
     def _setDefaultFileName(self):
@@ -265,9 +272,11 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         
     def setInterlock(self, occupied_flag):
         if occupied_flag:
-            if self.sequencer.occupant == self:
+            if self.sequencer.occupant == self.scanner:
                 self.BTN_scan_vicinity.setEnabled(False)
                 self.BTN_go_to_max.setEnabled(False)
+                self.BTN_pause_or_resume_scanning.setEnabled(True)
+                print("enabled button")
             else:
                 self._setEnableObjects(False)
                 self.BTN_pause_or_resume_scanning.setEnabled(False)
@@ -418,19 +427,22 @@ class PMTScanner(QObject):
         self.setOccupant(False)
 
     def resumeScanning(self):
-        self.setOccupant(True)
         self._status = "scanning"
         self.scan_idx += 1
         self.moveMotorByIndex(self.scan_idx)
+        self.setOccupant(True)
+
         
     def continueScanning(self):
-        self.setOccupant(True)
         self._status = "scanning"
         self.moveMotorByIndex(self.scan_idx)
+        self.setOccupant(True)
+
 
     def stopScanning(self):
         self._status = "standby"
         self.setOccupant(False)
+
         
     def setOccupant(self, flag):
         if flag:
