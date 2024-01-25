@@ -243,7 +243,6 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
                 if "max_power_ch%d" % (ch+1) in config_options:
                     max_power = float(self.config.get(self.device_name, "max_power_ch%d" % (ch+1)))
                     self.device.settings[ch]["max_power"] = max_power
-                    print("max power", max_power)
                 
 
     def _initUi(self):

@@ -2,14 +2,14 @@
 """
 Created on Sun Nov 28 22:37:43 2021
 
-@author: QCP32
+@author: Junho Jeong
 """
-import os, time, datetime
+import os
 from PyQt5 import uic
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QHBoxLayout
 from PyQt5.QtGui     import QColor
-from PyQt5.QtCore    import pyqtSignal, QMutex, QWaitCondition, QThread, QObject
+from PyQt5.QtCore    import pyqtSignal, QObject
 
 import numpy as np
 import pickle
@@ -31,6 +31,8 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
         self.parent = parent
+        self.cp = self.parent.cp
+        self.app_name = self.parent.app_name
         self.detector = self.parent.detector
 
         self.motors = {nick: motor_controller._motors[nick] for nick in motor_nicks if ("x" in nick or "y" in nick)}
@@ -53,15 +55,63 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         self._initUi()
 
 
+    def saveData(self, save_file_name=""):
+        if save_file_name == "":
+            save_file_name = self.LE_save_file_dir.text() + "/" + self.LE_save_file_name.text()
+        if save_file_name[-3:] == "pkl":
+            save_file_name = save_file_name[:-4]
+            
+        save_dict = {"img": self.plot_im,
+                     "x_pos": self.scanner.x_scan_range,
+                     "y_pos": self.scanner.y_scan_range}
+        if os.path.isfile(save_file_name + ".pkl"):
+            idx = 0
+            while True:
+                if os.path.isfile(filename + "_%02d" % idx + ".pkl"):
+                    idx += 1
+                else:
+                    break
+            save_file_name = save_file_name + "_%02d" % idx
+            
+        
+        with open (save_file_name + ".pkl", "wb") as fw:
+            pickle.dump(save_dict, fw)
+        
+        try:
+            self.parent.grab().save(save_file_name + ".png")
+        except Exception as ee:
+            print(ee)
+        self._setDefaultFileName()
+        self.toStatusBar("Saved data.")
+        
+        
+    def pressedSaveButton(self):
+        pre_filename = "%s/%s" % (self.LE_save_file_dir.text(), self.LE_save_file_name.text())
+        save_file_name, _ = QFileDialog.getSaveFileName(self, "Saving file",
+                                                        pre_filename, "Data files (*.pkl)")
+        if save_file_name == "":
+            self.toStatusBar("Aborted saving file.")
+        else:
+            self.saveData(save_file_name)
+        
         
     def _initUi(self):
         self.plot, self.im, self.colorbar = self._create_canvas(self.image_viewer)
         self.updatePlot()
         
-        self.save_file_dir = dirname
-        self.LE_save_file_dir.setText(self.save_file_dir)
-        self.LE_save_file_name.setText("%s_default" % datetime.datetime.now().strftime("%y%m%d_%H%M%S"))
+        self.save_file_dir = dirname + "\\data"
+        self._setDefaultFileName()
         
+    def _setDefaultFileName(self):
+        self.LE_save_file_dir.setText(self.save_file_dir)
+        self.LE_save_file_name.setText("%s_%s" % (datetime.datetime.now().strftime("%y%m%d_%H%M%S"), self.app_name))
+        
+    def _readConfig(self):
+        if "color_map" in self.cp.options(self.app_name):
+            color_map = self.cp.get(self.app_name, "color_map")
+            
+            return color_map
+    
     def _create_canvas(self, frame):
         if self._theme == "black":
             pg.setConfigOption('background', QColor(40, 40, 40))
@@ -71,6 +121,10 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             color_map = "viridis"
             pg.setConfigOption('background', 'w')
             pg.setConfigOption('foreground', 'k')
+            
+        config_color_map = self._readConfig()
+        if config_color_map:
+            color_map = config_color_map
         
         canvas = pg.GraphicsLayoutWidget()
         plot = canvas.addPlot()
@@ -306,6 +360,7 @@ class PMTScanner(QObject):
             self.goToMaxPosition()
             
         self.stopScanning()
+        self.gui.saveData()
         
     def goToMaxPosition(self):
         self.x_max_pos, self.y_max_pos = self._getMaxPosition()
