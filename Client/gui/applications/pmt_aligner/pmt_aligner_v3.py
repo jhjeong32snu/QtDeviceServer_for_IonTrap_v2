@@ -53,6 +53,7 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
         self.motor_controller._sig_motors_positions.connect(self._liveUpdatePosition)
         
         self.sequencer = self.device_dict["sequencer"]
+        self.sequencer.sig_dev_con.connect(self._changeFPGAConn)
         
         self.cp = self.parent.cp
         self.operation_mode = "local"
@@ -179,6 +180,7 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
                 
     def returnedDetector(self):
         self.detector = self.LBL_detector.text()
+        self.toStatusBar("A detector has been set to %s." % self.detector)
         
 class MotorController(QObject):
     
