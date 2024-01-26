@@ -20,13 +20,15 @@ exp_gui, _ = uic.loadUiType(exp_gui_file)
 
 class ExperimenterGUI(QtWidgets.QMainWindow, exp_gui, experimenter_theme_base):
     
-    def __init__(self, device_dict={}, parent=None, theme="black"):
+    def __init__(self, device_dict={}, parent=None, theme="black", app_name="experimenter"):
         QtWidgets.QMainWindow.__init__(self)
         self.device_dict = device_dict
         self.sequencer = self.device_dict["sequencer"]
         self.tab_dict = {}
+        self.experiment_dict = {}
         self.parent = parent
-        self._theme = theme        
+        self._theme = theme
+        self.app_name = app_name
         self.setupUi(self)
         self.setWindowTitle("Experimenter")
         
@@ -37,6 +39,9 @@ class ExperimenterGUI(QtWidgets.QMainWindow, exp_gui, experimenter_theme_base):
         self.sequencer.sig_dev_con.connect(self._changeFPGAConn)
         if self.sequencer.is_opened:
             self.BTN_connect_FPGA.setChecked(True)
+            
+    def __call__(self):
+        return self.experiment_dict
 
     def setTabs(self, folder_list):
         from parametric_heating.parametric_heating_widget import ParametricHeatingGUI
@@ -74,8 +79,8 @@ class ExperimenterGUI(QtWidgets.QMainWindow, exp_gui, experimenter_theme_base):
         self.tab_dict[name] = widget
         self.tabWidget.addTab(widget, name)
         
-    def toStatusBar(self, message):
-        self.statusbar.showMessage(message)
+    def toStatusBar(self, message, duration=5000):
+        self.statusbar.showMessage(message, duration)
         
         
         

@@ -124,12 +124,13 @@ class SequencerRunner(QObject):
                         
         """
         if self.is_opened:
-            script_filename = os.path.basename(seq_file)
-            file_string = self.replaceParameters(seq_file, replace_dict, replace_registers)
-
-            self._executeFileString(file_string)
-            self.seq_file = script_filename
-            # self.toStatusBar("Loaded file (%s)." % script_filename)
+            try:
+                script_filename = os.path.basename(seq_file)
+                file_string = self.replaceParameters(seq_file, replace_dict, replace_registers)
+                self._executeFileString(file_string)
+                self.seq_file = script_filename
+            except Exception as ee:
+                print("An error while loading the sequencer file '%s'. (%s)" % (os.path.basename(seq_file), ee))
         else:
             self.toStatusBar("You must open the FPGA first.")
             
@@ -183,8 +184,6 @@ class SequencerRunner(QObject):
         if len(replace_registers):
             for old_str, new_str in replace_registers.items():
                 file_string = file_string.replace(old_str, new_str)
-                print("found replacement", old_str, new_str)
-                print(file_string)
                 
         return file_string
     
@@ -267,29 +266,32 @@ class Runner(QThread):
         self.controller = controller
     
     def run(self):
-        self.status = "running"
-        if self.controller.device_sweep_flag:
-            time.sleep(1)
-        
-        controller = self.controller
-        s = controller.gl['s']
-        
-        s.program(show=False, target=controller.sequencer)
-        controller.sequencer.auto_mode()
-        controller.sequencer.start_sequencer()
-        
-        self.data = []
-        while(controller.sequencer.sequencer_running_status() == 'running'):
-            data_count = controller.sequencer.fifo_data_length()
-            self.data += controller.sequencer.read_fifo_data(data_count)
-        
-        data_count = controller.sequencer.fifo_data_length()
-        while (data_count > 0):
-            self.data += controller.sequencer.read_fifo_data(data_count)
-            data_count = controller.sequencer.fifo_data_length()
-
-        if self.controller.verbose:
-            print(self.data)
+        try:
+            self.status = "running"
+            if self.controller.device_sweep_flag:
+                time.sleep(1)
             
-        controller.data.append(self.data)
+            controller = self.controller
+            s = controller.gl['s']
+            
+            s.program(show=False, target=controller.sequencer)
+            controller.sequencer.auto_mode()
+            controller.sequencer.start_sequencer()
+            
+            self.data = []
+            while(controller.sequencer.sequencer_running_status() == 'running'):
+                data_count = controller.sequencer.fifo_data_length()
+                self.data += controller.sequencer.read_fifo_data(data_count)
+            
+            data_count = controller.sequencer.fifo_data_length()
+            while (data_count > 0):
+                self.data += controller.sequencer.read_fifo_data(data_count)
+                data_count = controller.sequencer.fifo_data_length()
+    
+            if self.controller.verbose:
+                print(self.data)
+                
+            controller.data.append(self.data)
+        except Exception as ee:
+            print("An error occured while running the sequencer file (%s)" % ee)
         self.status = "standby"
