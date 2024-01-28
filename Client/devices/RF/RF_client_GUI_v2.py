@@ -62,7 +62,7 @@ class RF_ControllerGUI(QtWidgets.QMainWindow, RF_client_theme_base, main_ui):
                 layout_widget = QtWidgets.QWidget()
                 layout_widget.setLayout(layout)
                 
-                curr_dev = RF_ChannelWidget(self, device_name, device_dict[device_name], self.rf_config)
+                curr_dev = RF_ChannelWidget(self, device_name, device_dict[device_name], self.rf_config, self._theme)
                 layout.addWidget(curr_dev)
                 
                 self.tabWidget.addTab(layout_widget, device_name.upper())
@@ -156,13 +156,14 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
         return wrapper
     
     
-    def __init__(self, parent=None, device_name="", device_settings=None, config=None):
+    def __init__(self, parent=None, device_name="", device_settings=None, config=None, theme="black"):
         QtWidgets.QWidget.__init__(self)
         self.main_gui = parent
         self.device_name = device_name
         self.device = device_settings
         self.config = config
         self.controller = self.main_gui.controller
+        self._theme = theme
         
         self.isUiInitiated = False
         self.device_channel = 0
@@ -210,6 +211,7 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
                     
             if "oscillo" in config_options:
                  self.BTN_oscillo.setVisible(True)
+                 self.BTN_oscillo.clicked.connect(self.openOscilloScope)
                  
             if "power_unit" in config_options:
                 power_unit = self.config.get(self.device_name, "power_unit")
@@ -584,6 +586,24 @@ class RF_ChannelWidget(QtWidgets.QWidget, channel_ui):
     def enableInteractionObjects(self, flag):
         for obj in self._interaction_objects:
             obj.setEnabled(flag)
+            
+    def openOscilloScope(self):
+        if not "OSC" in self.__dict__:
+        
+            sys.path.append(sub_file_path + "/sub_widgets/")
+            from Oscillo_scope_gui_v0_04 import DS1052E_GUI
+            self.OSC = DS1052E_GUI(self, self._theme)    
+            self.OSC.changeTheme(self._theme)
+    
+            if self.device_name == "ea_rf":
+                self.OSC.CBOX_chamber.setCurrentIndex(1)
+            else:
+                self.OSC.CBOX_chamber.setCurrentIndex(0)
+                
+        self.OSC.raise_()
+        self.OSC.activateWindow()
+        self.OSC.showNormal()
+
 
 
 if __name__ == "__main__":

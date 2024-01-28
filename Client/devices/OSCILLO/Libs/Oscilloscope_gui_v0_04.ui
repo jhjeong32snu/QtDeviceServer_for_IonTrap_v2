@@ -26,7 +26,7 @@
    <string>Oscilloscipe D1052E v0.02</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color:rgb(70, 70, 70);</string>
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_6">
    <item>
@@ -1023,6 +1023,14 @@
                 <height>30</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>Arial</family>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
               <property name="styleSheet">
                <string notr="true"/>
               </property>
@@ -1095,22 +1103,6 @@
     <hint type="destinationlabel">
      <x>799</x>
      <y>153</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>CBOX_chamber</sender>
-   <signal>currentTextChanged(QString)</signal>
-   <receiver>Form</receiver>
-   <slot>changedSelectedDevice()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>667</x>
-     <y>115</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>799</x>
-     <y>212</y>
     </hint>
    </hints>
   </connection>
@@ -1226,12 +1218,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>CBOX_chamber</sender>
+   <signal>currentIndexChanged(QString)</signal>
+   <receiver>Form</receiver>
+   <slot>changedChamber()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>702</x>
+     <y>119</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1027</x>
+     <y>121</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>pressedSaveButton()</slot>
-  <slot>changedSelectedDevice()</slot>
   <slot>changedSliderBar()</slot>
   <slot>pressedRunButton()</slot>
   <slot>pressedAutoSet()</slot>
+  <slot>changedChamber()</slot>
  </slots>
 </ui>

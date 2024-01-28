@@ -26,7 +26,7 @@
    <string>Oscilloscipe D1052E v0.02</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color:rgb(70, 70, 70);</string>
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_6">
    <item>
@@ -154,7 +154,7 @@
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QLabel" name="LBL_CH1_P2P">
+           <widget class="QLabel" name="LBL_CH1_VPP">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -205,7 +205,7 @@
            </widget>
           </item>
           <item row="1" column="3">
-           <widget class="QLabel" name="LBL_CH2_P2P">
+           <widget class="QLabel" name="LBL_CH2_VPP">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -341,7 +341,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QGroupBox" name="GBOX_Chamber">
+          <widget class="QGroupBox" name="GBOX_chamber">
            <property name="minimumSize">
             <size>
              <width>150</width>
@@ -370,7 +370,7 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
-             <widget class="QComboBox" name="CMB_CHAMBER">
+             <widget class="QComboBox" name="CBOX_chamber">
               <property name="styleSheet">
                <string notr="true"/>
               </property>
@@ -543,7 +543,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="NON_LBL_VS1">
+             <widget class="QLabel" name="NON_LBL_VS">
               <property name="font">
                <font>
                 <family>Arial</family>
@@ -594,22 +594,28 @@
                  <number>0</number>
                 </property>
                 <property name="maximum">
-                 <number>200</number>
+                 <number>20</number>
                 </property>
                 <property name="singleStep">
                  <number>1</number>
                 </property>
                 <property name="pageStep">
-                 <number>10</number>
+                 <number>4</number>
                 </property>
                 <property name="value">
-                 <number>100</number>
+                 <number>10</number>
+                </property>
+                <property name="tracking">
+                 <bool>true</bool>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
                 <property name="wrapping">
                  <bool>false</bool>
+                </property>
+                <property name="notchTarget">
+                 <double>2.000000000000000</double>
                 </property>
                 <property name="notchesVisible">
                  <bool>true</bool>
@@ -632,7 +638,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="NON_LBL_VS1_2">
+             <widget class="QLabel" name="NON_LBL_VP">
               <property name="font">
                <font>
                 <family>Arial</family>
@@ -768,7 +774,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="NON_LBL_VS1_3">
+             <widget class="QLabel" name="NON_LBL_VS2">
               <property name="font">
                <font>
                 <family>Arial</family>
@@ -819,22 +825,25 @@
                  <number>0</number>
                 </property>
                 <property name="maximum">
-                 <number>200</number>
+                 <number>20</number>
                 </property>
                 <property name="singleStep">
                  <number>1</number>
                 </property>
                 <property name="pageStep">
-                 <number>10</number>
+                 <number>4</number>
                 </property>
                 <property name="value">
-                 <number>100</number>
+                 <number>10</number>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
                 <property name="wrapping">
                  <bool>false</bool>
+                </property>
+                <property name="notchTarget">
+                 <double>2.000000000000000</double>
                 </property>
                 <property name="notchesVisible">
                  <bool>true</bool>
@@ -857,7 +866,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="NON_LBL_VS1_4">
+             <widget class="QLabel" name="NON_LBL_VP2">
               <property name="font">
                <font>
                 <family>Arial</family>
@@ -1001,7 +1010,7 @@
              <number>6</number>
             </property>
             <item>
-             <widget class="QPushButton" name="BTN_RUN">
+             <widget class="QPushButton" name="BTN_run">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1029,7 +1038,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="BTN_AUTO">
+          <widget class="QPushButton" name="BTN_auto">
            <property name="minimumSize">
             <size>
              <width>50</width>
@@ -1074,22 +1083,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>BTN_AUTO</sender>
-   <signal>clicked()</signal>
-   <receiver>Form</receiver>
-   <slot>preseedAutoSet()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>764</x>
-     <y>472</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>799</x>
-     <y>507</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>BTN_DB</sender>
    <signal>clicked()</signal>
    <receiver>Form</receiver>
@@ -1102,22 +1095,6 @@
     <hint type="destinationlabel">
      <x>799</x>
      <y>153</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>CMB_CHAMBER</sender>
-   <signal>currentTextChanged(QString)</signal>
-   <receiver>Form</receiver>
-   <slot>changedSelectedDevice()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>667</x>
-     <y>115</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>799</x>
-     <y>212</y>
     </hint>
    </hints>
   </connection>
@@ -1202,7 +1179,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>BTN_RUN</sender>
+   <sender>BTN_run</sender>
    <signal>clicked(bool)</signal>
    <receiver>Form</receiver>
    <slot>pressedRunButton()</slot>
@@ -1217,12 +1194,44 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>BTN_auto</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>pressedAutoSet()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>782</x>
+     <y>489</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1183</x>
+     <y>429</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>CBOX_chamber</sender>
+   <signal>currentIndexChanged(QString)</signal>
+   <receiver>Form</receiver>
+   <slot>changedChamber()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>702</x>
+     <y>119</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1027</x>
+     <y>121</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
-  <slot>preseedAutoSet()</slot>
   <slot>pressedSaveButton()</slot>
-  <slot>changedSelectedDevice()</slot>
   <slot>changedSliderBar()</slot>
   <slot>pressedRunButton()</slot>
+  <slot>pressedAutoSet()</slot>
+  <slot>changedChamber()</slot>
  </slots>
 </ui>
