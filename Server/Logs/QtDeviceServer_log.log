@@ -1,10 +1,16 @@
-2024-01-24 19:54:11,988 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 58516)
-2024-01-24 19:58:28,588 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 58596)
-2024-01-24 19:58:35,183 - Server.RequestHandler.client - ERROR - An error [''] occured while handling ['receiveMessage'].
-2024-01-24 19:58:40,698 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 58614)
-2024-01-24 19:58:55,883 - Server.RequestHandler.client - ERROR - An error [''] occured while handling ['receiveMessage'].
-2024-01-24 19:59:02,557 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 58618)
-2024-01-24 20:00:25,763 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 58687)
-2024-01-24 20:00:40,306 - Server.RequestHandler - INFO - A client (, 0) has been disconnected.
-2024-01-24 20:00:40,802 - Server.RequestHandler - INFO - A client (, 0) has been disconnected.
-2024-01-24 20:10:27,113 - Server.RequestHandler.client - ERROR - An error [''] occured while handling ['receiveMessage'].
+2024-01-27 14:45:19,351 - Server - INFO - Session opened.
+2024-01-27 14:45:33,712 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51211)
+2024-01-27 15:08:50,919 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51416)
+2024-01-27 15:10:20,385 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51462)
+2024-01-27 15:12:22,201 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51510)
+2024-01-27 15:15:35,075 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51566)
+2024-01-27 15:18:18,780 - Server.RequestHandler.client - ERROR - An error [''] occured while handling ['receiveMessage'].
+2024-01-27 15:18:20,115 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51584)
+2024-01-27 15:18:56,577 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51628)
+2024-01-27 15:19:50,425 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51670)
+2024-01-27 15:22:00,567 - Server.RequestHandler.client - ERROR - An error [''] occured while handling ['receiveMessage'].
+2024-01-27 15:22:02,049 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51692)
+2024-01-27 15:22:22,140 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51735)
+2024-01-27 15:23:19,542 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51784)
+2024-01-27 15:25:03,968 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51834)
+2024-01-27 15:26:03,912 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 51883)

@@ -32,7 +32,7 @@ class ExperimenterGUI(QtWidgets.QMainWindow, exp_gui, experimenter_theme_base):
         self.setupUi(self)
         self.setWindowTitle("Experimenter")
         
-        folder_list = [folder for folder in os.listdir(dirname) if (os.path.isdir(folder) and not (folder =="ui" or folder == "__pycache__"))]
+        folder_list = [folder for folder in os.listdir(dirname) if (os.path.isdir(folder) and not (folder == "ui" or folder == "__pycache__"))]
 
         self.setTabs(folder_list)
         self.sequencer.sig_occupied.connect(self._setInterlock)
@@ -46,13 +46,8 @@ class ExperimenterGUI(QtWidgets.QMainWindow, exp_gui, experimenter_theme_base):
     def setTabs(self, folder_list):
         from parametric_heating.parametric_heating_widget import ParametricHeatingGUI
         self.tab_dict["parametric_heating"] = my_widget = ParametricHeatingGUI(self.device_dict, self, self._theme)
-        # my_widget.setStyleSheet(self._tabbar_stylesheet[self._theme])
         self.tabWidget.addTab(my_widget, "parametric_heating")
 
-    # def changeTheme(self, theme):
-    #     self.setStyleSheet(self._mainwindow_stylesheet[self._theme])
-    #     self.tabWidget.setStyleSheet(self._tabbar_stylesheet[self._theme])
-    
     def connectFPGA(self, flag):
         if flag:
             open_result = self.sequencer.openDevice()

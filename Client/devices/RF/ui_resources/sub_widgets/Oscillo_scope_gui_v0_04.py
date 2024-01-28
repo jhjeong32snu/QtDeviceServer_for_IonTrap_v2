@@ -133,8 +133,8 @@ class DS1052E_GUI(QtWidgets.QWidget, Ui_Form, Oscilloscpoe_theme_base):
         if (not self.isHidden() and not self.isMinimized()):
             for ch, on in enumerate(self.CH_list):
                 if on:
-                    y_data = wave_data["data"][ch]
-                    x_data = wave_data["time"][ch]
+                    y_data = wave_data["data"][ch][::2]
+                    x_data = wave_data["time"][ch][::2]
                     
                 if not y_data[0] == "auto":
                     off_scale = np.linspace(-0.1, 0.1, 201)[self.Vposition[ch]]
@@ -195,25 +195,6 @@ class DS1052E_GUI(QtWidgets.QWidget, Ui_Form, Oscilloscpoe_theme_base):
         else:
             self.Hscale = ScaleInt
 
-    # def pressedRunButton(self, flag):
-    #     if flag:
-    #         self.CMB_CHAMBER.setEnabled(False)
-    #         self.plotter.run_flag = flag
-    #         if self.chamber == "EA": 
-    #             osc_id = 1
-    #         elif self.chamber == "EC": 
-    #             osc_id = 0
-            
-    #         self.plotter.start()
-    #         self.plotter.scope.sendall(bytes("REQ:%d\n" % osc_id, 'latin-1'))
-            
-    #     else:
-    #         self.CMB_CHAMBER.setEnabled(True)
-    #         self.plotter.run_flag = flag
-    #         while self.plotter.isRunning():
-    #             time.sleep(0.2)
-    #         self.plotter.scope.sendall(bytes("STOP\n", 'latin-1'))
-            
     def VPlotScaler(self, data):
         data = abs(data)
         if data == 0.0:
@@ -290,7 +271,7 @@ class Fetcher(QThread):
         self.ip = svr_ip
         self.port = svr_port
         self.queue = Queue()
-        
+        self.scope = None
         self.data_buffer = []
         
     def run(self):
@@ -347,8 +328,8 @@ class DB_Recorder(QThread):
               
               
 
-        RF_Vpp_data = self.dBm_to_vpp(self.rf_gui.panel_dict[SG].device.settings[0]["power"])
-        RF_freq_data = self.dBm_to_vpp(self.rf_gui.panel_dict[SG].device.settings[0]["freq"])
+        RF_Vpp_data = self.dBm_to_vpp(self.rf_gui.main_gui.panel_dict[SG].device.settings[0]["power"])
+        RF_freq_data = self.rf_gui.main_gui.panel_dict[SG].device.settings[0]["freq"]
 
 
         if hasattr(self.parent, 'CH1_P2P'):
@@ -363,7 +344,7 @@ class DB_Recorder(QThread):
         
     def run(self):
         self.DB = DB_ASRI133109()
-        self.saveToDb()
+        self.saveToDB()
         self.DB.closeDB()
         self.DB = None
 
