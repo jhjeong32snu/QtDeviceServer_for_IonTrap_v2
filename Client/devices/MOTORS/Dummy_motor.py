@@ -33,7 +33,6 @@ class DummyKDC101:
     move_relative           : number [, bool, bool] => (int, int, int)
     stop_profiled           : () => ()
     """
-    position = 0
     acc = 5
     vel = 5
     is_opened = False
@@ -46,6 +45,7 @@ class DummyKDC101:
             The serial number of the device
         """
         self.serno = serno
+        self.position = np.random.random(1)[0]*12
 
 
     def get_position(self):

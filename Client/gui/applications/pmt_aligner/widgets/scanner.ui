@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>922</width>
-    <height>660</height>
+    <width>923</width>
+    <height>662</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -266,13 +266,6 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QCheckBox" name="CB_auto_go_to_max">
-            <property name="text">
-             <string>Go to the max position after the scanning is finished</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_15">
             <property name="text">
@@ -287,32 +280,53 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QCheckBox" name="CB_auto_go_to_max">
+            <property name="text">
+             <string>Go to the max position after the scanning is finished</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
-         <widget class="QPushButton" name="BTN_scan_vicinity">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="sizeIncrement">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <family>Arial Black</family>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>Scan Around the Current Position</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QPushButton" name="BTN_scan_vicinity">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="sizeIncrement">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Arial Black</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Scan Around the Current Position</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="SPBOX_vicinity_length">
+            <property name="minimum">
+             <number>2</number>
+            </property>
+            <property name="maximum">
+             <number>5</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -714,11 +728,11 @@
    <slot>pressedScanStartButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>911</x>
+     <x>901</x>
      <y>613</y>
     </hint>
     <hint type="destinationlabel">
-     <x>921</x>
+     <x>911</x>
      <y>515</y>
     </hint>
    </hints>
@@ -730,11 +744,11 @@
    <slot>pressedChangeSaveDir()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>680</x>
+     <x>670</x>
      <y>387</y>
     </hint>
     <hint type="destinationlabel">
-     <x>921</x>
+     <x>911</x>
      <y>300</y>
     </hint>
    </hints>
@@ -746,11 +760,11 @@
    <slot>pressedPauseScanning()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>911</x>
+     <x>901</x>
      <y>577</y>
     </hint>
     <hint type="destinationlabel">
-     <x>921</x>
+     <x>911</x>
      <y>468</y>
     </hint>
    </hints>
@@ -762,11 +776,11 @@
    <slot>pressedScanVicinityButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>901</x>
-     <y>206</y>
+     <x>812</x>
+     <y>205</y>
     </hint>
     <hint type="destinationlabel">
-     <x>921</x>
+     <x>911</x>
      <y>232</y>
     </hint>
    </hints>
@@ -778,7 +792,7 @@
    <slot>pressedApplyButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>901</x>
+     <x>891</x>
      <y>531</y>
     </hint>
     <hint type="destinationlabel">
@@ -794,11 +808,11 @@
    <slot>pressedGoToMax()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>911</x>
+     <x>901</x>
      <y>649</y>
     </hint>
     <hint type="destinationlabel">
-     <x>921</x>
+     <x>911</x>
      <y>528</y>
     </hint>
    </hints>
@@ -810,11 +824,11 @@
    <slot>changedStepValue()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>900</x>
+     <x>890</x>
      <y>72</y>
     </hint>
     <hint type="destinationlabel">
-     <x>921</x>
+     <x>911</x>
      <y>62</y>
     </hint>
    </hints>
@@ -826,11 +840,11 @@
    <slot>changedStepValue()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>900</x>
+     <x>890</x>
      <y>98</y>
     </hint>
     <hint type="destinationlabel">
-     <x>921</x>
+     <x>911</x>
      <y>207</y>
     </hint>
    </hints>
@@ -842,11 +856,11 @@
    <slot>pressedLoadSaveFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>900</x>
+     <x>890</x>
      <y>387</y>
     </hint>
     <hint type="destinationlabel">
-     <x>921</x>
+     <x>911</x>
      <y>350</y>
     </hint>
    </hints>
@@ -862,7 +876,7 @@
      <y>369</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1549</x>
+     <x>911</x>
      <y>410</y>
     </hint>
    </hints>
