@@ -1,4 +1,0 @@
-2022-01-11 19:05:51,074 - Server - INFO - Session opened.
-2022-01-11 20:02:00,367 - Server.RequestHandler - INFO - A new connection from (127.0.0.1, 1386)
-2022-01-11 20:25:59,903 - Server.RequestHandler - INFO - A client (127.0.0.1, 1386) has been disconnected.
-2022-01-11 20:25:59,904 - Server.dds - INFO - No client is being connected. closing the device.

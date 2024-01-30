@@ -44,8 +44,6 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         self.plot_im = np.random.random((5, 5))
         self.significant_figure = 1
         
-
-        
         self._disable_list = [self.BTN_scan_vicinity,
                               self.BTN_start_scanning,
                               self.BTN_go_to_max]
@@ -82,7 +80,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         try:
             self.parent.grab().save(save_file_name + ".png")
         except Exception as ee:
-            print(ee)
+            self.toStatusBar("An error while saving a screenshot. (%s)" % ee)
         self._setDefaultFileName()
         
         
@@ -108,8 +106,15 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         if not os.path.isdir(self.save_file_dir):
             os.mkdir(self.save_file_dir)
             self.toStatusBar("No save data directory for this application has been found, a new dir has been created.")
-        
+        self._initializePosition()
         self._setDefaultFileName()
+        
+    def _initializePosition(self):
+        for axis in ["x", "y"]:
+            initial_pos = float(getattr(self.parent, "LBL_%s_pos" % axis.upper()).text())
+            step = getattr(self, "GUI_%s_step" % axis).value()
+            getattr(self, "GUI_%s_start" % axis).setValue(initial_pos - step*self.SPBOX_vicinity_length.value())
+            getattr(self, "GUI_%s_stop" % axis).setValue(initial_pos + step*self.SPBOX_vicinity_length.value())
         
     def _setDefaultFileName(self):
         self.LE_save_file_dir.setText(self.save_file_dir)
@@ -241,7 +246,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             if stop <= start:
                 self.toStatusBar("The stop value should be larger than the start value.")
                 return
-        self.scanner.startScanning(False)
+        self.scanner.startScanning()
     
     def pressedChangeSaveDir(self):
         save_dir = QFileDialog.getExistingDirectory(parent=self, directory=dirname + '/../save_data')
@@ -253,7 +258,22 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             self.toStatusBar("Changed the saving directory.")
     
     def pressedScanVicinityButton(self):
-        self.scanner.startScanning(True)    
+        try:
+            for axis in ["x", "y"]:
+                
+                step = getattr(self, "GUI_%s_step" % axis).value()
+                center = float(getattr(self.parent, "LBL_%s_pos" % axis.upper()).text())
+                
+                start = max(0, center - step*self.SPBOX_vicinity_length.value())
+                stop = min(12, center + step*self.SPBOX_vicinity_length.value())
+    
+                getattr(self, "GUI_%s_start" % axis).setValue(start)
+                getattr(self, "GUI_%s_stop" % axis).setValue(stop)
+        except Exception as ee:
+            self.toStatusBar("An error while seeting scan positions.(%s)" % ee)
+            return
+        
+        self.scanner.startScanning()    
     
     def pressedPauseScanning(self):
         if "Pause" in self.BTN_pause_or_resume_scanning.text():
@@ -271,7 +291,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
     
     def pressedApplyButton(self):
         self.updatePlot()
-        
+                
     def setInterlock(self, occupied_flag):
         if occupied_flag:
             if self.sequencer.occupant == self.scanner:
@@ -319,10 +339,10 @@ class PMTScanner(QObject):
         
         self._list_motors_moving = []
         self._connect_signals()
-        
+                
     def __call__(self):
         return "scanner"
-        
+            
     def getScanRange(self, start, end, step):
         scan_list = np.arange(start, end, step).tolist()
         if not end in scan_list:
@@ -381,20 +401,9 @@ class PMTScanner(QObject):
         self.pmt_aligner.MoveToPosition(position_dict)
         
         
-    def resetScanning(self, vicinity=False):
-        if vicinity:
-            x_step   = self.gui.GUI_x_step.value()
-            x_center = float(self.gui.parent.LBL_X_pos.text())
-            print(x_center - x_step, x_center + x_step, x_step)
-            self.x_scan_range = self.getScanRange(x_center - x_step, x_center + x_step, x_step)
-            
-            y_step   = self.gui.GUI_y_step.value()
-            y_center = float(self.gui.parent.LBL_Y_pos.text())
-            self.y_scan_range = self.getScanRange(y_center - y_step, y_center + y_step, y_step)
-            
-        else:
-            self.x_scan_range = self.getScanRange(*[getattr(self.gui, "GUI_x_%s" % x).value() for x in ["start", "stop", "step"]])
-            self.y_scan_range = self.getScanRange(*[getattr(self.gui, "GUI_y_%s" % x).value() for x in ["start", "stop", "step"]])
+    def resetScanning(self):
+        self.x_scan_range = self.getScanRange(*[getattr(self.gui, "GUI_x_%s" % x).value() for x in ["start", "stop", "step"]])
+        self.y_scan_range = self.getScanRange(*[getattr(self.gui, "GUI_y_%s" % x).value() for x in ["start", "stop", "step"]])
         
 
         self.x_scan_coord, self.y_scan_coord = self.getScanCoordinates(self.x_scan_range, self.y_scan_range)
@@ -405,8 +414,9 @@ class PMTScanner(QObject):
         self._list_motors_moving = []
         self._sig_scanner.emit("R")
         
-    def startScanning(self, vicinity=False):
-        self.resetScanning(vicinity)
+    def startScanning(self):
+        self.resetScanning()
+        
         if self.sequencer.is_opened:
             self.setOccupant(True)
             self._status = "scanning"
