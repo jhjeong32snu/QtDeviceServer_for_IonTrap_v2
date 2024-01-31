@@ -250,45 +250,22 @@
          <string>Sequencer FPGA</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_5">
-         <item row="0" column="2">
-          <widget class="QLabel" name="LBL_serial">
-           <property name="font">
-            <font>
-             <family>Arial</family>
-             <pointsize>9</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>Serial</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="4">
-          <spacer name="horizontalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
+         <item row="0" column="3" colspan="2">
+          <widget class="QLineEdit" name="TXT_serial">
+           <property name="minimumSize">
             <size>
-             <width>40</width>
+             <width>0</width>
              <height>20</height>
             </size>
            </property>
-          </spacer>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLabel" name="LBL_com">
-           <property name="font">
-            <font>
-             <family>Arial</family>
-             <pointsize>9</pointsize>
-            </font>
+           <property name="maximumSize">
+            <size>
+             <width>250</width>
+             <height>16777215</height>
+            </size>
            </property>
-           <property name="text">
-            <string>COM</string>
+           <property name="styleSheet">
+            <string notr="true">QLineEdit { border: none }</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -328,6 +305,19 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="4">
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
          <item row="1" column="5">
           <widget class="QPushButton" name="BTN_fpga_connect">
            <property name="minimumSize">
@@ -361,28 +351,6 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="3" colspan="2">
-          <widget class="QLineEdit" name="TXT_serial">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>20</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>250</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QLineEdit { border: none }</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="3">
           <widget class="QLineEdit" name="TXT_com">
            <property name="minimumSize">
@@ -402,6 +370,71 @@
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QLabel" name="LBL_com">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>COM</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLabel" name="LBL_serial">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Serial</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2" colspan="4">
+          <widget class="QPushButton" name="BTN_hardware_definition">
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>Arial Black</family>
+             <pointsize>10</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-radius: 5px ;background-color: rgb(180, 180, 180);  color: rgb(255, 255, 255); color: rgb(255, 255, 255); border-style: outset; border-bottom: 1px solid; border-right: 1px solid</string>
+           </property>
+           <property name="text">
+            <string>Open Hardware Definition</string>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+           <property name="autoDefault">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -1078,6 +1111,7 @@
                </property>
                <property name="font">
                 <font>
+                 <family>Arial</family>
                  <pointsize>9</pointsize>
                 </font>
                </property>
@@ -1197,6 +1231,7 @@
                </property>
                <property name="font">
                 <font>
+                 <family>Arial</family>
                  <pointsize>9</pointsize>
                 </font>
                </property>
@@ -1994,8 +2029,8 @@
    <slot>changeFreq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>728</x>
-     <y>234</y>
+     <x>726</x>
+     <y>248</y>
     </hint>
     <hint type="destinationlabel">
      <x>836</x>
@@ -2010,8 +2045,8 @@
    <slot>changeFreq()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>728</x>
-     <y>345</y>
+     <x>726</x>
+     <y>363</y>
     </hint>
     <hint type="destinationlabel">
      <x>836</x>
@@ -2211,6 +2246,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>BTN_hardware_definition</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>buttonHardwareDefinitionPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>643</x>
+     <y>133</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1849</x>
+     <y>130</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>scanFPGA()</slot>
@@ -2231,5 +2282,6 @@
   <slot>buttonDACResetPressed()</slot>
   <slot>buttonDACSavePressed()</slot>
   <slot>buttonDACLoadPressed()</slot>
+  <slot>buttonHardwareDefinitionPressed()</slot>
  </slots>
 </ui>

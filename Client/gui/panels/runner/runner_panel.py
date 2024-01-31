@@ -168,6 +168,12 @@ class RunnerPanel(QtWidgets.QMainWindow, main_ui, runner_panel_theme_base):
         self.TXT_filename.setText(self.seq_file)
         self.fillParameterTable(seq_file)
         
+    def pressedHardwareDefinition(self):
+        try:
+            self.sequencer.openHardwareDefinitionFile()
+        except Exception as ee:
+            self.toStatusBar("An error while opening the hardware definition file.(%s)" % ee)
+        
  
     #%% button slots
     def buttonFileLoadPressed(self):

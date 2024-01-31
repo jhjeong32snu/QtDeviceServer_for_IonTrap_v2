@@ -131,6 +131,7 @@
            <property name="font">
             <font>
              <family>Arial</family>
+             <pointsize>10</pointsize>
             </font>
            </property>
            <property name="textElideMode">
@@ -139,11 +140,11 @@
            <attribute name="horizontalHeaderCascadingSectionResizes">
             <bool>false</bool>
            </attribute>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>150</number>
-           </attribute>
            <attribute name="horizontalHeaderMinimumSectionSize">
             <number>100</number>
+           </attribute>
+           <attribute name="horizontalHeaderDefaultSectionSize">
+            <number>150</number>
            </attribute>
            <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
             <bool>false</bool>
@@ -283,6 +284,58 @@
          <string>FPGA Settings</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_5">
+         <item row="0" column="5" rowspan="2">
+          <widget class="QPushButton" name="BTN_fpga_connect">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>Arial Black</family>
+             <pointsize>10</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-radius: 5px ;background-color: rgb(120, 120, 120);  color: rgb(255, 255, 255); color: rgb(255, 255, 255); border-style: outset; border-bottom: 1px solid; border-right: 1px solid</string>
+           </property>
+           <property name="text">
+            <string>    Connect    </string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+           <property name="autoDefault">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLabel" name="LBL_fpga_serial">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Serial</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="3" colspan="2">
           <widget class="QLineEdit" name="TXT_serial">
            <property name="minimumSize">
@@ -301,22 +354,6 @@
             <string notr="true">QLineEdit { border: none;
 background-color:rgb(0,0,0);
 color:rgb(255, 255, 255); }</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QLabel" name="LBL_fpga_serial">
-           <property name="font">
-            <font>
-             <family>Arial</family>
-             <pointsize>9</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>Serial</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -363,15 +400,15 @@ color:rgb(255, 255, 255); }</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="5" rowspan="2">
-          <widget class="QPushButton" name="BTN_fpga_connect">
+         <item row="2" column="2" colspan="4">
+          <widget class="QPushButton" name="BTN_hardware_definition">
            <property name="enabled">
             <bool>true</bool>
            </property>
            <property name="minimumSize">
             <size>
              <width>50</width>
-             <height>50</height>
+             <height>25</height>
             </size>
            </property>
            <property name="font">
@@ -386,10 +423,10 @@ color:rgb(255, 255, 255); }</string>
             <string notr="true">border-radius: 5px ;background-color: rgb(120, 120, 120);  color: rgb(255, 255, 255); color: rgb(255, 255, 255); border-style: outset; border-bottom: 1px solid; border-right: 1px solid</string>
            </property>
            <property name="text">
-            <string>    Connect    </string>
+            <string>Open Hardware Definition</string>
            </property>
            <property name="checkable">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <property name="checked">
             <bool>false</bool>
@@ -625,6 +662,9 @@ color:rgb(255, 255, 255); }</string>
            <property name="text">
             <string>Save File</string>
            </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
         </layout>
@@ -644,8 +684,8 @@ color:rgb(255, 255, 255); }</string>
    <slot>buttonFileLoadPressed()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>410</x>
-     <y>51</y>
+     <x>488</x>
+     <y>64</y>
     </hint>
     <hint type="destinationlabel">
      <x>1063</x>
@@ -692,8 +732,8 @@ color:rgb(255, 255, 255); }</string>
    <slot>buttonDataLoadPathPressed()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>739</x>
-     <y>542</y>
+     <x>839</x>
+     <y>633</y>
     </hint>
     <hint type="destinationlabel">
      <x>911</x>
@@ -708,8 +748,8 @@ color:rgb(255, 255, 255); }</string>
    <slot>selectComboDevice()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>80</x>
-     <y>558</y>
+     <x>110</x>
+     <y>649</y>
     </hint>
     <hint type="destinationlabel">
      <x>368</x>
@@ -724,8 +764,8 @@ color:rgb(255, 255, 255); }</string>
    <slot>checkDeviceSweep()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>292</x>
-     <y>561</y>
+     <x>263</x>
+     <y>645</y>
     </hint>
     <hint type="destinationlabel">
      <x>1059</x>
@@ -740,12 +780,28 @@ color:rgb(255, 255, 255); }</string>
    <slot>checkIndividualSave()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>548</x>
-     <y>508</y>
+     <x>839</x>
+     <y>597</y>
     </hint>
     <hint type="destinationlabel">
      <x>906</x>
      <y>497</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BTN_hardware_definition</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pressedHardwareDefinition()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>648</x>
+     <y>104</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1694</x>
+     <y>371</y>
     </hint>
    </hints>
   </connection>
@@ -758,5 +814,6 @@ color:rgb(255, 255, 255); }</string>
   <slot>selectComboDevice()</slot>
   <slot>checkDeviceSweep()</slot>
   <slot>checkIndividualSave()</slot>
+  <slot>pressedHardwareDefinition()</slot>
  </slots>
 </ui>

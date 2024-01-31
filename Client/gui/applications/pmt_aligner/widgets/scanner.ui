@@ -318,6 +318,12 @@
           </item>
           <item>
            <widget class="QSpinBox" name="SPBOX_vicinity_length">
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="minimum">
              <number>2</number>
             </property>

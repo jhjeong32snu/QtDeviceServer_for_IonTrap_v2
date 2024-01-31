@@ -83,16 +83,51 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             self.toStatusBar("An error while saving a screenshot. (%s)" % ee)
         self._setDefaultFileName()
         
-        
-    def pressedSaveButton(self):
-        pre_filename = "%s/%s" % (self.LE_save_file_dir.text(), self.LE_save_file_name.text())
-        save_file_name, _ = QFileDialog.getSaveFileName(self, "Saving file",
-                                                        pre_filename, "Data files (*.pkl)")
-        if save_file_name == "":
-            self.toStatusBar("Aborted saving file.")
+    def loadData(self, data_file_name=""):
+        try:
+            with open (data_file_name, "rb") as fr:
+                loaded_data_dict = pickle.load(fr)
+                img, x_scan_range, y_scan_range = loaded_data_dict["img"], loaded_data_dict["x_pos"], loaded_data_dict["y_pos"]
+                # self.plot_im = loaded_data_dict["img"]
+                # self.scanner.x_scan_range = loaded_data_dict["x_pos"]
+                # self.scanner.y_scan_range = loaded_data_dict["y_pos"]
+            step_value = np.round(np.diff(x_scan_range)[0], 3)
+            self.setSignificant_figure(step_value)
+            self._temporaryUpdatePlot(img, x_scan_range, y_scan_range)
+            self.toStatusBar("Successfully loaded a data file. (%s)" % os.path.basename(data_file_name))
+                
+        except Exception as ee:
+            self.toStatusBar("An error while opening the data file.(%s)" % ee)
+            
+    def _temporaryUpdatePlot(self, plot_im, x_scan_range, y_scan_range):
+        """
+        This method is a temporary debugging method for loading a saved data. This will be deprecated.
+        """
+        if self.CB_auto_minmax.isChecked():
+            im_min, im_max = np.min(plot_im), np.max(plot_im)
+            self.plot_min.setText("%.1f" % im_min)
+            self.plot_max.setText("%.1f" % im_max)
         else:
-            self.saveData(save_file_name)
+            try:
+                value_list = [float(self.plot_min.text()), float(self.plot_max.text())]
+                value_list.sort()
+                im_min, im_max = value_list
+            except:
+                self.toStatusBar("The min and max values should be numbers.")
+                
+        self.colorbar.setLevels( (im_min, im_max) )
+        self.im.setImage(plot_im, autoLevels=False)
         
+        ax = self.plot.getAxis('bottom')  # This is the trick
+        dx = [(idx+0.5, str(round(value, self.significant_figure))) for idx, value in enumerate(x_scan_range)]
+        ax.setTicks([dx, []])
+        
+        ay = self.plot.getAxis('left')  # This is the trick
+        dy = [(idx+0.5, str(round(value, self.significant_figure))) for idx, value in enumerate(y_scan_range)]
+        ay.setTicks([dy, []])
+        
+        self.plot.setLimits(xMin=0, xMax=len(x_scan_range), yMin=0, yMax=len(y_scan_range))
+                    
         
     def _initUi(self):
         self.plot, self.im, self.colorbar = self._create_canvas(self.image_viewer)
@@ -223,7 +258,10 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         axis = self.sender().objectName().split("_")[1]
         for spin_box in [getattr(self, "GUI_%s_%s" % (axis, attr_name)) for attr_name in ("start", "stop")]:
             spin_box.setSingleStep(value)
+        self.setSignificant_figure(value)
             
+            
+    def setSignificant_figure(self, value):
         if 1 <= value:
             self.significant_figure = 0
         elif 0.1 <= value and value < 1:
@@ -283,8 +321,23 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             self.BTN_pause_or_resume_scanning.setText("Pause Scanning")
             self.scanner.continueScanning()
     
+    def pressedSaveButton(self):
+        pre_filename = "%s/%s" % (self.LE_save_file_dir.text(), self.LE_save_file_name.text())
+        save_file_name, _ = QFileDialog.getSaveFileName(self, "Saving file",
+                                                        pre_filename, "Data files (*.pkl)")
+        if save_file_name == "":
+            self.toStatusBar("Aborted saving a data file.")
+        else:
+            self.saveData(save_file_name)
+    
     def pressedLoadSaveFile(self):
-        pass
+        pre_filename = "%s/" % (self.LE_save_file_dir.text())
+        open_file_name, _ = QFileDialog.getOpenFileName(self, "Select File", pre_filename, "Data files(*.pkl)")
+       
+        if open_file_name == "":
+            self.toStatusBar("Aborted loading a data file.")
+        else:
+            self.loadData(open_file_name)
     
     def pressedGoToMax(self):
         self.scanner.goToMaxPosition()
