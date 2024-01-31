@@ -88,12 +88,23 @@ class SequencerRunner(QObject):
             
     def closeDevice(self):
         if self.is_opened:
-            self.sequencer.com.close()
-            self.toStatusBar("Closed the FPGA.")
-            self.is_opened = False
-            self.sig_dev_con.emit(False)
+            try:
+                self.sequencer.com.close()
+                self.toStatusBar("Closed the FPGA.")
+                self.is_opened = False
+                self.sig_dev_con.emit(False)
+                self.sequencer = None
+            except Exception as ee:
+                print("An error while closing the sequencer.(%s)" % ee)
         else:
             self.toStatusBar("Failed to close the FPGA. Maybe the FPGA is already closed?")
+            
+    def openHardwareDefinitionFile(self):
+        """
+        This function directly runs the hardware definition file.
+        """
+        full_path_of_hardware_def = os.path.abspath(dirname + '/%s.py' % self.hw_def)
+        os.startfile(full_path_of_hardware_def)
             
     def openHardwareDefinition(self, hw_def):
         try:
@@ -123,16 +134,14 @@ class SequencerRunner(QObject):
                                  The keys of the dict are old register strings, the values of the dict are new register strings.
                         
         """
-        if self.is_opened:
-            try:
-                script_filename = os.path.basename(seq_file)
-                file_string = self.replaceParameters(seq_file, replace_dict, replace_registers)
-                self._executeFileString(file_string)
-                self.seq_file = script_filename
-            except Exception as ee:
-                print("An error while loading the sequencer file '%s'. (%s)" % (os.path.basename(seq_file), ee))
-        else:
-            self.toStatusBar("You must open the FPGA first.")
+        try:
+            script_filename = os.path.basename(seq_file)
+            file_string = self.replaceParameters(seq_file, replace_dict, replace_registers)
+            self._executeFileString(file_string)
+            self.seq_file = script_filename
+        except Exception as ee:
+            self.toStatusBar("An error while loading the sequencer file '%s'.(%s)" % (os.path.basename(seq_file), ee))
+
             
     def runSequencerFile(self, iteration=1, device_sweep=False):
         if self.is_opened:
@@ -233,7 +242,7 @@ class SequencerRunner(QObject):
 
         if self.user_stop:
             self.sig_seq_complete.emit(False)
-            self.sequencer.flush_Output_FIFO()
+            self.sequencer.flush_input()
             self.user_stop = False # initialize the flag.
             self.toStatusBar("Stopped running sequencer.")
         else:

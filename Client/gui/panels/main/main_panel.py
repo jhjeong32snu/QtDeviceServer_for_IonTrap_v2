@@ -141,6 +141,12 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
                 self.sequencer.closeDevice()
         self.setupSwitches(flag)
         
+    def buttonHardwareDefinitionPressed(self):
+        try:
+            self.sequencer.openHardwareDefinitionFile()
+        except Exception as ee:
+            self.toStatusBar("An error while opening the hardware definition file. (%s)" % ee)
+        
             
     def buttonConfigPressed(self):
         config_file = QFileDialog.getOpenFileName(self, 'Open .ini file.',

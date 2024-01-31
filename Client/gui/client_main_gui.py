@@ -164,8 +164,8 @@ class MainWindow(QtWidgets.QMainWindow, main_ui, client_gui_theme_base):
         self.socket.breakConnection(True)
         self.toStatusBar("Disconnected from the Server.")
         
-    def toStatusBar(self, message):
-        self.statusbar.showMessage(message)
+    def toStatusBar(self, message, duration=8000):
+        self.statusbar.showMessage(message, duration)
         
     def handleServerMessage(self, message_list):
         message = message_list.pop(1)
