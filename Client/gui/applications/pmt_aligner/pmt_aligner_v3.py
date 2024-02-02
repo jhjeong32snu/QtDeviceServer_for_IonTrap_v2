@@ -87,6 +87,9 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
             self.operation_mode = "remote"
             
         for motor_idx, motor_nick in enumerate(motor_list):
+            if self.operation_mode == "remote":
+                remote_nick = self.cp.get(self.app_name, "remote")
+                motor_nick = remote_nick + ":" + motor_nick
             nick_label = getattr(self, "NON_%s_pos" % chr(88 + motor_idx))
             value_label = getattr(self, "LBL_%s_pos" % chr(88 + motor_idx))
             motor_handle = self.device_dict["motors"]._motors[motor_nick]

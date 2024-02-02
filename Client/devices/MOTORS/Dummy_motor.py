@@ -108,6 +108,11 @@ class DummyKDC101:
         """
         sleep_time = np.random.choice(np.arange(1.8, 5.2, 0.2), 1)[0]
         time.sleep(sleep_time)
+        success = np.random.random()
+        if success < 0.1:
+            raise RuntimeError("An error while opening the motor.")
+            return
+            
         self.is_opened = True
         return self
 

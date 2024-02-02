@@ -4,6 +4,7 @@ Created on Sun Nov 21 2021
 """
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 from motor_handler import MotorHandler
+from queue import Queue
 version = "2.1"
 qtimer_interval = 100 # ms
 
@@ -24,7 +25,6 @@ class MotorController(QObject):
         self.cp = self.parent.cp
         self.gui = gui
         
-        self._client_list = []
         self._status = "standby"
         self._motors = {}
         self._is_opened = False
@@ -41,6 +41,10 @@ class MotorController(QObject):
         self.pos_checker.timeout.connect(self.announcePositionsUnderMoving)
         
         print("Motor Controller v%s" % version)
+        
+        # For remote control
+        self._client_list = []
+        self.queue = Queue()
         
     def openGui(self):
         from Motor_Controller_GUI_v3 import MotorController_GUI
@@ -141,4 +145,6 @@ class MotorController(QObject):
         #     self.gui.toStatus(msg)
         # else:
         print(msg)
+        
+    def toWorkList
             

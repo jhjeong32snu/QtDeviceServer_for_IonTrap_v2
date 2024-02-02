@@ -113,10 +113,10 @@ def main():
     
     
 if __name__ == "__main__":
-    # app = QtWidgets.QApplication(sys.argv)
-    # if app is None:
-    #     app = QtWidgets.QApplication([])
-    # srv = DeviceServer(True)
+    app = QtWidgets.QApplication(sys.argv)
+    if app is None:
+        app = QtWidgets.QApplication([])
+    srv = DeviceServer(True)
     # app.exec_()
     # sys.exit(app.exec())
-    main()
+    # main()
