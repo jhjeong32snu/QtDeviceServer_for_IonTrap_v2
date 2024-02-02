@@ -98,7 +98,7 @@ class DDS_ClientInterface(QThread):
             self.start()
 
     def run(self):
-        while True:
+        while self.que.qsize():
             work = self.que.get()
             self._status  = "running"
             # decompose the job

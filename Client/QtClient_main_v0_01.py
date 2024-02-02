@@ -40,14 +40,13 @@ class ClientMain(QObject):
         self.socket._message_signal.connect(self.receivedMessage)
         self._msg_queue = Queue()
 
-
         self._setupDevices()
         if gui:
             sys.path.append(dirname + '/gui')
             from client_main_gui import MainWindow
             self.gui = MainWindow(self.device_dict, self.cp, self, self.cp.get("gui", "theme"))
         
-        self._fire_signal.connect(self.dealMessageList)
+        self._fire_signal.connect(self.manageMessageQue)
         
     def _readConfig(self):
         PC_name = os.getenv('COMPUTERNAME', 'defaultValue')
@@ -82,7 +81,7 @@ class ClientMain(QObject):
         if self.status == "standby":
             self._fire_signal.emit()
         
-    def dealMessageList(self):
+    def manageMessageQue(self):
         self.status = "sending"
         while self._msg_queue.qsize():
             msg = self._msg_queue.get()
@@ -92,9 +91,12 @@ class ClientMain(QObject):
     def receivedMessage(self, msg_list):
         device = msg_list.pop(1)
         if not device == "SRV":
+            if ":" in device.lower():
+                device = device.split(":")[1]
+                
             if device.lower() in self.device_dict.keys():
                 self.device_dict[device.lower()].toWorkList(msg_list)
-            else:
+            else:                    
                 print("No such device is in o8ur device dict! (%s)." % device)
         
         else:

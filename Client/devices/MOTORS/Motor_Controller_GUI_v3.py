@@ -53,6 +53,9 @@ class MotorController_GUI(QtWidgets.QWidget, Ui_Form):
     def _initMotors(self, motor_dict):
         for nick, motor in motor_dict.items():
             self.addMotor(nick, motor.serial, motor)
+            
+            if motor.serial == "remote":
+                motor.updateStatus()
         
     def addMotor(self, nickname="", serial_number="", motor=None):
         if nickname in self.motor_dict.keys():

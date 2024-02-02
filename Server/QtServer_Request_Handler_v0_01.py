@@ -108,8 +108,29 @@ class RequestHandler(QTcpServer):
         """
         It distrubutes the command following the request.
         """
-        device = msg.pop(1)
-        self.device_dict[device].toWorkList(msg)
+        device = msg[1]
+        if device in self.device_dict:
+            msg.pop(1)
+            self.device_dict[device].toWorkList(msg)
+        else:
+            try:
+                user_nick, device = device.split(":")
+                # sender = msg.pop(-1)
+                
+                if (msg[0] == "C" or msg[0] == "Q"): # command
+                    msg[1] = device
+                    for client in self.client_list:
+                        if client.user_name == user_nick:
+                            client.toMessageList(msg)
+            
+                elif (msg[0] == "D" or msg[0] == "E"):
+                    for client in self.client_list:
+                        if not client.user_name == user_nick:
+                            client.toMessageList(msg)
+                            
+            except Exception as ee:
+                self.toLog("error", "An unknown remote control has been detected. (%s)." % (ee))
+            # self.toLog("info", "An remote control has been detected.")
         
     def toLog(self, log_type, log_content):
         if not self.logger == None:
@@ -161,7 +182,7 @@ class MessageHandler(QObject):
         self._num_failure = 0
         self._address = self.socket.peerAddress().toString()
         self._port = self.socket.peerPort()
-        self._fire_signal.connect(self.dealMessageList)
+        self._fire_signal.connect(self.manageMessageList)
         
     def __call__(self):
         return self._address
@@ -204,7 +225,7 @@ class MessageHandler(QObject):
             self._fire_signal.emit()
         
     @logger_decorator
-    def dealMessageList(self):
+    def manageMessageList(self):
         while self.msg_queue.qsize():
             msg = self.msg_queue.get()
             self.sendMessage(msg)
@@ -227,6 +248,8 @@ class MessageHandler(QObject):
             command = str(stream.readQString())      ### command of 2 ~ 4 characters
             data = list(stream.readQVariantList())   ### data
             self._block_size = 0
+            
+            print("Received,", [control, device, command, data])
 
             if device == "SRV":
                 if control =="C" and command == "CON":
