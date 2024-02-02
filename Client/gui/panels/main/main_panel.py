@@ -123,6 +123,7 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
         
         if com_port == None:
            self.TXT_com.setText("")
+           self.toStatusBar("No COM ports has been found for the given serial number.")
         else:
             self.TXT_com.setText(com_port)
             self.sequencer.com_port = com_port

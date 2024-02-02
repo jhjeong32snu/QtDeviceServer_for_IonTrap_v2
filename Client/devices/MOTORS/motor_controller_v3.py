@@ -176,7 +176,7 @@ class MotorController(QObject):
     def openDevice(self, motor_list):
         if type(motor_list) == str:
             motor_list = [motor_list]
-        self._sig_motors_initialized.emit(len(motor_list), "")  # Let applications know how many motors to be open.
+        self._sig_motors_initialized.emit(len(motor_list), "")  # Let applications know how many motors to be open. # Redundant?
         for m_idx, m_nick in enumerate(motor_list):
             self._motors_under_loading.append(m_nick)
             self._motors[m_nick].toWorkList("O")
@@ -326,6 +326,7 @@ class MotorController(QObject):
                 elif command == "CLOSE":
                     for nick in data:
                         self._motors[nick].status = "closed"
+                        self._motors[nick]._is_opened = False
                         
                 elif command == "HOME":
                     for nick in data:
@@ -338,6 +339,7 @@ class MotorController(QObject):
                 elif command == "INITED":
                     for nick in data:
                         self._motors[nick].status = "standby"
+                        self._motors[nick]._is_opened = True
                         self._motors[nick]._sig_motor_initialized.emit(nick)
                 
                 elif command == "HOMED":

@@ -100,7 +100,7 @@ class PMTAlginerGUI(QtWidgets.QMainWindow, Ui_Form, pmt_aligner_theme_base):
                                                           motor_nick,
                                                           self.motor_controller,
                                                           True if self.operation_mode=="local" else False)
-            self.motor_opener.addMotor(motor_handle)
+            self.motor_opener.addMotor(motor_handle, motor_nick)
             
         if "detector" in self.cp.options(self.app_name):
             self.detector = self.cp.get(self.app_name, "detector")
@@ -207,7 +207,7 @@ class MotorController(QObject):
         self.motor._sig_motor_homed.connect(self._finishedMoving)
         self.motor._sig_motors_changed_status.connect(self._changedStatus)
         if not self.motor._is_opened:
-            self.motor_controller.openDevice(self.motor.nickname)
+            self.motor_controller.openDevice(self.nickname)
         
         self.updatePosition()
         
@@ -260,19 +260,11 @@ class MotorOpener(QtWidgets.QWidget, MotorOpener_Theme_Base):
         self._motor_list = []
         self.num_motors = 0
         
-    def addMotor(self, motor):
+    def addMotor(self, motor, nickname):
         if not motor._is_opened:
-            self._motor_list.append(motor.nickname)
+            self._motor_list.append(nickname)
             motor._sig_motor_initialized.connect(self.changeProgressBar)
             self.num_motors += 1
-        
-    # def changeTheme(self, theme):
-    #     self._theme = theme
-    #     styleSheet = {"white": "background-color:rgb(255, 255, 255)",
-    #                   "black": "background-color:rgb(40, 40, 40); color:rgb(180, 180, 180)"}
-        
-    #     self.setStyleSheet(self._mainwindow_stylesheet[self._theme])
-
         
     def initUi(self):
         frame = QVBoxLayout()
