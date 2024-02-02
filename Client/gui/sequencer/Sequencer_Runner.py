@@ -74,6 +74,9 @@ class SequencerRunner(QObject):
     def openDevice(self, com_port=None):
         if com_port == None:
             com_port = self.com_port
+            
+            if com_port == None:
+                return -1
         try:
             if self.sequencer == None:
                 self.sequencer = ArtyS7(com_port)

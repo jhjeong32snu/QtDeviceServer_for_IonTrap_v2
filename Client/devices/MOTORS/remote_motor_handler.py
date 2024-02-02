@@ -41,8 +41,7 @@ class RemoteMotorHandler(QThread):
         self.socket = socket
         
         self.serial = "remote"
-        
-        
+                
         if self.socket.socket.isOpen():
             self.updateStatus()
         
@@ -86,6 +85,8 @@ class RemoteMotorHandler(QThread):
     @status.setter
     def status(self, status):
         self._status = status
+        if not (status == "closed" or status == "initiating"):
+            if not self._is_opened: self._is_opened = True
         self._sig_motors_changed_status.emit(self.nickname, status)
         
     def updateStatus(self):
