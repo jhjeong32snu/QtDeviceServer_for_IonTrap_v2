@@ -214,10 +214,7 @@ class MotorController(QObject):
         
     @remote_control_wrapper
     def _detectedError(self, msg):
-        if not self.gui == None:
-            self.gui.toStatusBar(msg)
-        else:
-            print(msg)
+        print(msg)
         
     def toWorkList(self, cmd):
         self.queue.put(cmd)

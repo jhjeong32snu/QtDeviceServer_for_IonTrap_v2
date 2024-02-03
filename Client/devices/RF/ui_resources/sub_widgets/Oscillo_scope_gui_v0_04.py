@@ -323,7 +323,7 @@ class DB_Recorder(QThread):
               SG = "ea_rf"
               chamber = "EA"
         else:
-              SG = "ec_Rf"
+              SG = "ec_rf"
               chamber = "EC"
               
         RF_Vpp_data = self.dBm_to_vpp(self.rf_gui.main_gui.panel_dict[SG].device.settings[0]["power"])
