@@ -120,12 +120,14 @@ class RequestHandler(QTcpServer):
                 if (msg[0] == "C" or msg[0] == "Q"): # command
                     msg[1] = device
                     for client in self.client_list:
-                        if client.user_name == user_nick:
+                        client_user_name = client.user_name.split("(")[0] # due to duplication
+                        if client_user_name == user_nick:
                             client.toMessageList(msg)
             
                 elif (msg[0] == "D" or msg[0] == "E"):
                     for client in self.client_list:
-                        if not client.user_name == user_nick:
+                        client_user_name = client.user_name.split("(")[0] # due to duplication
+                        if not client_user_name == user_nick:
                             client.toMessageList(msg)
                             
             except Exception as ee:
