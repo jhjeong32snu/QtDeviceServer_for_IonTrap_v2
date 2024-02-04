@@ -116,7 +116,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     if app is None:
         app = QtWidgets.QApplication([])
-    srv = DeviceServer(True)
+    srv = DeviceServer(auto_setup=True)
     # app.exec_()
     # sys.exit(app.exec())
     # main()
