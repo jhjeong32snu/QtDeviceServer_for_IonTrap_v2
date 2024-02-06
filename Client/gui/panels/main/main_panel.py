@@ -146,13 +146,14 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
         try:
             self.sequencer.openHardwareDefinitionFile()
         except Exception as ee:
-            self.toStatusBar("An error while opening the hardware definition file. (%s)" % ee)
+            self.toStatusBar("An error while opening the hardware definition file.(%s)" % ee)
         
             
     def buttonConfigPressed(self):
-        config_file = QFileDialog.getOpenFileName(self, 'Open .ini file.',
-                                                  os.path.basename(self.TXT_config.text()), 'ini files(*.ini)')[0]
-        self.loadConfig(config_file)
+        try:
+            os.startfile(self.TXT_config.text())
+        except Exception as ee:
+            self.toStatusBar("An error while opening the config file.(%s)" % ee)
         
        
     def buttonSwitchPressed(self):
@@ -207,8 +208,8 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
             self.toStatusBar("Couldn't read the config file.")
             return
         
-        self.TXT_ip.setText(cp.get("server", "ip"))
-        self.TXT_port.setText(cp.get("server", "port"))
+        self.TXT_ip.setText(cp.get("win_server", "ip"))
+        self.TXT_port.setText(cp.get("win_server", "port"))
         self.TXT_config.setText(config_file)
         self.toStatusBar("Loaded a config file.")
         

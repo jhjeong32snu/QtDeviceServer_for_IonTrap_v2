@@ -178,7 +178,7 @@ class MessageHandler(QObject):
         self.msg_queue = Queue()
         
         # privates
-        self._name_duplicate = 0
+        self._duplicated = False
         self._valid = True
         self._block_size = 0
         self._num_failure = 0
@@ -255,11 +255,11 @@ class MessageHandler(QObject):
 
             if device == "SRV":
                 if control =="C" and command == "CON":
-                    self.user_name, self._name_duplicate = self.fixUserName(data[0])
+                    self.user_name, self._duplicated = self.fixUserName(data[0])
                     self.toMessageList(["D", "SRV", "HELO", self.getDeviceList()])
                     
                 elif control =="C" and command == "DCN":
-                    if self._name_duplicate == 0:
+                    if self._duplicated == 0:
                         assert(self.user_name == data[0])
                     else:
                         assert(self.user_name[:-3] == data[0])
@@ -280,6 +280,7 @@ class MessageHandler(QObject):
                     flagDuplicate = True
                     index += 1
                     user_name = user_name + "(" + str(index) + ")"
+                
         return user_name, index
     
     def getDeviceList(self):
