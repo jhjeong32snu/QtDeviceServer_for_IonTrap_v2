@@ -8,7 +8,7 @@ import os
 from PyQt5 import uic
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QHBoxLayout
-from PyQt5.QtGui     import QColor
+from PyQt5.QtGui     import QColor, QCursor
 from PyQt5.QtCore    import pyqtSignal, QObject
 
 import numpy as np
@@ -42,7 +42,7 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         self.im_min = 0
         self.im_max = 100
         self.plot_im = np.random.random((5, 5))
-        self.significant_figure = 1
+        self.significant_figure = 2
         
         self._disable_list = [self.BTN_scan_vicinity,
                               self.BTN_start_scanning,
@@ -176,6 +176,8 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             color_map = config_color_map
         
         canvas = pg.GraphicsLayoutWidget()
+        canvas.scene().sigMouseClicked.connect(self.mouseClickedEvent)
+        
         plot = canvas.addPlot()
         plot.setDefaultPadding(0)
 
@@ -229,10 +231,19 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             
             ax = self.plot.getAxis('bottom')  # This is the trick
             dx = [(idx+0.5, str(round(value, self.significant_figure))) for idx, value in enumerate(self.scanner.x_scan_range)]
+            
+            if len(dx) >= 10:
+                mod = len(dx) // 10
+                dx = dx[::mod]
+            
             ax.setTicks([dx, []])
             
             ay = self.plot.getAxis('left')  # This is the trick
             dy = [(idx+0.5, str(round(value, self.significant_figure))) for idx, value in enumerate(self.scanner.y_scan_range)]
+            if len(dy) >= 20:
+                mod = len(dy) // 20
+                dy = dy[::mod]
+            
             ay.setTicks([dy, []])
                         
             self.LBL_latest_count.setText("%.2f" % self.scanner.recent_pmt_result)
@@ -253,6 +264,24 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         
         self.updatePlot()
         
+    def mouseClickedEvent(self, event):
+        try:
+            scene_coords = event.scenePos()
+            if self.plot.sceneBoundingRect().contains(scene_coords):
+                mouse_point = self.plot.vb.mapSceneToView(scene_coords)
+    
+                x = int(mouse_point.x())
+                y = int(mouse_point.y())
+                
+                if x >= 0 and x <= self.plot_im.shape[1]:
+                    if y >= 0 and y <= self.plot_im.shape[0]:
+                        QtWidgets.QToolTip.showText(QCursor().pos(), "x: %.3f\ny: %.3f\ncount: %.2f" %(self.scanner.x_scan_coord[x],
+                                                                                                   self.scanner.y_scan_coord[y],
+                                                                                                   self.plot_im[y][x]))
+        except:
+            pass # an error when no scan done. ignors the exception.
+
+        
     def changedStepValue(self):
         value = self.sender().value()
         axis = self.sender().objectName().split("_")[1]
@@ -263,13 +292,13 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             
     def setSignificant_figure(self, value):
         if 1 <= value:
-            self.significant_figure = 0
-        elif 0.1 <= value and value < 1:
             self.significant_figure = 1
-        elif 0.01 <= value and value < 0.1:
+        elif 0.1 <= value and value < 1:
             self.significant_figure = 2
-        else:
+        elif 0.01 <= value and value < 0.1:
             self.significant_figure = 3
+        else:
+            self.significant_figure = 4
             
     def recievedScannerSignal(self, s):
         if s == "R":
@@ -278,13 +307,18 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             self.updatePlot()
     
     def pressedScanStartButton(self):
-        for axis in ["x", "y"]:
-            start = getattr(self, "GUI_%s_start" % axis).value()
-            stop  = getattr(self, "GUI_%s_stop" % axis).value()
-            if stop <= start:
-                self.toStatusBar("The stop value should be larger than the start value.")
-                return
-        self.scanner.startScanning()
+        if not self.sequencer.is_opened:
+            self.toStatusBar("The FPGA is not opened yet.")
+            return
+        
+        else:
+            for axis in ["x", "y"]:
+                start = getattr(self, "GUI_%s_start" % axis).value()
+                stop  = getattr(self, "GUI_%s_stop" % axis).value()
+                if stop <= start:
+                    self.toStatusBar("The stop value should be larger than the start value.")
+                    return
+            self.scanner.startScanning()
     
     def pressedChangeSaveDir(self):
         save_dir = QFileDialog.getExistingDirectory(parent=self, directory=dirname + '/../save_data')
@@ -296,22 +330,27 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             self.toStatusBar("Changed the saving directory.")
     
     def pressedScanVicinityButton(self):
-        try:
-            for axis in ["x", "y"]:
-                
-                step = getattr(self, "GUI_%s_step" % axis).value()
-                center = float(getattr(self.parent, "LBL_%s_pos" % axis.upper()).text())
-                
-                start = max(0, center - step*self.SPBOX_vicinity_length.value())
-                stop = min(12, center + step*self.SPBOX_vicinity_length.value())
-    
-                getattr(self, "GUI_%s_start" % axis).setValue(start)
-                getattr(self, "GUI_%s_stop" % axis).setValue(stop)
-        except Exception as ee:
-            self.toStatusBar("An error while seeting scan positions.(%s)" % ee)
+        if not self.sequencer.is_opened:
+            self.toStatusBar("The FPGA is not opened yet.")
             return
         
-        self.scanner.startScanning()    
+        else:
+            try:
+                for axis in ["x", "y"]:
+                    
+                    step = getattr(self, "GUI_%s_step" % axis).value()
+                    center = float(getattr(self.parent, "LBL_%s_pos" % axis.upper()).text())
+                    
+                    start = max(0, center - step*self.SPBOX_vicinity_length.value())
+                    stop = min(12, center + step*self.SPBOX_vicinity_length.value())
+        
+                    getattr(self, "GUI_%s_start" % axis).setValue(start)
+                    getattr(self, "GUI_%s_stop" % axis).setValue(stop)
+            except Exception as ee:
+                self.toStatusBar("An error while seeting scan positions.(%s)" % ee)
+                return
+            
+            self.scanner.startScanning()    
     
     def pressedPauseScanning(self):
         if "Pause" in self.BTN_pause_or_resume_scanning.text():
@@ -351,7 +390,6 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
                 self.BTN_scan_vicinity.setEnabled(False)
                 self.BTN_go_to_max.setEnabled(False)
                 self.BTN_pause_or_resume_scanning.setEnabled(True)
-                print("enabled button")
             else:
                 self._setEnableObjects(False)
                 self.BTN_pause_or_resume_scanning.setEnabled(False)
@@ -398,7 +436,7 @@ class PMTScanner(QObject):
             
     def getScanRange(self, start, end, step):
         scan_list = np.arange(start, end, step).tolist()
-        if not end in scan_list:
+        if abs(scan_list[-1] - end) > step:
             scan_list.append(end)
         return np.asarray(scan_list)
     

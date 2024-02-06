@@ -12,7 +12,6 @@ dirname = os.path.dirname(filename)
 
 # PyQt libraries
 from PyQt5 import uic, QtWidgets
-from PyQt5.QtWidgets import QFileDialog
 
 from main_panel_theme import main_panel_theme_base
 main_ui_file = dirname + "/main_panel.ui"
