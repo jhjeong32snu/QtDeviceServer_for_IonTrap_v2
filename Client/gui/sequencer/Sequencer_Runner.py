@@ -185,9 +185,9 @@ class SequencerRunner(QObject):
                 if not line:
                     break
                 if " as hd\n" in line:
-                    print ("replaced from %s" % line)
+                    # print ("replaced from %s" % line)
                     line = "import %s as hd\n" % self.hw_def
-                    print("to %s" % line)
+                    # print("to %s" % line)
                 if line_idx in line_idx_list:
                     line = '%s=%.0f\n' % (replace_dict[line_idx]["param"], replace_dict[line_idx]["value"])
                 file_string += line
