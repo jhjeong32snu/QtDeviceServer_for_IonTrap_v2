@@ -120,10 +120,20 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
         
         ax = self.plot.getAxis('bottom')  # This is the trick
         dx = [(idx+0.5, str(round(value, self.significant_figure))) for idx, value in enumerate(x_scan_range)]
+        if len(dx) >= 10:
+            mod = len(dx) // 10
+            start = int(mod/2)
+            dx = dx[start::mod]
+        
         ax.setTicks([dx, []])
         
         ay = self.plot.getAxis('left')  # This is the trick
         dy = [(idx+0.5, str(round(value, self.significant_figure))) for idx, value in enumerate(y_scan_range)]
+        if len(dy) >= 20:
+            mod = len(dy) // 20
+            start = int(mod/2)
+            dy = dy[start::mod]
+        
         ay.setTicks([dy, []])
         
         self.plot.setLimits(xMin=0, xMax=len(x_scan_range), yMin=0, yMax=len(y_scan_range))
@@ -234,7 +244,8 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             
             if len(dx) >= 10:
                 mod = len(dx) // 10
-                dx = dx[::mod]
+                start = int(mod/2)
+                dx = dx[start::mod]
             
             ax.setTicks([dx, []])
             
@@ -242,7 +253,8 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             dy = [(idx+0.5, str(round(value, self.significant_figure))) for idx, value in enumerate(self.scanner.y_scan_range)]
             if len(dy) >= 20:
                 mod = len(dy) // 20
-                dy = dy[::mod]
+                start = int(mod/2)
+                dy = dy[start::mod]
             
             ay.setTicks([dy, []])
                         
@@ -321,13 +333,10 @@ class ScannerGUI(QtWidgets.QWidget, Ui_Form):
             self.scanner.startScanning()
     
     def pressedChangeSaveDir(self):
-        save_dir = QFileDialog.getExistingDirectory(parent=self, directory=dirname + '/../save_data')
-        if save_dir == "":
-            self.toStatusBar("Aborted changing the saving directory.")
-        else:
-            self._changeSaveDir(save_dir)
-            self.save_file_dir = save_dir
-            self.toStatusBar("Changed the saving directory.")
+        try:
+            os.startfile(self.LE_save_file_dir.text())
+        except Exception as ee:
+            self.toStatusBar("An error while opening the save file directory.(%s)" % ee)
     
     def pressedScanVicinityButton(self):
         if not self.sequencer.is_opened:
