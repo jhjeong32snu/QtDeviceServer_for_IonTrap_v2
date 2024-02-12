@@ -3,12 +3,15 @@
 Created on Sat Aug 21 23:22:02 2021
 
 Author: JHJeong32
+
+Panels are designed as gui-oriented since I did not plan to reuse the code.
 """
 import os
 version = "1.1"
 
 filename = os.path.abspath(__file__)
 dirname = os.path.dirname(filename)
+seq_dirname = os.path.abspath(dirname + "/../../libraries/sequencer_files/")
 
 # PyQt libraries
 from PyQt5 import uic, QtWidgets
@@ -177,24 +180,19 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
         replace_string = ",".join(replace_string_list)
         
         file_string = self._getReplacedFileString(replace_string)
+        
         self.sequencer.spontaneous = True
         self.sequencer._executeFileString(file_string)
         self.sequencer.runSequencerFile()
         self.sequencer.spontaneous = False
-            
+        
+        
     def _getReplacedFileString(self, replace_string):
-        file_string = ''
-        seq_file = dirname + '/sequencer/' + 'Switch_sequencer_base.py'
-        with open (seq_file) as f:
-            while True:
-                line = f.readline()
-                if not line:
-                    break
-                if " as hd\n" in line:
-                    line = "import %s as hd\n" % self.sequencer.hw_def
-                if "Will_be_replaced_line" in line:
-                    line = "s.set_output_port(hd.external_control_port, [%s])" % replace_string
-                file_string += line
+        seq_file = seq_dirname + "/Switch_sequencer_base.py"
+        pre_defined_string = self.sequencer.replaceParameters(seq_file)
+        
+        file_string = pre_defined_string.replace("Will_be_replaced_line", "s.set_output_port(hd.external_control_port, [%s])" % replace_string)
+        
         return file_string
                 
     #%%

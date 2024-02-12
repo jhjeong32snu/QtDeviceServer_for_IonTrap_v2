@@ -88,6 +88,8 @@ class ArtyS7:
             #print(data_to_send)
             self.com.write(data_to_send)
 
+
+
     def read_next(self):
         first_char = self.com.read(1).decode('latin-1') # bytes larger than 127 cannot be translated into 'utf-8', but 'latin-1' can handle up to 255
         if first_char == '\x10':
@@ -102,7 +104,7 @@ class ArtyS7:
     
     def flush_input(self):
         length = self.com.inWaiting()
-        self.com.read(length)
+        print(self.com.read(length))
         print('flush_input: %d bytes were waiting.' % length)
 
     

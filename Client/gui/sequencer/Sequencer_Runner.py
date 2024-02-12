@@ -48,7 +48,7 @@ class SequencerRunner(QObject):
     device_sweep_flag = False 
     
     
-    def __init__(self, ser_num=None, hw_def=None, parent=None):
+    def __init__(self, ser_num=None, hw_def=None, parent=None, verbose=False):
         super().__init__()
         self.parent = parent
         self.ser_num = ser_num
@@ -70,6 +70,9 @@ class SequencerRunner(QObject):
         
         self.occupant = ""
         self.verbose = False
+        
+    def setVerbose(self, flag):
+        self.verbose = flag
         
     def openDevice(self, com_port=None):
         if com_port == None:
@@ -304,6 +307,7 @@ class Runner(QThread):
                 print(self.data)
                 
             controller.data.append(self.data)
+            
         except Exception as ee:
             print("An error occured while running the sequencer file (%s)" % ee)
         self.status = "standby"

@@ -6,89 +6,63 @@ Created on Tue Dec 12 23:23:46 2017
 
 v1_02: Added an example to read DNA_PORT in the main
 """
+verbose = False
 
-import serial
+class DummyCom(object):
+    
+    def __init__(self, serialPort, buadrate=57600, timeout=1, **kwargs):
+        
+        self.__key_list = ["serialPort", "buadrate", "timeout"]
+        self.__key_list += list(**kwargs.keys())
+        for key, val in kwargs.items():
+            setattr(self, key, val)
+            
+        self._isOpen = False
+            
+    def open(self):
+        self._isOpen = True
+        
+    def close(self):
+        self._isOpen = False
+        
+    def isOpen(self):
+        return self._isOpen
+    
+    def write(self, str_msg):
+        if verbose:
+            print("A dummy com accepted %s." % str_msg)
+    
 
-class escapeSequenceDetected(Exception):
-    def __init__(self, escape_char):
-        self.escape_char = escape_char
-    def __str__(self):
-        return ('\\x10%c is detected' % self.escape_char)
-
-class ArtyS7:
-    CMD_RX_BUFFER_BYTES = 0xf
-    BTF_RX_BUFFER_BYTES = 0x100
-    TERMINATOR_STRING = '\r\n'
-    PATTERN_BYTES = 4
-    PROGRAM_MEMORY_DATA_WIDTH = 64
-    PROGRAM_MEMORY_ADDR_WIDTH = 9
-    MAX_OUTPUT_DATA_FIFO_TRANSMISSION_CHUNK_SIZE = 512
+            
+            
+    def __call__(self):
+        return "Dummy_com"
+        
+        
+class ArtyS7_Dummy(object):
 
     
     def __init__(self, serialPort):
-        self.com = serial.Serial(serialPort, baudrate=57600, timeout=1, \
-                parity='N', bytesize=8, stopbits=2, xonxoff=False, \
-                rtscts=False, dsrdtr=False, writeTimeout = 0 )
+        self.com = DummyCom(serialPort, baudrate=57600, timeout=1, \
+                            parity='N', bytesize=8, stopbits=2, xonxoff=False, \
+                            rtscts=False, dsrdtr=False, writeTimeout = 0 )
         
+    def __call__(self):
+        return "Dummy_ArtyS7"
+            
+            
     def close(self):
         self.com.close()
 
 
     def send_command(self, cmd):
-        string_length = len(cmd)
-        if (string_length > ArtyS7.CMD_RX_BUFFER_BYTES):
-            print('send_command: CMD cannot be longer than %d. Current length is %d.' % \
-                  (ArtyS7.CMD_RX_BUFFER_BYTES, string_length))
-        else:
-            string_to_send = ('!%x' % string_length)
-            for each_char in cmd:
-                if each_char == '\x10':
-                    string_to_send += '\x10\x10'
-                else:
-                    string_to_send += each_char
-            string_to_send += '\r\n'
-            string_to_send = string_to_send.encode('latin-1')
-            self.com.write(string_to_send)
+        self.com.write(cmd)
 
     def send_mod_BTF_string(self, modified_BTF):
-        string_length = len(modified_BTF)
-        if (string_length > ArtyS7.BTF_RX_BUFFER_BYTES):
-            print('send_mod_BTF_string: Modified BTF cannot be longer than %d. Current length is %d.' \
-                  % (ArtyS7.BTF_RX_BUFFER_BYTES, string_length))
-        else:
-            byte_count_string = '%x' % string_length
-            num_digits = len(byte_count_string)
-            data_to_send = ('#%x%s' % (num_digits, byte_count_string))
-            for each_char in modified_BTF:
-                if each_char == '\x10':
-                    data_to_send += '\x10\x10'
-                else:
-                    data_to_send += each_char
-            data_to_send += '\r\n'
-            data_to_send = data_to_send.encode('latin-1')
-            #print(data_to_send)
-            self.com.write(data_to_send)
+        self.com.write(modified_BTF)
 
     def send_mod_BTF_int_list(self, modified_BTF):
-        dataLength = len(modified_BTF)
-        if (dataLength> ArtyS7.BTF_RX_BUFFER_BYTES):
-            print('send_mod_BTF_int_list: Modified BTF cannot be longer than %d. Current length is %d.' \
-                  % (ArtyS7.BTF_RX_BUFFER_BYTES, dataLength))
-        else:
-            byte_count_string = '%x' % dataLength
-            num_digits = len(byte_count_string)
-            data_to_send = ('#%x%s' % (num_digits, byte_count_string))
-            for each_byte in modified_BTF:
-                if each_byte == 0x10:
-                    data_to_send += '\x10\x10'
-                else:
-                    data_to_send += chr(each_byte)
-            data_to_send += '\r\n'
-            data_to_send = data_to_send.encode('latin-1')
-            #print(data_to_send)
-            self.com.write(data_to_send)
-
-
+        self.com.write(modified_BTF)
 
     def read_next(self):
         first_char = self.com.read(1).decode('latin-1') # bytes larger than 127 cannot be translated into 'utf-8', but 'latin-1' can handle up to 255
@@ -104,7 +78,7 @@ class ArtyS7:
     
     def flush_input(self):
         length = self.com.inWaiting()
-        print(self.com.read(length))
+        self.com.read(length)
         print('flush_input: %d bytes were waiting.' % length)
 
     
@@ -443,7 +417,7 @@ class ArtyS7:
 if __name__ == '__main__':
     if 'dev' in vars(): # To close the previously opened device when re-running the script with "F5"
         dev.close()
-    dev = ArtyS7('COM7')
+    dev = ArtyS7('COM6')
     dev.send_command('*IDN?') # com.write(b'!5*IDN?\r\n')
     print(dev.read_next_message())
     dev.check_waveform_capture() # Check the status of trigger
