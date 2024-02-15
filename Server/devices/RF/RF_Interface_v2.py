@@ -136,6 +136,8 @@ class RFInterface(QThread):
                     
                 # A disconnection request. The RF devices will be closed for the safety if there are no clients.
                 elif rf_device == "DCN": # disconnect
+                    msg = ["D", "RF", "DCN", []]
+                    self.AnnounceToClients(msg, client)
                     self._client_list.remove(client)
                     if not len(self._client_list):
                         self.toLog("info", "No clients, turning off the RF devices.")
