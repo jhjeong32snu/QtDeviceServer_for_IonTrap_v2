@@ -8,7 +8,7 @@ Created on Thu Feb  1 21:08:57 2018
 # mux2 #(16) external_control(.d0(output_ports[0]), .d1(patterns[17:32]), .select(manual_control_on), .y(external_output));
 # assign monitoring_32bits = {external_output, stopped, manual_control_on, {(14-INSTRUCTION_MEMORY_ADDR_WIDTH){1'b0}}, PC[INSTRUCTION_MEMORY_ADDR_WIDTH-1:0]};
 
-HW_VERSION = 'Sequencer v4_01'
+HW_VERSION = 'Sequencer v4_02'
 
 #%%################################################################
 # Input connections to sequencer
@@ -94,9 +94,24 @@ jb_6_counter_enable = 12      # assign jb_6_counter_clock_enable = output_ports_
 
 
 ####################################################
-# Output port[2] is assigned to Microwave phase shifter
-#Microwave_phase_shifter_port = 2
-
+# Output port[2] is assigned to slow output port
+external_slow_port = 2
+jd_7_out = 15		# assign jd_7 = output_ports_2[15];
+jd_6_out = 14		# assign jd_6 = output_ports_2[14];
+jd_5_out = 13		# assign jd_5 = output_ports_2[13];
+jd_4_out = 12		# assign jd_4 = output_ports_2[12];
+jd_3_out = 11		# assign jd_3 = output_ports_2[11];
+jd_2_out = 10		# assign jd_2 = output_ports_2[10];
+jd_1_out = 9		# assign jd_1 = output_ports_2[9];
+jd_0_out = 8		# assign jd_0 = output_ports_2[8];
+jc_7_out = 7		# assign jc_7 = output_ports_2[7];
+jc_6_out = 6		# assign jc_6 = output_ports_2[6];
+jc_5_out = 5		# assign jc_5 = output_ports_2[5];
+jc_4_out = 4		# assign jc_4 = output_ports_2[4];
+jc_3_out = 3		# assign jc_3 = output_ports_2[3];
+jc_2_out = 2		# assign jc_2 = output_ports_2[2];
+jc_1_out = 1		# assign jc_1 = output_ports_2[1];
+jc_0_out = 0		# assign jc_0 = output_ports_2[0];
 
 #%%################################################################
 # Monitoring pins assignment

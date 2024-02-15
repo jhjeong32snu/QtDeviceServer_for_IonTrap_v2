@@ -173,25 +173,35 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
     def _runButtonSequencer(self, button_dict):
         self.user_run_flag = True
 
-        replace_string_list = []
+        output_port_list = []
+        slow_port_list = []
+        
         for switch_out, switch_flag in button_dict.items():
-            replace_string = "(hd.%s, %d)" % (switch_out, switch_flag)
-            replace_string_list.append(replace_string)
-        replace_string = ",".join(replace_string_list)
+            switch_port = switch_out[:-4]
+            pin = self.sequencer.hd.output_mapping[switch_port]
+            
+            if ("jc_" in pin) or ("jd_" in pin): # slow_output_port
+                slow_port_list.append("(hd.%s, %d)" % (switch_out, switch_flag))
+            else:
+                output_port_list.append("(hd.%s, %d)" % (switch_out, switch_flag))
         
-        file_string = self._getReplacedFileString(replace_string)
-        
+        file_string = self._getReplacedFileString(slow_port_list, output_port_list)
         self.sequencer.spontaneous = True
         self.sequencer._executeFileString(file_string)
         self.sequencer.runSequencerFile()
         self.sequencer.spontaneous = False
         
         
-    def _getReplacedFileString(self, replace_string):
+    def _getReplacedFileString(self, slow_port_list, output_port_list):
         seq_file = seq_dirname + "/Switch_sequencer_base.py"
         pre_defined_string = self.sequencer.replaceParameters(seq_file)
         
-        file_string = pre_defined_string.replace("Will_be_replaced_line", "s.set_output_port(hd.external_control_port, [%s])" % replace_string)
+        fast_output_string = "s.set_output_port(hd.external_control_port, [%s])" % ",".join(output_port_list) if len(output_port_list) else ""
+        slow_output_string = "s.set_output_port(hd.external_control_port, [%s])" % ",".join(slow_port_list) if len(slow_port_list) else ""
+
+        replace_string = fast_output_string + "\n" + slow_output_string
+                
+        file_string = pre_defined_string.replace("Will_be_replaced_line", replace_string)
         
         return file_string
                 
@@ -223,7 +233,10 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
                     self.switch_button_list[idx].setText(key + "_out")
 
                     if "description" in FPGA.hd.__dict__.keys():
-                        desc_text += FPGA.hd.description[key] + "\n"
+                        if key in FPGA.hd.description.keys():
+                            desc_text += FPGA.hd.description[key] + "\n"
+                        else:
+                            desc_text += ""
                     desc_text += "(%s)" % FPGA.hd.output_mapping[key]
 
                 else:
@@ -385,7 +398,6 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
         else:
             self.toStatusBar("You must connect to the DAC first.")
     
-    
     def changedDACVoltage(self):
         prev_voltage_list = self.device_dict["dac"]._voltage_list
         channel_list = []
@@ -421,7 +433,6 @@ class MainPanel(QtWidgets.QMainWindow, main_ui, main_panel_theme_base):
             
         self.user_update = True
 
-            
     def changeDDSconn(self, flag):
         self.user_update = False
         self.BTN_dds_connect.setChecked(flag)

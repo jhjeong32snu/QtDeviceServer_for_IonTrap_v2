@@ -23,7 +23,7 @@ from PyQt5.QtGui     import QColor
 from PyQt5.QtWidgets import QVBoxLayout, QFileDialog
 
 # Custom widgets
-from .Connection_widget import CustomDevice
+from .Connection_widget import CustomDevice, InternalRF_Device
 # from .
 
 ph_ui_file = dirname + "/ui/parametric_heating.ui"
@@ -73,10 +73,10 @@ class ParametricHeatingGUI(QtWidgets.QWidget, ph_ui):
 
     def initUi(self):
         self.custom_con = CustomDevice(self)
-        self.non_custom_con = CustomDevice() # This should be changed later
+        self.internal_con = InternalRF_Device(self) # This should be changed later
         
         self.GBOX_device.layout().addWidget(self.custom_con)
-        self.GBOX_device.layout().addWidget(self.non_custom_con)
+        self.GBOX_device.layout().addWidget(self.internal_con)
         
         self.changeConnectionDevice()
         
@@ -102,13 +102,13 @@ class ParametricHeatingGUI(QtWidgets.QWidget, ph_ui):
 
     def changeConnectionDevice(self):
         if self.CBOX_custom.isChecked():
-            self.non_custom_con.hide()
+            self.internal_con.hide()
             self.custom_con.show()
             self.con = self.custom_con
         else:
             self.custom_con.hide()
-            self.non_custom_con.show()
-            self.con = self.non_custom_con
+            self.internal_con.show()
+            self.con = self.internal_con
        
     @checkError
     def pressedStartButton(self, flag):
@@ -274,6 +274,10 @@ class PlotHandler(QThread):
         
         self.save_file_dir = os.path.abspath(dirname + "/../data/parametric_heating")
         self.save_file_name = ""
+        
+        self.y_max = 1
+        self.y_min = 0
+        self.percentage = 100
         
     @checkError
     def _resetProgress(self):
